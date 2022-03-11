@@ -2,6 +2,7 @@
 
 // Uses
 use super::{EnabledBitRange, StatusValue};
+use crate::status_values::Severity;
 
 // Struct Implementation
 pub struct CardholderVerificationRule {
@@ -100,6 +101,7 @@ impl StatusValue<u16> for CardholderVerificationRule {
 				offset: 6 + 8,
 				len: 1,
 				explanation: "Apply succeeding CV Rule if this CVM is unsuccessful".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		enabled_bits.push(EnabledBitRange {
@@ -127,6 +129,7 @@ impl StatusValue<u16> for CardholderVerificationRule {
 					"Unknown (likely issuer or payment system-specific)"
 				}
 			),
+			severity: Severity::Normal,
 		});
 		enabled_bits.push(EnabledBitRange {
 			offset: 7,
@@ -161,6 +164,7 @@ impl StatusValue<u16> for CardholderVerificationRule {
 					"Unknown (likely payment system-specific)"
 				}
 			),
+			severity: Severity::Normal,
 		});
 
 		enabled_bits

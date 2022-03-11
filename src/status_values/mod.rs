@@ -7,11 +7,11 @@ mod cvr;
 mod tsi;
 mod tvr;
 
+// Uses
+use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
+
 // Public Exports
-pub use cvm_results::*;
-pub use cvr::*;
-pub use tsi::*;
-pub use tvr::*;
+pub use self::{cvm_results::*, cvr::*, tsi::*, tvr::*};
 
 /// An EMV status value.
 pub trait StatusValue<I: Into<u64>> {
@@ -36,10 +36,18 @@ pub struct EnabledBitRange {
 	pub offset: u8,
 	pub len: u8,
 	pub explanation: String,
+	pub severity: Severity,
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub enum Severity {
+	Normal,
+	Warning,
+	Error,
 }
 
 /// Displays a pretty breakdown of the bits and their meaning.
-pub fn display_breakdown<V: StatusValue<I>, I: Into<u64>>(value: &V) {
+pub fn display_breakdown<V: StatusValue<I>, I: Into<u64>>(stdout: &mut StandardStream, value: &V) {
 	// Fetch the required data
 	let bits = value.get_bits().into();
 	let num_bits = V::NUM_BITS;
@@ -48,10 +56,20 @@ pub fn display_breakdown<V: StatusValue<I>, I: Into<u64>>(value: &V) {
 	//dbg!(enabled_bits);
 
 	// Print the hex representation
-	println!("Hex: {:#01$X}", bits, usize::from((num_bits / 8) * 2 + 2));
+	stdout
+		.set_color(ColorSpec::new().set_bold(true).set_fg(Some(Color::Cyan)))
+		.ok();
+	print!("Hex:");
+	stdout.reset().ok();
+	println!(" {:#01$X}", bits, usize::from((num_bits / 8) * 2 + 2));
 
 	// Print the binary representation
+	stdout
+		.set_color(ColorSpec::new().set_bold(true).set_fg(Some(Color::Cyan)))
+		.ok();
 	println!("Breakdown:");
+	stdout.reset().ok();
+	stdout.set_color(ColorSpec::new().set_bold(true)).ok();
 	for offset in (0..num_bits).rev() {
 		if bits & (1 << offset) > 0 {
 			print!("1");
@@ -59,10 +77,11 @@ pub fn display_breakdown<V: StatusValue<I>, I: Into<u64>>(value: &V) {
 			print!("0");
 		}
 		if offset % 8 == 0 && offset > 0 {
-			print!("_");
+			print!(" ");
 		}
 	}
 	println!();
+	stdout.reset().ok();
 
 	// Print the breakdown
 	let mut arm_bits = 0u64;
@@ -117,6 +136,15 @@ pub fn display_breakdown<V: StatusValue<I>, I: Into<u64>>(value: &V) {
 				print!(" ");
 			}
 		}
-		println!("\u{2514} {}", enabled_bit.explanation);
+		print!("\u{2514} ");
+		stdout
+			.set_color(ColorSpec::new().set_fg(match enabled_bit.severity {
+				Severity::Normal => None,
+				Severity::Warning => Some(Color::Yellow),
+				Severity::Error => Some(Color::Red),
+			}))
+			.ok();
+		println!("{}", enabled_bit.explanation);
+		stdout.reset().ok();
 	}
 }

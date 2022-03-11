@@ -8,6 +8,16 @@ pub fn parse_cli_arguments() -> ArgMatches {
 		.author(env!("CARGO_PKG_AUTHORS"))
 		.about(env!("CARGO_PKG_DESCRIPTION"))
 		.arg(
+			Arg::new("colour")
+				.alias("color")
+				.long("colour")
+				.takes_value(true)
+				.default_value("auto")
+				.possible_values(["auto", "always", "ansi", "never"])
+				.value_name("WHEN")
+				.help("When to use colour in console output"),
+		)
+		.arg(
 			Arg::new("tvr")
 				.short('t')
 				.long("tvr")

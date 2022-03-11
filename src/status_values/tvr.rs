@@ -2,6 +2,7 @@
 
 // Uses
 use super::{EnabledBitRange, StatusValue};
+use crate::status_values::Severity;
 
 // Struct Implementation
 pub struct TerminalVerificationResults {
@@ -95,6 +96,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 7 + 4 * 8,
 				len: 1,
 				explanation: "Offline data authentication was not performed".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.sda_failed {
@@ -102,6 +104,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 6 + 4 * 8,
 				len: 1,
 				explanation: "SDA failed".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.icc_data_missing {
@@ -109,6 +112,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 5 + 4 * 8,
 				len: 1,
 				explanation: "ICC data missing".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.terminal_card_exception {
@@ -116,6 +120,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 4 + 4 * 8,
 				len: 1,
 				explanation: "Card appears on terminal exception file".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.dda_failed {
@@ -123,6 +128,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 3 + 4 * 8,
 				len: 1,
 				explanation: "DDA failed".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.cda_failed {
@@ -130,6 +136,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 2 + 4 * 8,
 				len: 1,
 				explanation: "CDA failed".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.icc_terminal_version_mismatch {
@@ -137,6 +144,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 7 + 3 * 8,
 				len: 1,
 				explanation: "ICC and terminal have different application versions".to_owned(),
+				severity: Severity::Warning,
 			});
 		}
 		if self.expired_application {
@@ -144,6 +152,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 6 + 3 * 8,
 				len: 1,
 				explanation: "Expired application".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.application_not_yet_effective {
@@ -151,6 +160,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 5 + 3 * 8,
 				len: 1,
 				explanation: "Application not yet effective".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.requested_service_not_allowed {
@@ -158,6 +168,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 4 + 3 * 8,
 				len: 1,
 				explanation: "Requested service not allowed for card product".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.new_card {
@@ -165,6 +176,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 3 + 3 * 8,
 				len: 1,
 				explanation: "New card".to_owned(),
+				severity: Severity::Warning,
 			});
 		}
 		if self.cardholder_verification_unsuccessful {
@@ -172,6 +184,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 7 + 2 * 8,
 				len: 1,
 				explanation: "Cardholder verification was not successful".to_owned(),
+				severity: Severity::Warning,
 			});
 		}
 		if self.unrecognized_cvm {
@@ -179,6 +192,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 6 + 2 * 8,
 				len: 1,
 				explanation: "Unrecognised CVM".to_owned(),
+				severity: Severity::Warning,
 			});
 		}
 		if self.pin_try_limit_exceeded {
@@ -186,6 +200,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 5 + 2 * 8,
 				len: 1,
 				explanation: "PIN try limit exceeded".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.pin_entry_required_but_no_pinpad {
@@ -193,6 +208,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 4 + 2 * 8,
 				len: 1,
 				explanation: "PIN entry required and PIN pad not present or not working".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.pin_entry_required_but_no_entry {
@@ -201,6 +217,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				len: 1,
 				explanation: "PIN entry required, PIN pad present, but PIN was not entered"
 					.to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.online_pin_entered {
@@ -208,6 +225,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 2 + 2 * 8,
 				len: 1,
 				explanation: "Online PIN entered".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.transaction_exceeds_floor_limit {
@@ -215,6 +233,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 7 + 8,
 				len: 1,
 				explanation: "Transaction exceeds floor limit".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.consecutive_offline_limit_lower_exceeded {
@@ -222,6 +241,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 6 + 8,
 				len: 1,
 				explanation: "Lower consecutive offline limit exceeded".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.consecutive_offline_limit_upper_exceeded {
@@ -229,6 +249,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 5 + 8,
 				len: 1,
 				explanation: "Upper consecutive offline limit exceeded".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.transaction_selected_for_online_processing {
@@ -236,6 +257,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 4 + 8,
 				len: 1,
 				explanation: "Transaction selected randomly for online processing".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.merchant_forced_transaction_online {
@@ -243,6 +265,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 3 + 8,
 				len: 1,
 				explanation: "Merchant forced transaction online".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.default_tdol_used {
@@ -250,6 +273,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 7,
 				len: 1,
 				explanation: "Default TDOL used".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.issuer_authentication_failed {
@@ -257,6 +281,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 6,
 				len: 1,
 				explanation: "Issuer authentication failed".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.script_processing_failed_before_final_gen_ac {
@@ -264,6 +289,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 5,
 				len: 1,
 				explanation: "Script processing failed before final GENERATE AC".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.script_processing_failed_after_final_gen_ac {
@@ -271,6 +297,7 @@ impl StatusValue<u64> for TerminalVerificationResults {
 				offset: 4,
 				len: 1,
 				explanation: "Script processing failed after final GENERATE AC".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 

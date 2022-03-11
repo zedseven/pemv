@@ -2,7 +2,7 @@
 
 // Uses
 use super::{EnabledBitRange, StatusValue};
-use crate::status_values::cv_rule::CardholderVerificationRule;
+use crate::status_values::{cv_rule::CardholderVerificationRule, Severity};
 
 // Struct Implementation
 pub struct CardholderVerificationMethodResults {
@@ -69,6 +69,11 @@ impl StatusValue<u32> for CardholderVerificationMethodResults {
 					CvmResult::Successful => "Successful",
 				}
 			),
+			severity: match self.result {
+				CvmResult::Unknown => Severity::Normal,
+				CvmResult::Failed => Severity::Error,
+				CvmResult::Successful => Severity::Normal,
+			},
 		});
 
 		enabled_bits

@@ -42,6 +42,8 @@ mod util;
 
 // Uses
 use anyhow::{Context, Result};
+use atty::{is as is_atty, Stream};
+use termcolor::{ColorChoice, StandardStream};
 
 use crate::{
 	cli::parse_cli_arguments,
@@ -58,29 +60,43 @@ use crate::{
 // Entry Point
 fn main() -> Result<()> {
 	let matches = parse_cli_arguments();
+
+	let choice = {
+		match matches.value_of("colour").unwrap_or("auto") {
+			"always" => ColorChoice::Always,
+			"ansi" => ColorChoice::AlwaysAnsi,
+			"auto" => {
+				if is_atty(Stream::Stdout) {
+					ColorChoice::Auto
+				} else {
+					ColorChoice::Never
+				}
+			}
+			_ => ColorChoice::Never,
+		}
+	};
+	let mut stdout = StandardStream::stdout(choice);
+
 	if let Some(tvr_value) = matches.value_of("tvr") {
 		let status_value = TerminalVerificationResults::new(
 			hex_str_to_u64(tvr_value).with_context(|| "unable to parse hex value")?,
 		);
-		display_breakdown(&status_value);
-	}
-	if let Some(cvr_value) = matches.value_of("cvr") {
+		display_breakdown(&mut stdout, &status_value);
+	} else if let Some(cvr_value) = matches.value_of("cvr") {
 		let status_value = CardVerificationResults::new(
 			hex_str_to_u64(cvr_value).with_context(|| "unable to parse hex value")?,
 		);
-		display_breakdown(&status_value);
-	}
-	if let Some(tsi_value) = matches.value_of("tsi") {
+		display_breakdown(&mut stdout, &status_value);
+	} else if let Some(tsi_value) = matches.value_of("tsi") {
 		let status_value = TransactionStatusInformation::new(
 			hex_str_to_u16(tsi_value).with_context(|| "unable to parse hex value")?,
 		);
-		display_breakdown(&status_value);
-	}
-	if let Some(cvm_value) = matches.value_of("cvm") {
+		display_breakdown(&mut stdout, &status_value);
+	} else if let Some(cvm_value) = matches.value_of("cvm") {
 		let status_value = CardholderVerificationMethodResults::new(
 			hex_str_to_u32(cvm_value).with_context(|| "unable to parse hex value")?,
 		);
-		display_breakdown(&status_value);
+		display_breakdown(&mut stdout, &status_value);
 	}
 
 	Ok(())

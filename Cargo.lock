@@ -97,7 +97,9 @@ name = "pemv"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "atty",
  "clap",
+ "termcolor",
 ]
 
 [[package]]

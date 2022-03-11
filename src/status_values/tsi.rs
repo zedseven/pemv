@@ -2,6 +2,7 @@
 
 // Uses
 use super::{EnabledBitRange, StatusValue};
+use crate::status_values::Severity;
 
 // Struct Implementation
 pub struct TransactionStatusInformation {
@@ -51,6 +52,7 @@ impl StatusValue<u16> for TransactionStatusInformation {
 				offset: 7 + 8,
 				len: 1,
 				explanation: "Offline data authentication was performed".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.cardholder_verification_performed {
@@ -58,6 +60,7 @@ impl StatusValue<u16> for TransactionStatusInformation {
 				offset: 6 + 8,
 				len: 1,
 				explanation: "Cardholder verification was performed".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.card_risk_management_performed {
@@ -65,6 +68,7 @@ impl StatusValue<u16> for TransactionStatusInformation {
 				offset: 5 + 8,
 				len: 1,
 				explanation: "Card risk management was performed".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.issuer_authentication_performed {
@@ -72,6 +76,7 @@ impl StatusValue<u16> for TransactionStatusInformation {
 				offset: 4 + 8,
 				len: 1,
 				explanation: "Issuer authentication was performed".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.terminal_risk_management_performed {
@@ -79,6 +84,7 @@ impl StatusValue<u16> for TransactionStatusInformation {
 				offset: 3 + 8,
 				len: 1,
 				explanation: "Terminal risk management was performed".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.script_processing_performed {
@@ -86,6 +92,7 @@ impl StatusValue<u16> for TransactionStatusInformation {
 				offset: 2 + 8,
 				len: 1,
 				explanation: "Script processing was performed".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 

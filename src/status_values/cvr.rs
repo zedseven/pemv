@@ -2,6 +2,7 @@
 
 // Uses
 use super::{EnabledBitRange, StatusValue};
+use crate::status_values::Severity;
 
 // Struct Implementation
 pub struct CardVerificationResults {
@@ -126,6 +127,7 @@ impl StatusValue<u64> for CardVerificationResults {
 					GenAc2ApplicationCryptogramType::Rfu => "RFU",
 				}
 			),
+			severity: Severity::Normal,
 		});
 		enabled_bits.push(EnabledBitRange {
 			offset: 5 + 4 * 8,
@@ -139,12 +141,14 @@ impl StatusValue<u64> for CardVerificationResults {
 					GenAc1ApplicationCryptogramType::Rfu => "RFU",
 				}
 			),
+			severity: Severity::Normal,
 		});
 		if self.cda_performed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 3 + 4 * 8,
 				len: 1,
 				explanation: "CDA performed".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.offline_dda_performed {
@@ -152,6 +156,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 2 + 4 * 8,
 				len: 1,
 				explanation: "Offline DDA performed".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.issuer_authentication_not_performed {
@@ -159,6 +164,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 1 + 4 * 8,
 				len: 1,
 				explanation: "Issuer authentication not performed".to_owned(),
+				severity: Severity::Warning,
 			});
 		}
 		if self.issuer_authentication_failed {
@@ -166,18 +172,21 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 4 * 8,
 				len: 1,
 				explanation: "Issuer authentication failed".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		enabled_bits.push(EnabledBitRange {
 			offset: 7 + 3 * 8,
 			len: 4,
 			explanation: format!("PIN try count: {}", self.pin_try_count),
+			severity: Severity::Normal,
 		});
 		if self.offline_pin_verification_performed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 3 + 3 * 8,
 				len: 1,
 				explanation: "Offline PIN verification performed".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.offline_pin_verification_failed {
@@ -186,6 +195,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				len: 1,
 				explanation: "Offline PIN verification performed and PIN not successfully verified"
 					.to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.pin_try_limit_exceeded {
@@ -193,6 +203,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 1 + 3 * 8,
 				len: 1,
 				explanation: "PIN try limit exceeded".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.last_online_transaction_not_completed {
@@ -200,6 +211,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 3 * 8,
 				len: 1,
 				explanation: "Last online transaction not completed".to_owned(),
+				severity: Severity::Warning,
 			});
 		}
 		if self.offline_transaction_count_limit_lower_exceeded {
@@ -207,6 +219,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 7 + 2 * 8,
 				len: 1,
 				explanation: "Lower offline transaction count limit exceeded".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.offline_transaction_count_limit_upper_exceeded {
@@ -214,6 +227,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 6 + 2 * 8,
 				len: 1,
 				explanation: "Upper offline transaction count limit exceeded".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.offline_cumulative_amount_limit_lower_exceeded {
@@ -221,6 +235,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 5 + 2 * 8,
 				len: 1,
 				explanation: "Lower cumulative offline amount limit exceeded".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.offline_cumulative_amount_limit_upper_exceeded {
@@ -228,6 +243,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 4 + 2 * 8,
 				len: 1,
 				explanation: "Upper cumulative offline amount limit exceeded".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.issuer_discretionary_bit_1 {
@@ -235,6 +251,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 3 + 2 * 8,
 				len: 1,
 				explanation: "Issuer-discretionary bit 1".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.issuer_discretionary_bit_2 {
@@ -242,6 +259,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 2 + 2 * 8,
 				len: 1,
 				explanation: "Issuer-discretionary bit 2".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.issuer_discretionary_bit_3 {
@@ -249,6 +267,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 1 + 2 * 8,
 				len: 1,
 				explanation: "Issuer-discretionary bit 3".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.issuer_discretionary_bit_4 {
@@ -256,6 +275,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 2 * 8,
 				len: 1,
 				explanation: "Issuer-discretionary bit 4".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		enabled_bits.push(EnabledBitRange {
@@ -266,12 +286,14 @@ impl StatusValue<u64> for CardVerificationResults {
 				 messaging: {}",
 				self.successful_issuer_script_commands_with_secure_messaging
 			),
+			severity: Severity::Normal,
 		});
 		if self.issuer_script_processing_failed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 3 + 8,
 				len: 1,
 				explanation: "Issuer script processing failed".to_owned(),
+				severity: Severity::Error,
 			});
 		}
 		if self.offline_data_authentication_failed_on_previous_transaction {
@@ -280,6 +302,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				len: 1,
 				explanation: "Offline data authentication failed on previous transaction"
 					.to_owned(),
+				severity: Severity::Warning,
 			});
 		}
 		if self.go_online_on_next_transaction {
@@ -287,6 +310,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 1 + 8,
 				len: 1,
 				explanation: "Go online on next transaction".to_owned(),
+				severity: Severity::Normal,
 			});
 		}
 		if self.unable_to_go_online {
@@ -294,6 +318,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				offset: 8,
 				len: 1,
 				explanation: "Unable to go online".to_owned(),
+				severity: Severity::Warning,
 			});
 		}
 
