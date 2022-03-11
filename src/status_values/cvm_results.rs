@@ -70,9 +70,8 @@ impl StatusValue<u32> for CardholderVerificationMethodResults {
 				}
 			),
 			severity: match self.result {
-				CvmResult::Unknown => Severity::Normal,
+				CvmResult::Unknown | CvmResult::Successful => Severity::Normal,
 				CvmResult::Failed => Severity::Error,
-				CvmResult::Successful => Severity::Normal,
 			},
 		});
 
