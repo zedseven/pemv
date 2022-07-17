@@ -1,5 +1,5 @@
 // Uses
-use clap::{Arg, ArgGroup, ArgMatches, Command};
+use clap::{Arg, ArgMatches, Command};
 
 /// Parse CLI input.
 pub fn parse_cli_arguments() -> ArgMatches {
@@ -17,13 +17,14 @@ pub fn parse_cli_arguments() -> ArgMatches {
 				.value_name("WHEN")
 				.help("When to use colour in console output"),
 		)
+		.next_help_heading("EMV TAGS")
 		.arg(
 			Arg::new("tvr")
 				.short('t')
 				.long("tvr")
 				.takes_value(true)
 				.value_name("TVR")
-				.help("Parse Terminal Verification Results"),
+				.help("Parse Terminal Verification Results (tag 0x95)"),
 		)
 		.arg(
 			Arg::new("cvr")
@@ -31,14 +32,14 @@ pub fn parse_cli_arguments() -> ArgMatches {
 				.long("cvr")
 				.takes_value(true)
 				.value_name("CVR")
-				.help("Parse Card Verification Results"),
+				.help("Parse Card Verification Results (part of tag 0x9F10)"),
 		)
 		.arg(
 			Arg::new("tsi")
 				.long("tsi")
 				.takes_value(true)
 				.value_name("TSI")
-				.help("Parse Transaction Status Information"),
+				.help("Parse Transaction Status Information (tag 0x9B)"),
 		)
 		.arg(
 			Arg::new("cvm")
@@ -46,8 +47,7 @@ pub fn parse_cli_arguments() -> ArgMatches {
 				.long("cvm")
 				.takes_value(true)
 				.value_name("CVM results")
-				.help("Parse Cardholder Verification Method Results"),
+				.help("Parse Cardholder Verification Method Results (tag 0x9F34)"),
 		)
-		.group(ArgGroup::new("status-values").args(&["tvr", "cvr", "tsi", "cvm"]))
 		.get_matches()
 }
