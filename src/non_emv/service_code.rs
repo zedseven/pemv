@@ -2,9 +2,9 @@
 //!
 //! Information for this can be found in [ISO/IEC 7813](https://www.iso.org/standard/43317.html).
 
+// Uses
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
-// Uses
 use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
 
 use crate::{error::ParseError, DisplayBreakdown};
