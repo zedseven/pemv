@@ -1,12 +1,12 @@
 //! Everything for handling Cardholder Verification (CV) Rule values.
 
 // Uses
-use super::{EnabledBitRange, Severity, StatusValue};
+use super::{EnabledBitRange, Severity, UnitValue};
 use crate::{error::ParseError, util::byte_slice_to_u64, ParseFromBytes};
 
 // Struct Implementation
 pub struct CardholderVerificationRule {
-	bytes: <Self as StatusValue>::Bytes,
+	bytes: <Self as UnitValue>::Bytes,
 	// Byte 1 Values
 	pub continue_if_unsuccessful: bool,
 	pub method: Option<CvMethod>,
@@ -91,7 +91,7 @@ impl ParseFromBytes for CardholderVerificationRule {
 	}
 }
 
-impl StatusValue for CardholderVerificationRule {
+impl UnitValue for CardholderVerificationRule {
 	const NUM_BYTES: usize = 2;
 	const USED_BITS_MASK: &'static [u8] = &[0b0111_1111, 0b1111_1111];
 	type Bytes = [u8; Self::NUM_BYTES as usize];

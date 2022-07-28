@@ -1,12 +1,12 @@
 //! Everything for handling Cardholder Verification Method (CVM) Results values.
 
 // Uses
-use super::{cv_rule::CardholderVerificationRule, EnabledBitRange, Severity, StatusValue};
+use super::{cv_rule::CardholderVerificationRule, EnabledBitRange, Severity, UnitValue};
 use crate::{error::ParseError, util::byte_slice_to_u64, ParseFromBytes};
 
 // Struct Implementation
 pub struct CardholderVerificationMethodResults {
-	bytes: <Self as StatusValue>::Bytes,
+	bytes: <Self as UnitValue>::Bytes,
 	// CV Rule
 	pub cv_rule: CardholderVerificationRule,
 	// Byte 3 Values
@@ -48,7 +48,7 @@ impl ParseFromBytes for CardholderVerificationMethodResults {
 	}
 }
 
-impl StatusValue for CardholderVerificationMethodResults {
+impl UnitValue for CardholderVerificationMethodResults {
 	const NUM_BYTES: usize = 3;
 	const USED_BITS_MASK: &'static [u8] = &[0b0111_1111, 0b1111_1111, 0b1111_1111];
 	type Bytes = [u8; Self::NUM_BYTES as usize];

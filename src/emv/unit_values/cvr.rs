@@ -1,12 +1,12 @@
 //! Everything for handling Card Verification Results (CVR) values.
 
 // Uses
-use super::{EnabledBitRange, Severity, StatusValue};
+use super::{EnabledBitRange, Severity, UnitValue};
 use crate::{error::ParseError, util::byte_slice_to_u64, ParseFromBytes};
 
 // Struct Implementation
 pub struct CardVerificationResults {
-	bytes: <Self as StatusValue>::Bytes,
+	bytes: <Self as UnitValue>::Bytes,
 	// Byte 1 Values
 	pub gen_ac_2_application_cryptogram_type: GenAc2ApplicationCryptogramType,
 	pub gen_ac_1_application_cryptogram_type: GenAc1ApplicationCryptogramType,
@@ -108,7 +108,7 @@ impl ParseFromBytes for CardVerificationResults {
 	}
 }
 
-impl StatusValue for CardVerificationResults {
+impl UnitValue for CardVerificationResults {
 	const NUM_BYTES: usize = 5;
 	const USED_BITS_MASK: &'static [u8] = &[
 		0b1111_1111,

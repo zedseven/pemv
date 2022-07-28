@@ -49,7 +49,7 @@ use termcolor::{ColorChoice, StandardStream};
 
 use crate::{
 	cli::parse_cli_arguments,
-	emv::status_values::{
+	emv::unit_values::{
 		CardVerificationResults,
 		CardholderVerificationMethodResults,
 		TerminalVerificationResults,

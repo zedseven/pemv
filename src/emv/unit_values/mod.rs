@@ -30,8 +30,9 @@ pub enum Severity {
 	Error,
 }
 
-/// An EMV status value.
-pub trait StatusValue
+/// An EMV value that's complete as a single unit (fixed size and
+/// self-contained).
+pub trait UnitValue
 where
 	Self: Sized,
 {
@@ -59,7 +60,7 @@ where
 
 impl<V> DisplayBreakdown for V
 where
-	V: StatusValue,
+	V: UnitValue,
 {
 	fn display_breakdown(&self, stdout: &mut StandardStream) {
 		// Fetch the required data

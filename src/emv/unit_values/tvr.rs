@@ -1,12 +1,12 @@
 //! Everything for handling Terminal Verification Results (TVR) values.
 
 // Uses
-use super::{EnabledBitRange, Severity, StatusValue};
+use super::{EnabledBitRange, Severity, UnitValue};
 use crate::{error::ParseError, util::byte_slice_to_u64, ParseFromBytes};
 
 // Struct Implementation
 pub struct TerminalVerificationResults {
-	bytes: <Self as StatusValue>::Bytes,
+	bytes: <Self as UnitValue>::Bytes,
 	// Byte 1 Values
 	pub offline_data_authentication_not_performed: bool,
 	pub sda_failed: bool,
@@ -86,7 +86,7 @@ impl ParseFromBytes for TerminalVerificationResults {
 	}
 }
 
-impl StatusValue for TerminalVerificationResults {
+impl UnitValue for TerminalVerificationResults {
 	const NUM_BYTES: usize = 5;
 	const USED_BITS_MASK: &'static [u8] = &[
 		0b1111_1100,

@@ -1,12 +1,12 @@
 //! Everything for handling Transaction Status Information (TSI) values.
 
 // Uses
-use super::{EnabledBitRange, Severity, StatusValue};
+use super::{EnabledBitRange, Severity, UnitValue};
 use crate::{error::ParseError, util::byte_slice_to_u64, ParseFromBytes};
 
 // Struct Implementation
 pub struct TransactionStatusInformation {
-	bytes: <Self as StatusValue>::Bytes,
+	bytes: <Self as UnitValue>::Bytes,
 	// Byte 1 Values
 	pub offline_data_authentication_performed: bool,
 	pub cardholder_verification_performed: bool,
@@ -42,7 +42,7 @@ impl ParseFromBytes for TransactionStatusInformation {
 	}
 }
 
-impl StatusValue for TransactionStatusInformation {
+impl UnitValue for TransactionStatusInformation {
 	const NUM_BYTES: usize = 2;
 	const USED_BITS_MASK: &'static [u8] = &[0b1111_1100, 0b0000_0000];
 	type Bytes = [u8; Self::NUM_BYTES as usize];
