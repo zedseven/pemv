@@ -70,7 +70,8 @@ where
 	/// Parses raw bytes into the value.
 	///
 	/// # Errors
-	/// [`ParseError::WrongSize`] when the byte slice is the incorrect size.
+	/// [`ParseError::WrongByteCount`] when the byte slice is the incorrect
+	/// size.
 	fn parse_bytes(bytes: &[u8]) -> Result<Self, ParseError>;
 }
 
