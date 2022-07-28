@@ -1,12 +1,12 @@
 //! Everything for handling Cardholder Verification (CV) Rule values.
 
 // Uses
-use super::{EnabledBitRange, StatusValue};
-use crate::status_values::Severity;
+use super::{EnabledBitRange, Severity, StatusValue};
+use crate::{error::ParseError, util::byte_slice_to_u64, ParseFromBytes};
 
 // Struct Implementation
 pub struct CardholderVerificationRule {
-	bits: u16,
+	bytes: <Self as StatusValue>::Bytes,
 	// Byte 1 Values
 	pub continue_if_unsuccessful: bool,
 	pub method: Option<CvMethod>,
@@ -39,23 +39,24 @@ pub enum CvmCondition {
 	InApplicationCurrencyOverY,
 }
 
-impl CardholderVerificationRule {
-	pub fn new<B: Into<u16>>(bits: B) -> Self {
-		Self::parse_bits(bits)
-	}
-}
+impl ParseFromBytes for CardholderVerificationRule {
+	fn parse_bytes(raw_bytes: &[u8]) -> Result<Self, ParseError> {
+		if raw_bytes.len() != Self::NUM_BYTES {
+			return Err(ParseError::WrongByteCount {
+				expected: Self::NUM_BYTES,
+				found: raw_bytes.len(),
+			});
+		}
+		let mut bytes = [0u8; Self::NUM_BYTES];
+		for (index, byte) in raw_bytes.iter().enumerate() {
+			bytes[index] = byte & Self::USED_BITS_MASK[index];
+		}
 
-impl StatusValue<u16> for CardholderVerificationRule {
-	const NUM_BITS: u8 = 16;
-	const USED_BITS_MASK: u16 = 0b0111_1111_1111_1111;
-
-	fn parse_bits<B: Into<u16>>(bits: B) -> Self {
-		let bits = bits.into() & Self::USED_BITS_MASK;
-		Self {
-			bits,
-			continue_if_unsuccessful: (0b0100_0000 << 8) & bits > 0,
+		Ok(Self {
+			bytes,
+			continue_if_unsuccessful: 0b0100_0000 & bytes[0] > 0,
 			method: {
-				match ((0b0011_1111 << 8) & bits) >> 8 {
+				match 0b0011_1111 & bytes[0] {
 					0b00_0000 => Some(CvMethod::FailCvmProcessing),
 					0b00_0001 => Some(CvMethod::PlaintextPin),
 					0b00_0010 => Some(CvMethod::EncipheredPinOnline),
@@ -72,7 +73,7 @@ impl StatusValue<u16> for CardholderVerificationRule {
 				}
 			},
 			condition: {
-				match 0b1111_1111 & bits {
+				match 0b1111_1111 & bytes[1] {
 					0x00 => Some(CvmCondition::Always),
 					0x01 => Some(CvmCondition::UnattendedCash),
 					0x02 => Some(CvmCondition::NotUnattendedNotManualNotCashback),
@@ -86,11 +87,21 @@ impl StatusValue<u16> for CardholderVerificationRule {
 					_ => None,
 				}
 			},
-		}
+		})
+	}
+}
+
+impl StatusValue for CardholderVerificationRule {
+	const NUM_BYTES: usize = 2;
+	const USED_BITS_MASK: &'static [u8] = &[0b0111_1111, 0b1111_1111];
+	type Bytes = [u8; Self::NUM_BYTES as usize];
+
+	fn get_binary_value(&self) -> Self::Bytes {
+		self.bytes
 	}
 
-	fn get_bits(&self) -> u16 {
-		self.bits
+	fn get_numeric_value(&self) -> u64 {
+		byte_slice_to_u64(&self.bytes)
 	}
 
 	fn get_display_information(&self) -> Vec<EnabledBitRange> {

@@ -1,12 +1,12 @@
 //! Everything for handling Cardholder Verification Method (CVM) Results values.
 
 // Uses
-use super::{EnabledBitRange, StatusValue};
-use crate::status_values::{cv_rule::CardholderVerificationRule, Severity};
+use super::{cv_rule::CardholderVerificationRule, EnabledBitRange, Severity, StatusValue};
+use crate::{error::ParseError, util::byte_slice_to_u64, ParseFromBytes};
 
 // Struct Implementation
 pub struct CardholderVerificationMethodResults {
-	bits: u32,
+	bytes: <Self as StatusValue>::Bytes,
 	// CV Rule
 	pub cv_rule: CardholderVerificationRule,
 	// Byte 3 Values
@@ -19,37 +19,46 @@ pub enum CvmResult {
 	Successful,
 }
 
-impl CardholderVerificationMethodResults {
-	pub fn new<B: Into<u32>>(bits: B) -> Self {
-		Self::parse_bits(bits)
-	}
-}
+impl ParseFromBytes for CardholderVerificationMethodResults {
+	fn parse_bytes(raw_bytes: &[u8]) -> Result<Self, ParseError> {
+		if raw_bytes.len() != Self::NUM_BYTES {
+			return Err(ParseError::WrongByteCount {
+				expected: Self::NUM_BYTES,
+				found: raw_bytes.len(),
+			});
+		}
+		let mut bytes = [0u8; Self::NUM_BYTES];
+		for (index, byte) in raw_bytes.iter().enumerate() {
+			bytes[index] = byte & Self::USED_BITS_MASK[index];
+		}
 
-impl StatusValue<u32> for CardholderVerificationMethodResults {
-	const NUM_BITS: u8 = 24;
-	const USED_BITS_MASK: u32 = 0b0111_1111_1111_1111_1111_1111;
-
-	fn parse_bits<B: Into<u32>>(bits: B) -> Self {
-		let bits = bits.into() & Self::USED_BITS_MASK;
-		Self {
-			bits,
-			cv_rule: CardholderVerificationRule::parse_bits(
-				(((0b1111_1111_1111_1111 << 8) & bits) >> 8) as u16,
-			),
+		Ok(Self {
+			bytes,
+			cv_rule: CardholderVerificationRule::parse_bytes(&bytes[0..=1])?,
 			result: {
 				#[allow(clippy::match_same_arms)]
-				match 0b1111_1111 & bits {
+				match 0b1111_1111 & bytes[2] {
 					0b00 => CvmResult::Unknown,
 					0b01 => CvmResult::Failed,
 					0b10 => CvmResult::Successful,
 					_ => CvmResult::Unknown,
 				}
 			},
-		}
+		})
+	}
+}
+
+impl StatusValue for CardholderVerificationMethodResults {
+	const NUM_BYTES: usize = 3;
+	const USED_BITS_MASK: &'static [u8] = &[0b0111_1111, 0b1111_1111, 0b1111_1111];
+	type Bytes = [u8; Self::NUM_BYTES as usize];
+
+	fn get_binary_value(&self) -> Self::Bytes {
+		self.bytes
 	}
 
-	fn get_bits(&self) -> u32 {
-		self.bits
+	fn get_numeric_value(&self) -> u64 {
+		byte_slice_to_u64(&self.bytes)
 	}
 
 	fn get_display_information(&self) -> Vec<EnabledBitRange> {

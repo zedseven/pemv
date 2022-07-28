@@ -1,12 +1,12 @@
 //! Everything for handling Card Verification Results (CVR) values.
 
 // Uses
-use super::{EnabledBitRange, StatusValue};
-use crate::status_values::Severity;
+use super::{EnabledBitRange, Severity, StatusValue};
+use crate::{error::ParseError, util::byte_slice_to_u64, ParseFromBytes};
 
 // Struct Implementation
 pub struct CardVerificationResults {
-	bits: u64,
+	bytes: <Self as StatusValue>::Bytes,
 	// Byte 1 Values
 	pub gen_ac_2_application_cryptogram_type: GenAc2ApplicationCryptogramType,
 	pub gen_ac_1_application_cryptogram_type: GenAc1ApplicationCryptogramType,
@@ -50,23 +50,24 @@ pub enum GenAc2ApplicationCryptogramType {
 	Rfu,
 }
 
-impl CardVerificationResults {
-	pub fn new<B: Into<u64>>(bits: B) -> Self {
-		Self::parse_bits(bits)
-	}
-}
-
-impl StatusValue<u64> for CardVerificationResults {
-	const NUM_BITS: u8 = 40;
-	const USED_BITS_MASK: u64 = 0b1111_1111_1111_1111_1111_1111_1111_1111_0000_0000;
-
+impl ParseFromBytes for CardVerificationResults {
 	#[rustfmt::skip]
-	fn parse_bits<B: Into<u64>>(bits: B) -> Self {
-		let bits = bits.into() & Self::USED_BITS_MASK;
-		Self {
-			bits,
+	fn parse_bytes(raw_bytes: &[u8]) -> Result<Self, ParseError> {
+		if raw_bytes.len() != Self::NUM_BYTES {
+			return Err(ParseError::WrongByteCount {
+				expected: Self::NUM_BYTES,
+				found: raw_bytes.len(),
+			});
+		}
+		let mut bytes = [0u8; Self::NUM_BYTES];
+		for (index, byte) in raw_bytes.iter().enumerate() {
+			bytes[index] = byte & Self::USED_BITS_MASK[index];
+		}
+
+		Ok(Self {
+			bytes,
 			gen_ac_2_application_cryptogram_type: {
-				match ((0b1100_0000 << (4 * 8)) & bits) >> (4 * 8 + 6) {
+				match (0b1100_0000 & bytes[0]) >> 6 {
 					0b00 => GenAc2ApplicationCryptogramType::Aac,
 					0b01 => GenAc2ApplicationCryptogramType::Tc,
 					0b10 => GenAc2ApplicationCryptogramType::SecondGenAcNotRequested,
@@ -74,41 +75,56 @@ impl StatusValue<u64> for CardVerificationResults {
 				}
 			},
 			gen_ac_1_application_cryptogram_type: {
-				match ((0b0011_0000 << (4 * 8)) & bits) >> (4 * 8 + 4) {
+				match (0b0011_0000 & bytes[0]) >> 4 {
 					0b00 => GenAc1ApplicationCryptogramType::Aac,
 					0b01 => GenAc1ApplicationCryptogramType::Tc,
 					0b10 => GenAc1ApplicationCryptogramType::Arqc,
 					_ => GenAc1ApplicationCryptogramType::Rfu,
 				}
 			},
-			cda_performed:                                              (0b0000_1000 << (4 * 8)) & bits > 0,
-			offline_dda_performed:                                      (0b0000_0100 << (4 * 8)) & bits > 0,
-			issuer_authentication_not_performed:                        (0b0000_0010 << (4 * 8)) & bits > 0,
-			issuer_authentication_failed:                               (0b0000_0001 << (4 * 8)) & bits > 0,
-			pin_try_count: (((0b1111_0000 << (3 * 8)) & bits) >> (3 * 8 + 4)) as u8,
-			offline_pin_verification_performed:                         (0b0000_1000 << (3 * 8)) & bits > 0,
-			offline_pin_verification_failed:                            (0b0000_0100 << (3 * 8)) & bits > 0,
-			pin_try_limit_exceeded:                                     (0b0000_0010 << (3 * 8)) & bits > 0,
-			last_online_transaction_not_completed:                      (0b0000_0001 << (3 * 8)) & bits > 0,
-			offline_transaction_count_limit_lower_exceeded:             (0b1000_0000 << (2 * 8)) & bits > 0,
-			offline_transaction_count_limit_upper_exceeded:             (0b0100_0000 << (2 * 8)) & bits > 0,
-			offline_cumulative_amount_limit_lower_exceeded:             (0b0010_0000 << (2 * 8)) & bits > 0,
-			offline_cumulative_amount_limit_upper_exceeded:             (0b0001_0000 << (2 * 8)) & bits > 0,
-			issuer_discretionary_bit_1:                                 (0b0000_1000 << (2 * 8)) & bits > 0,
-			issuer_discretionary_bit_2:                                 (0b0000_0100 << (2 * 8)) & bits > 0,
-			issuer_discretionary_bit_3:                                 (0b0000_0010 << (2 * 8)) & bits > 0,
-			issuer_discretionary_bit_4:                                 (0b0000_0001 << (2 * 8)) & bits > 0,
-			successful_issuer_script_commands_with_secure_messaging:
-				(((0b1111_0000 << 8) & bits) >> (8 + 4)) as u8,
-			issuer_script_processing_failed:                            (0b0000_1000 << 8) & bits > 0,
-			offline_data_authentication_failed_on_previous_transaction: (0b0000_0100 << 8) & bits > 0,
-			go_online_on_next_transaction:                              (0b0000_0010 << 8) & bits > 0,
-			unable_to_go_online:                                        (0b0000_0001 << 8) & bits > 0,
-		}
+			cda_performed:                                              0b0000_1000 & bytes[0] > 0,
+			offline_dda_performed:                                      0b0000_0100 & bytes[0] > 0,
+			issuer_authentication_not_performed:                        0b0000_0010 & bytes[0] > 0,
+			issuer_authentication_failed:                               0b0000_0001 & bytes[0] > 0,
+			pin_try_count:                                            ((0b1111_0000 & bytes[1]) >> 4) as u8,
+			offline_pin_verification_performed:                         0b0000_1000 & bytes[1] > 0,
+			offline_pin_verification_failed:                            0b0000_0100 & bytes[1] > 0,
+			pin_try_limit_exceeded:                                     0b0000_0010 & bytes[1] > 0,
+			last_online_transaction_not_completed:                      0b0000_0001 & bytes[1] > 0,
+			offline_transaction_count_limit_lower_exceeded:             0b1000_0000 & bytes[2] > 0,
+			offline_transaction_count_limit_upper_exceeded:             0b0100_0000 & bytes[2] > 0,
+			offline_cumulative_amount_limit_lower_exceeded:             0b0010_0000 & bytes[2] > 0,
+			offline_cumulative_amount_limit_upper_exceeded:             0b0001_0000 & bytes[2] > 0,
+			issuer_discretionary_bit_1:                                 0b0000_1000 & bytes[2] > 0,
+			issuer_discretionary_bit_2:                                 0b0000_0100 & bytes[2] > 0,
+			issuer_discretionary_bit_3:                                 0b0000_0010 & bytes[2] > 0,
+			issuer_discretionary_bit_4:                                 0b0000_0001 & bytes[2] > 0,
+			successful_issuer_script_commands_with_secure_messaging:  ((0b1111_0000 & bytes[3]) >> 4) as u8,
+			issuer_script_processing_failed:                            0b0000_1000 & bytes[3] > 0,
+			offline_data_authentication_failed_on_previous_transaction: 0b0000_0100 & bytes[3] > 0,
+			go_online_on_next_transaction:                              0b0000_0010 & bytes[3] > 0,
+			unable_to_go_online:                                        0b0000_0001 & bytes[3] > 0,
+		})
+	}
+}
+
+impl StatusValue for CardVerificationResults {
+	const NUM_BYTES: usize = 5;
+	const USED_BITS_MASK: &'static [u8] = &[
+		0b1111_1111,
+		0b1111_1111,
+		0b1111_1111,
+		0b1111_1111,
+		0b0000_0000,
+	];
+	type Bytes = [u8; Self::NUM_BYTES as usize];
+
+	fn get_binary_value(&self) -> Self::Bytes {
+		self.bytes
 	}
 
-	fn get_bits(&self) -> u64 {
-		self.bits
+	fn get_numeric_value(&self) -> u64 {
+		byte_slice_to_u64(&self.bytes)
 	}
 
 	fn get_display_information(&self) -> Vec<EnabledBitRange> {

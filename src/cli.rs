@@ -1,3 +1,5 @@
+//! Provides the CLI for the program.
+
 // Uses
 use clap::{Arg, ArgMatches, Command};
 
@@ -7,6 +9,7 @@ pub fn parse_cli_arguments() -> ArgMatches {
 		.version(env!("CARGO_PKG_VERSION"))
 		.author(env!("CARGO_PKG_AUTHORS"))
 		.about(env!("CARGO_PKG_DESCRIPTION"))
+		.arg_required_else_help(true)
 		.arg(
 			Arg::new("colour")
 				.alias("color")
@@ -46,7 +49,7 @@ pub fn parse_cli_arguments() -> ArgMatches {
 				.short('m')
 				.long("cvm")
 				.takes_value(true)
-				.value_name("CVM results")
+				.value_name("CVM RESULTS")
 				.help("Parse Cardholder Verification Method Results (tag 0x9F34)"),
 		)
 		.get_matches()

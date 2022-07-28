@@ -26,6 +26,7 @@
 	clippy::cast_precision_loss,
 	clippy::cast_sign_loss,
 	clippy::doc_markdown,
+	clippy::identity_op,
 	clippy::module_name_repetitions,
 	clippy::similar_names,
 	clippy::struct_excessive_bools,
@@ -37,28 +38,49 @@
 
 // Modules
 mod cli;
-mod status_values;
+mod emv;
+mod error;
+mod non_emv;
 mod util;
 
 // Uses
-use anyhow::{Context, Result};
 use atty::{is as is_atty, Stream};
 use termcolor::{ColorChoice, StandardStream};
 
 use crate::{
 	cli::parse_cli_arguments,
-	status_values::{
-		display_breakdown,
+	emv::status_values::{
 		CardVerificationResults,
 		CardholderVerificationMethodResults,
 		TerminalVerificationResults,
 		TransactionStatusInformation,
 	},
-	util::{hex_str_to_u16, hex_str_to_u32, hex_str_to_u64},
+	error::ParseError,
+	util::parse_hex_str,
 };
 
+// Constants
+pub const BITS_PER_BYTE: u8 = 8;
+
+// Traits
+pub trait ParseFromBytes
+where
+	Self: Sized,
+{
+	/// Parses raw bytes into the value.
+	///
+	/// # Errors
+	/// [`ParseError::WrongSize`] when the byte slice is the incorrect size.
+	fn parse_bytes(bytes: &[u8]) -> Result<Self, ParseError>;
+}
+
+pub trait DisplayBreakdown {
+	/// Displays a pretty breakdown of the value and every part's meaning.
+	fn display_breakdown(&self, stdout: &mut StandardStream);
+}
+
 // Entry Point
-fn main() -> Result<()> {
+fn main() {
 	let matches = parse_cli_arguments();
 
 	let choice = {
@@ -77,27 +99,33 @@ fn main() -> Result<()> {
 	};
 	let mut stdout = StandardStream::stdout(choice);
 
-	if let Some(tvr_value) = matches.value_of("tvr") {
-		let status_value = TerminalVerificationResults::new(
-			hex_str_to_u64(tvr_value).with_context(|| "unable to parse hex value")?,
-		);
-		display_breakdown(&mut stdout, &status_value);
+	let parse_error = if let Some(tvr_value) = matches.value_of("tvr") {
+		TerminalVerificationResults::parse_bytes(&parse_hex_str(tvr_value))
+			.map(|v| v.display_breakdown(&mut stdout))
+			.err()
 	} else if let Some(cvr_value) = matches.value_of("cvr") {
-		let status_value = CardVerificationResults::new(
-			hex_str_to_u64(cvr_value).with_context(|| "unable to parse hex value")?,
-		);
-		display_breakdown(&mut stdout, &status_value);
+		CardVerificationResults::parse_bytes(&parse_hex_str(cvr_value))
+			.map(|v| v.display_breakdown(&mut stdout))
+			.err()
 	} else if let Some(tsi_value) = matches.value_of("tsi") {
-		let status_value = TransactionStatusInformation::new(
-			hex_str_to_u16(tsi_value).with_context(|| "unable to parse hex value")?,
-		);
-		display_breakdown(&mut stdout, &status_value);
+		TransactionStatusInformation::parse_bytes(&parse_hex_str(tsi_value))
+			.map(|v| v.display_breakdown(&mut stdout))
+			.err()
 	} else if let Some(cvm_value) = matches.value_of("cvm") {
-		let status_value = CardholderVerificationMethodResults::new(
-			hex_str_to_u32(cvm_value).with_context(|| "unable to parse hex value")?,
-		);
-		display_breakdown(&mut stdout, &status_value);
-	}
+		CardholderVerificationMethodResults::parse_bytes(&parse_hex_str(cvm_value))
+			.map(|v| v.display_breakdown(&mut stdout))
+			.err()
+	} else {
+		unreachable!();
+	};
 
-	Ok(())
+	if let Some(error) = parse_error {
+		match error {
+			ParseError::WrongByteCount { expected, found } => eprintln!(
+				"The wrong number of bytes were provided for the value. Perhaps you provided the \
+				 wrong value? Expected: {}, Found: {}",
+				expected, found
+			),
+		}
+	}
 }

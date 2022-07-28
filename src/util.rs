@@ -1,25 +1,42 @@
 //! Utility functions for internal use by other components of the crate.
 
-// Uses
-use anyhow::{Context, Result};
+/// Parses a hex string into a vector of bytes.
+///
+/// Original function written by Jake Goulding.
+///
+/// https://codereview.stackexchange.com/a/201699
+pub fn parse_hex_str(hex_asm: &str) -> Vec<u8> {
+	let mut hex_bytes = hex_asm
+		.as_bytes()
+		.iter()
+		.filter_map(|b| match b {
+			b'0'..=b'9' => Some(b - b'0'),
+			b'a'..=b'f' => Some(b - b'a' + 10),
+			b'A'..=b'F' => Some(b - b'A' + 10),
+			_ => None,
+		})
+		.fuse();
 
-/// Converts a hex string into a raw integer, of size `u16`.
-pub fn hex_str_to_u16(hex_str: &str) -> Result<u16> {
-	let trimmed_str = hex_str.trim_start_matches("0x");
-	u16::from_str_radix(trimmed_str, 16)
-		.with_context(|| "unable to parse string as a 16-bit integer")
+	let mut bytes = Vec::new();
+	while let (Some(h), Some(l)) = (hex_bytes.next(), hex_bytes.next()) {
+		bytes.push(h << 4 | l);
+	}
+	bytes
 }
 
-/// Converts a hex string into a raw integer, of size `u32`.
-pub fn hex_str_to_u32(hex_str: &str) -> Result<u32> {
-	let trimmed_str = hex_str.trim_start_matches("0x");
-	u32::from_str_radix(trimmed_str, 16)
-		.with_context(|| "unable to parse string as a 32-bit integer")
-}
+/// Converts a raw byte slice to [`u64`].
+///
+/// Panics if the slice is too long.
+pub fn byte_slice_to_u64(bytes: &[u8]) -> u64 {
+	const BYTES_PER_64_BITS: usize = 8;
 
-/// Converts a hex string into a raw integer, of size `u64`.
-pub fn hex_str_to_u64(hex_str: &str) -> Result<u64> {
-	let trimmed_str = hex_str.trim_start_matches("0x");
-	u64::from_str_radix(trimmed_str, 16)
-		.with_context(|| "unable to parse string as a 64-bit integer")
+	let provided_bytes_length = bytes.len();
+	assert!(provided_bytes_length <= BYTES_PER_64_BITS);
+
+	let mut all_bytes = [0u8; BYTES_PER_64_BITS];
+	for i in 0..provided_bytes_length {
+		all_bytes[i + (BYTES_PER_64_BITS - provided_bytes_length)] = bytes[i];
+	}
+
+	u64::from_be_bytes(all_bytes)
 }

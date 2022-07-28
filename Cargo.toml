@@ -13,7 +13,6 @@ codegen-units = 1
 lto = true
 
 [dependencies]
-anyhow = "1.0"
 atty = "0.2"
 clap = "3.2"
 termcolor = "1.1"

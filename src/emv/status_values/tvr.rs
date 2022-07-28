@@ -1,12 +1,12 @@
 //! Everything for handling Terminal Verification Results (TVR) values.
 
 // Uses
-use super::{EnabledBitRange, StatusValue};
-use crate::status_values::Severity;
+use super::{EnabledBitRange, Severity, StatusValue};
+use crate::{error::ParseError, util::byte_slice_to_u64, ParseFromBytes};
 
 // Struct Implementation
 pub struct TerminalVerificationResults {
-	bits: u64,
+	bytes: <Self as StatusValue>::Bytes,
 	// Byte 1 Values
 	pub offline_data_authentication_not_performed: bool,
 	pub sda_failed: bool,
@@ -40,52 +40,69 @@ pub struct TerminalVerificationResults {
 	pub script_processing_failed_after_final_gen_ac: bool,
 }
 
-impl TerminalVerificationResults {
-	pub fn new<B: Into<u64>>(bits: B) -> Self {
-		Self::parse_bits(bits)
+impl ParseFromBytes for TerminalVerificationResults {
+	#[rustfmt::skip]
+	fn parse_bytes(raw_bytes: &[u8]) -> Result<Self, ParseError> {
+		if raw_bytes.len() != Self::NUM_BYTES {
+			return Err(ParseError::WrongByteCount {
+				expected: Self::NUM_BYTES,
+				found: raw_bytes.len(),
+			});
+		}
+		let mut bytes = [0u8; Self::NUM_BYTES];
+		for (index, byte) in raw_bytes.iter().enumerate() {
+			bytes[index] = byte & Self::USED_BITS_MASK[index];
+		}
+
+		Ok(Self {
+			bytes,
+			offline_data_authentication_not_performed:    0b1000_0000 & bytes[0] > 0,
+			sda_failed:                                   0b0100_0000 & bytes[0] > 0,
+			icc_data_missing:                             0b0010_0000 & bytes[0] > 0,
+			terminal_card_exception:                      0b0001_0000 & bytes[0] > 0,
+			dda_failed:                                   0b0000_1000 & bytes[0] > 0,
+			cda_failed:                                   0b0000_0100 & bytes[0] > 0,
+			icc_terminal_version_mismatch:                0b1000_0000 & bytes[1] > 0,
+			expired_application:                          0b0100_0000 & bytes[1] > 0,
+			application_not_yet_effective:                0b0010_0000 & bytes[1] > 0,
+			requested_service_not_allowed:                0b0001_0000 & bytes[1] > 0,
+			new_card:                                     0b0000_1000 & bytes[1] > 0,
+			cardholder_verification_unsuccessful:         0b1000_0000 & bytes[2] > 0,
+			unrecognized_cvm:                             0b0100_0000 & bytes[2] > 0,
+			pin_try_limit_exceeded:                       0b0010_0000 & bytes[2] > 0,
+			pin_entry_required_but_no_pinpad:             0b0001_0000 & bytes[2] > 0,
+			pin_entry_required_but_no_entry:              0b0000_1000 & bytes[2] > 0,
+			online_pin_entered:                           0b0000_0100 & bytes[2] > 0,
+			transaction_exceeds_floor_limit:              0b1000_0000 & bytes[3] > 0,
+			consecutive_offline_limit_lower_exceeded:     0b0100_0000 & bytes[3] > 0,
+			consecutive_offline_limit_upper_exceeded:     0b0010_0000 & bytes[3] > 0,
+			transaction_selected_for_online_processing:   0b0001_0000 & bytes[3] > 0,
+			merchant_forced_transaction_online:           0b0000_1000 & bytes[3] > 0,
+			default_tdol_used:                            0b1000_0000 & bytes[4] > 0,
+			issuer_authentication_failed:                 0b0100_0000 & bytes[4] > 0,
+			script_processing_failed_before_final_gen_ac: 0b0010_0000 & bytes[4] > 0,
+			script_processing_failed_after_final_gen_ac:  0b0001_0000 & bytes[4] > 0,
+		})
 	}
 }
 
-impl StatusValue<u64> for TerminalVerificationResults {
-	const NUM_BITS: u8 = 40;
-	const USED_BITS_MASK: u64 = 0b1111_1100_1111_1000_1111_1100_1111_1000_1111_0000;
+impl StatusValue for TerminalVerificationResults {
+	const NUM_BYTES: usize = 5;
+	const USED_BITS_MASK: &'static [u8] = &[
+		0b1111_1100,
+		0b1111_1000,
+		0b1111_1100,
+		0b1111_1000,
+		0b1111_0000,
+	];
+	type Bytes = [u8; Self::NUM_BYTES as usize];
 
-	#[rustfmt::skip]
-	fn parse_bits<B: Into<u64>>(bits: B) -> Self {
-		let bits = bits.into() & Self::USED_BITS_MASK;
-		Self {
-			bits,
-			offline_data_authentication_not_performed:    (0b1000_0000 << (4 * 8)) & bits > 0,
-			sda_failed:                                   (0b0100_0000 << (4 * 8)) & bits > 0,
-			icc_data_missing:                             (0b0010_0000 << (4 * 8)) & bits > 0,
-			terminal_card_exception:                      (0b0001_0000 << (4 * 8)) & bits > 0,
-			dda_failed:                                   (0b0000_1000 << (4 * 8)) & bits > 0,
-			cda_failed:                                   (0b0000_0100 << (4 * 8)) & bits > 0,
-			icc_terminal_version_mismatch:                (0b1000_0000 << (3 * 8)) & bits > 0,
-			expired_application:                          (0b0100_0000 << (3 * 8)) & bits > 0,
-			application_not_yet_effective:                (0b0010_0000 << (3 * 8)) & bits > 0,
-			requested_service_not_allowed:                (0b0001_0000 << (3 * 8)) & bits > 0,
-			new_card:                                     (0b0000_1000 << (3 * 8)) & bits > 0,
-			cardholder_verification_unsuccessful:         (0b1000_0000 << (2 * 8)) & bits > 0,
-			unrecognized_cvm:                             (0b0100_0000 << (2 * 8)) & bits > 0,
-			pin_try_limit_exceeded:                       (0b0010_0000 << (2 * 8)) & bits > 0,
-			pin_entry_required_but_no_pinpad:             (0b0001_0000 << (2 * 8)) & bits > 0,
-			pin_entry_required_but_no_entry:              (0b0000_1000 << (2 * 8)) & bits > 0,
-			online_pin_entered:                           (0b0000_0100 << (2 * 8)) & bits > 0,
-			transaction_exceeds_floor_limit:              (0b1000_0000 << 8) & bits > 0,
-			consecutive_offline_limit_lower_exceeded:     (0b0100_0000 << 8) & bits > 0,
-			consecutive_offline_limit_upper_exceeded:     (0b0010_0000 << 8) & bits > 0,
-			transaction_selected_for_online_processing:   (0b0001_0000 << 8) & bits > 0,
-			merchant_forced_transaction_online:           (0b0000_1000 << 8) & bits > 0,
-			default_tdol_used:                            0b1000_0000 & bits > 0,
-			issuer_authentication_failed:                 0b0100_0000 & bits > 0,
-			script_processing_failed_before_final_gen_ac: 0b0010_0000 & bits > 0,
-			script_processing_failed_after_final_gen_ac:  0b0001_0000 & bits > 0,
-		}
+	fn get_binary_value(&self) -> Self::Bytes {
+		self.bytes
 	}
 
-	fn get_bits(&self) -> u64 {
-		self.bits
+	fn get_numeric_value(&self) -> u64 {
+		byte_slice_to_u64(&self.bytes)
 	}
 
 	fn get_display_information(&self) -> Vec<EnabledBitRange> {
