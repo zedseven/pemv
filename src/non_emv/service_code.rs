@@ -1,4 +1,6 @@
 //! Everything for handling MSR service codes.
+//!
+//! Information for this can be found in [ISO/IEC 7813](https://www.iso.org/standard/43317.html).
 
 use std::fmt::{Display, Formatter, Result as FmtResult};
 

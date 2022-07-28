@@ -1,4 +1,6 @@
 //! Everything for handling Cardholder Verification Method (CVM) Results values.
+//!
+//! Information for this can be found in EMV Book 4, under section `A4`.
 
 // Uses
 use super::{cv_rule::CardholderVerificationRule, EnabledBitRange, Severity, UnitValue};

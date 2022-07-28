@@ -1,4 +1,6 @@
 //! Everything for handling Cardholder Verification (CV) Rule values.
+//!
+//! Information for this can be found in EMV Book 3, under section `C3`.
 
 // Uses
 use super::{EnabledBitRange, Severity, UnitValue};

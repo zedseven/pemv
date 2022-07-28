@@ -1,4 +1,6 @@
 //! Everything for handling Terminal Verification Results (TVR) values.
+//!
+//! Information for this can be found in EMV Book 3, under section `C5`.
 
 // Uses
 use super::{EnabledBitRange, Severity, UnitValue};

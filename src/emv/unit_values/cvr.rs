@@ -1,4 +1,6 @@
 //! Everything for handling Card Verification Results (CVR) values.
+//!
+//! Information for this can be found in EMV Book 3, under section `C7.3`.
 
 // Uses
 use super::{EnabledBitRange, Severity, UnitValue};

@@ -1,4 +1,6 @@
 //! Everything for handling Transaction Status Information (TSI) values.
+//!
+//! Information for this can be found in EMV Book 3, under section `C6`.
 
 // Uses
 use super::{EnabledBitRange, Severity, UnitValue};
