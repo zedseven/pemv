@@ -2,7 +2,11 @@
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
 [![# Issues](https://img.shields.io/github/issues/zedseven/pemv.svg?logo=github)](https://github.com/zedseven/pemv/issues)
 
-A utility for parsing EMV-related data.
+A utility for parsing data related to EMV and financial cards.
+
+If you're using this with a genuine value and part of it is reported as `RFU`
+(reserved for use), you can [open an issue](https://github.com/zedseven/pemv/issues).
+This could be an indication of something out of date.
 
 ## Project License
 This project is licensed under either of
