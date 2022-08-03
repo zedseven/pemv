@@ -55,7 +55,6 @@ use crate::{
 		TerminalVerificationResults,
 		TransactionStatusInformation,
 	},
-	error::ParseError,
 	non_emv::ServiceCode,
 	util::{parse_hex_str, parse_str_to_u16},
 };
@@ -116,15 +115,6 @@ fn main() {
 	};
 
 	if let Some(error) = parse_error {
-		match error {
-			ParseError::WrongByteCount { expected, found } => eprintln!(
-				"The wrong number of bytes were provided for the value. Perhaps you provided the \
-				 wrong value? Expected: {}, Found: {}",
-				expected, found
-			),
-			ParseError::InvalidNumber => {
-				eprintln!("The value provided is not a valid number, or is too large.");
-			}
-		}
+		eprintln!("{}", error);
 	}
 }
