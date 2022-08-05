@@ -73,5 +73,5 @@ pub fn byte_slice_to_u64(bytes: &[u8]) -> u64 {
 /// Once the `int_log` feature becomes stable, this can be replaced with
 /// [`u32::log10`].
 pub fn num_dec_digits(value: u32) -> usize {
-	successors(Some(value), |&n| (n >= 10).then(|| n / 10)).count()
+	successors(Some(value), |&n| (n >= 10).then_some(n / 10)).count()
 }
