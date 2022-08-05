@@ -45,12 +45,20 @@ pub fn parse_cli_arguments() -> ArgMatches {
 				.help("Parse Transaction Status Information (tag 0x9B)"),
 		)
 		.arg(
-			Arg::new("cvm")
-				.short('m')
-				.long("cvm")
+			Arg::new("cvm-results")
+				.alias("cvm-result")
+				.short('r')
+				.long("cvm-results")
 				.takes_value(true)
 				.value_name("CVM RESULTS")
-				.help("Parse Cardholder Verification Method Results (tag 0x9F34)"),
+				.help("Parse Cardholder Verification Method (CVM) Results (tag 0x9F34)"),
+		)
+		.arg(
+			Arg::new("cvm-list")
+				.long("cvm-list")
+				.takes_value(true)
+				.value_name("CVM LIST")
+				.help("Parse a Cardholder Verification Method (CVM) List (tag 0x8E)"),
 		)
 		.next_help_heading("NON-EMV")
 		.arg(

@@ -41,6 +41,7 @@ mod cli;
 mod emv;
 mod error;
 mod non_emv;
+mod output_colours;
 mod util;
 
 // Uses
@@ -49,11 +50,14 @@ use termcolor::{ColorChoice, StandardStream};
 
 use crate::{
 	cli::parse_cli_arguments,
-	emv::unit_values::{
-		CardVerificationResults,
-		CardholderVerificationMethodResults,
-		TerminalVerificationResults,
-		TransactionStatusInformation,
+	emv::{
+		unit_values::{
+			CardVerificationResults,
+			CardholderVerificationMethodResults,
+			TerminalVerificationResults,
+			TransactionStatusInformation,
+		},
+		CardholderVerificationMethodList,
 	},
 	non_emv::ServiceCode,
 	util::{parse_hex_str, parse_str_to_u16},
@@ -100,8 +104,12 @@ fn main() {
 		TransactionStatusInformation::try_from(parse_hex_str(tsi_str).as_slice())
 			.map(|v| v.display_breakdown(&mut stdout))
 			.err()
-	} else if let Some(cvm_str) = matches.value_of("cvm") {
-		CardholderVerificationMethodResults::try_from(parse_hex_str(cvm_str).as_slice())
+	} else if let Some(cvm_results_str) = matches.value_of("cvm-results") {
+		CardholderVerificationMethodResults::try_from(parse_hex_str(cvm_results_str).as_slice())
+			.map(|v| v.display_breakdown(&mut stdout))
+			.err()
+	} else if let Some(cvm_list_str) = matches.value_of("cvm-list") {
+		CardholderVerificationMethodList::try_from(parse_hex_str(cvm_list_str).as_slice())
 			.map(|v| v.display_breakdown(&mut stdout))
 			.err()
 	} else if let Some(service_code_str) = matches.value_of("service-code") {

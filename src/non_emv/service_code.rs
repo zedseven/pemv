@@ -5,12 +5,16 @@
 // Uses
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
-use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
+use termcolor::{StandardStream, WriteColor};
 
-use crate::{error::ParseError, DisplayBreakdown};
+use crate::{
+	error::ParseError,
+	output_colours::{bold_colour_spec, header_colour_spec},
+	DisplayBreakdown,
+};
 
 // Struct Implementation
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ServiceCode {
 	number: u16,
 	interchange: Interchange,
@@ -20,7 +24,7 @@ pub struct ServiceCode {
 	pin_requirements: PinRequirements,
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Interchange {
 	International,
 	National,
@@ -40,7 +44,7 @@ impl Display for Interchange {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Technology {
 	MagneticStripeOnly,
 	IntegratedCircuitCard,
@@ -54,7 +58,7 @@ impl Display for Technology {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum AuthorisationProcessing {
 	Normal,
 	ByIssuer,
@@ -75,7 +79,7 @@ impl Display for AuthorisationProcessing {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum AllowedServices {
 	NoRestrictions,
 	GoodsAndServicesOnly,
@@ -95,7 +99,7 @@ impl Display for AllowedServices {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum PinRequirements {
 	None,
 	PinRequired,
@@ -160,20 +164,17 @@ impl TryFrom<u16> for ServiceCode {
 
 impl DisplayBreakdown for ServiceCode {
 	fn display_breakdown(&self, stdout: &mut StandardStream) {
+		let header_colour_spec = header_colour_spec();
+		let bold_colour_spec = bold_colour_spec();
+
 		// Print the numeric representation
-		stdout
-			.set_color(ColorSpec::new().set_bold(true).set_fg(Some(Color::Cyan)))
-			.ok();
+		stdout.set_color(&header_colour_spec).ok();
 		print!("Value:");
 		stdout.reset().ok();
 		println!(" {:0>3}", self.number);
 
 		// Print the breakdown
-		let mut bold_colour_spec = ColorSpec::new();
-		bold_colour_spec.set_bold(true);
-		stdout
-			.set_color(ColorSpec::new().set_bold(true).set_fg(Some(Color::Cyan)))
-			.ok();
+		stdout.set_color(&header_colour_spec).ok();
 		println!("Breakdown:");
 		stdout.reset().ok();
 		stdout.set_color(&bold_colour_spec).ok();
@@ -181,10 +182,10 @@ impl DisplayBreakdown for ServiceCode {
 		stdout.reset().ok();
 
 		// Because the structure of the service code is much more rigidly-defined, the
-		// output here is much more static
-		// No less incomprehensible though, unfortunately
+		// output here is much more static.
+		// No less incomprehensible though, unfortunately.
 		// The reason this breakdown is aligned when the others aren't, is because each
-		// entry is a kind of category title, and alignment is more important
+		// entry is a kind of category title, and alignment is more important.
 
 		// Allowed Services
 		print!("\u{2502}\u{2502}\u{251c} ");

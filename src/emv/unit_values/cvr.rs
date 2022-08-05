@@ -3,7 +3,10 @@
 //! Information for this can be found in EMV Book 3, under section `C7.3`.
 
 // Uses
-use std::cmp::Ordering;
+use std::{
+	cmp::Ordering,
+	fmt::{Debug, Display, Formatter, Result as FmtResult},
+};
 
 use super::{EnabledBitRange, Severity, UnitValue};
 use crate::{error::ParseError, util::byte_slice_to_u64};
@@ -42,19 +45,42 @@ pub struct CardVerificationResults {
 	pub unable_to_go_online: bool,
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum GenAc1ApplicationCryptogramType {
 	Aac,
 	Tc,
 	Arqc,
 	Rfu,
 }
-#[derive(Debug)]
+impl Display for GenAc1ApplicationCryptogramType {
+	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+		f.write_str(match self {
+			GenAc1ApplicationCryptogramType::Aac => "AAC",
+			GenAc1ApplicationCryptogramType::Tc => "TC",
+			GenAc1ApplicationCryptogramType::Arqc => "ARQC",
+			GenAc1ApplicationCryptogramType::Rfu => "RFU",
+		})
+	}
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum GenAc2ApplicationCryptogramType {
 	Aac,
 	Tc,
 	SecondGenAcNotRequested,
 	Rfu,
+}
+impl Display for GenAc2ApplicationCryptogramType {
+	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+		f.write_str(match self {
+			GenAc2ApplicationCryptogramType::Aac => "AAC",
+			GenAc2ApplicationCryptogramType::Tc => "TC",
+			GenAc2ApplicationCryptogramType::SecondGenAcNotRequested => {
+				"Second GENERATE AC not requested"
+			}
+			GenAc2ApplicationCryptogramType::Rfu => "RFU",
+		})
+	}
 }
 
 impl TryFrom<&[u8]> for CardVerificationResults {
@@ -145,13 +171,7 @@ impl UnitValue for CardVerificationResults {
 			len: 2,
 			explanation: format!(
 				"Application cryptogram type returned in 2nd GENERATE AC: {}",
-				match self.gen_ac_2_application_cryptogram_type {
-					GenAc2ApplicationCryptogramType::Aac => "AAC",
-					GenAc2ApplicationCryptogramType::Tc => "TC",
-					GenAc2ApplicationCryptogramType::SecondGenAcNotRequested =>
-						"Second GENERATE AC not requested",
-					GenAc2ApplicationCryptogramType::Rfu => "RFU",
-				}
+				self.gen_ac_2_application_cryptogram_type
 			),
 			severity: Severity::Normal,
 		});
@@ -160,12 +180,7 @@ impl UnitValue for CardVerificationResults {
 			len: 2,
 			explanation: format!(
 				"Application cryptogram type returned in 1st GENERATE AC: {}",
-				match self.gen_ac_1_application_cryptogram_type {
-					GenAc1ApplicationCryptogramType::Aac => "AAC",
-					GenAc1ApplicationCryptogramType::Tc => "TC",
-					GenAc1ApplicationCryptogramType::Arqc => "ARQC",
-					GenAc1ApplicationCryptogramType::Rfu => "RFU",
-				}
+				self.gen_ac_1_application_cryptogram_type
 			),
 			severity: Severity::Normal,
 		});

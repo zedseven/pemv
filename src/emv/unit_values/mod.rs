@@ -12,7 +12,11 @@ use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
 
 // Public Exports
 pub use self::{cv_rule::*, cvm_results::*, cvr::*, tsi::*, tvr::*};
-use crate::{DisplayBreakdown, BITS_PER_BYTE};
+use crate::{
+	output_colours::{bold_colour_spec, header_colour_spec},
+	DisplayBreakdown,
+	BITS_PER_BYTE,
+};
 
 // Utility functions for child implementations
 #[derive(Debug)]
@@ -23,7 +27,7 @@ pub struct EnabledBitRange {
 	pub severity: Severity,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Severity {
 	Normal,
 	Warning,
@@ -63,6 +67,9 @@ where
 	V: UnitValue,
 {
 	fn display_breakdown(&self, stdout: &mut StandardStream) {
+		let header_colour_spec = header_colour_spec();
+		let bold_colour_spec = bold_colour_spec();
+
 		// Fetch the required data
 		let bits = self.get_numeric_value();
 		let num_bytes = V::NUM_BYTES as u8;
@@ -72,20 +79,16 @@ where
 		//dbg!(enabled_bits);
 
 		// Print the hex representation
-		stdout
-			.set_color(ColorSpec::new().set_bold(true).set_fg(Some(Color::Cyan)))
-			.ok();
+		stdout.set_color(&header_colour_spec).ok();
 		print!("Hex:");
 		stdout.reset().ok();
 		println!(" {:#01$X}", bits, usize::from(num_bytes * 2 + 2));
 
 		// Print the binary representation
-		stdout
-			.set_color(ColorSpec::new().set_bold(true).set_fg(Some(Color::Cyan)))
-			.ok();
+		stdout.set_color(&header_colour_spec).ok();
 		println!("Breakdown:");
 		stdout.reset().ok();
-		stdout.set_color(ColorSpec::new().set_bold(true)).ok();
+		stdout.set_color(&bold_colour_spec).ok();
 		for offset in (0..num_bits).rev() {
 			if bits & (1 << offset) > 0 {
 				print!("1");

@@ -2,9 +2,14 @@
 //!
 //! Information for this can be found in EMV Book 3, under section `C3`.
 
+// Modules
+mod cv_method;
+mod cvm_condition;
+
 // Uses
 use std::cmp::Ordering;
 
+pub use self::{cv_method::*, cvm_condition::*};
 use super::{EnabledBitRange, Severity, UnitValue};
 use crate::{error::ParseError, util::byte_slice_to_u64};
 
@@ -17,32 +22,6 @@ pub struct CardholderVerificationRule {
 	pub method: Option<CvMethod>,
 	// Byte 2 Values
 	pub condition: Option<CvmCondition>,
-}
-
-#[derive(Debug)]
-pub enum CvMethod {
-	FailCvmProcessing,
-	PlaintextPin,
-	EncipheredPinOnline,
-	PlaintextPinWithSignature,
-	EncipheredPin,
-	EncipheredPinWithSignature,
-	Signature,
-	NoCvmRequired,
-	NoCvmPerformed,
-}
-#[derive(Debug)]
-pub enum CvmCondition {
-	Always,
-	UnattendedCash,
-	NotUnattendedNotManualNotCashback,
-	TerminalSupported,
-	Manual,
-	Cashback,
-	InApplicationCurrencyUnderX,
-	InApplicationCurrencyOverX,
-	InApplicationCurrencyUnderY,
-	InApplicationCurrencyOverY,
 }
 
 impl TryFrom<&[u8]> for CardholderVerificationRule {
@@ -127,63 +106,13 @@ impl UnitValue for CardholderVerificationRule {
 		enabled_bits.push(EnabledBitRange {
 			offset: 5 + 8,
 			len: 6,
-			explanation: format!(
-				"Method: {}",
-				if let Some(method) = &self.method {
-					match method {
-						CvMethod::FailCvmProcessing => "Fail CVM processing",
-						CvMethod::PlaintextPin => "Plaintext PIN verification performed by ICC",
-						CvMethod::EncipheredPinOnline => "Enciphered PIN verified online",
-						CvMethod::PlaintextPinWithSignature => {
-							"Plaintext PIN verification performed by ICC and signature (paper)"
-						}
-						CvMethod::EncipheredPin => "Enciphered PIN verification performed by ICC",
-						CvMethod::EncipheredPinWithSignature => {
-							"Enciphered PIN verification performed by ICC and signature (paper)"
-						}
-						CvMethod::Signature => "Signature (paper)",
-						CvMethod::NoCvmRequired => "No CVM required",
-						CvMethod::NoCvmPerformed => "No CVM performed",
-					}
-				} else {
-					"Unknown (likely issuer or payment system-specific)"
-				}
-			),
+			explanation: format!("Method: {}", OptionalCvMethod::from(self.method)),
 			severity: Severity::Normal,
 		});
 		enabled_bits.push(EnabledBitRange {
 			offset: 7,
 			len: 8,
-			explanation: format!(
-				"Condition: {}",
-				if let Some(condition) = &self.condition {
-					match condition {
-						CvmCondition::Always => "Always",
-						CvmCondition::UnattendedCash => "If unattended cash",
-						CvmCondition::NotUnattendedNotManualNotCashback => {
-							"If not unattended cash and not manual cash and not purchase with \
-							 cashback"
-						}
-						CvmCondition::TerminalSupported => "If terminal supports the CVM",
-						CvmCondition::Manual => "If manual cash",
-						CvmCondition::Cashback => "If purchase with cashback",
-						CvmCondition::InApplicationCurrencyUnderX => {
-							"If transaction is in the application currency and is under X value"
-						}
-						CvmCondition::InApplicationCurrencyOverX => {
-							"If transaction is in the application currency and is over X value"
-						}
-						CvmCondition::InApplicationCurrencyUnderY => {
-							"If transaction is in the application currency and is under Y value"
-						}
-						CvmCondition::InApplicationCurrencyOverY => {
-							"If transaction is in the application currency and is over Y value"
-						}
-					}
-				} else {
-					"Unknown (likely payment system-specific)"
-				}
-			),
+			explanation: format!("Condition: {}", OptionalCvmCondition::from(self.condition)),
 			severity: Severity::Normal,
 		});
 

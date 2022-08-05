@@ -3,7 +3,10 @@
 //! Information for this can be found in EMV Book 4, under section `A4`.
 
 // Uses
-use std::cmp::Ordering;
+use std::{
+	cmp::Ordering,
+	fmt::{Debug, Display, Formatter, Result as FmtResult},
+};
 
 use super::{cv_rule::CardholderVerificationRule, EnabledBitRange, Severity, UnitValue};
 use crate::{error::ParseError, util::byte_slice_to_u64};
@@ -18,11 +21,21 @@ pub struct CardholderVerificationMethodResults {
 	pub result: CvmResult,
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum CvmResult {
 	Unknown,
 	Failed,
 	Successful,
+}
+
+impl Display for CvmResult {
+	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+		f.write_str(match self {
+			CvmResult::Unknown => "Unknown",
+			CvmResult::Failed => "Failed",
+			CvmResult::Successful => "Successful",
+		})
+	}
 }
 
 impl TryFrom<&[u8]> for CardholderVerificationMethodResults {
@@ -79,14 +92,7 @@ impl UnitValue for CardholderVerificationMethodResults {
 		enabled_bits.push(EnabledBitRange {
 			offset: 7,
 			len: 8,
-			explanation: format!(
-				"Result: {}",
-				match self.result {
-					CvmResult::Unknown => "Unknown",
-					CvmResult::Failed => "Failed",
-					CvmResult::Successful => "Successful",
-				}
-			),
+			explanation: format!("Result: {}", self.result),
 			severity: match self.result {
 				CvmResult::Unknown | CvmResult::Successful => Severity::Normal,
 				CvmResult::Failed => Severity::Error,
