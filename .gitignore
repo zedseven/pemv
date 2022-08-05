@@ -16,3 +16,6 @@
 
 # Environment variable files (for development, often containing private information)
 **/.env
+
+# Install integration files generated locally (man pages, shell completion scripts, etc.)
+/install_integrations/

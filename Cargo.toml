@@ -16,3 +16,9 @@ lto = true
 atty = "0.2"
 clap = "3.2"
 termcolor = "1.1"
+
+[build-dependencies]
+clap = "3.2"
+clap_complete = "3.2"
+clap_mangen = "0.1"
+dotenv = "0.15"

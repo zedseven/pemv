@@ -1,11 +1,15 @@
-//! Provides the CLI for the program.
+// Provides the CLI for the program.
 
 // Uses
-use clap::{Arg, ArgMatches, Command};
+use clap::{Arg, Command};
 
-/// Parse CLI input.
-pub fn parse_cli_arguments() -> ArgMatches {
-	Command::new("ParseEMV")
+// Constants
+pub const APPLICATION_PROPER_NAME: &str = "ParseEMV";
+pub const APPLICATION_BIN_NAME: &str = env!("CARGO_PKG_NAME");
+
+/// Builds the command-line interface.
+pub fn build_cli() -> Command<'static> {
+	Command::new(APPLICATION_PROPER_NAME)
 		.version(env!("CARGO_PKG_VERSION"))
 		.author(env!("CARGO_PKG_AUTHORS"))
 		.about(env!("CARGO_PKG_DESCRIPTION"))
@@ -68,5 +72,4 @@ pub fn parse_cli_arguments() -> ArgMatches {
 				.value_name("SERVICE CODE")
 				.help("Parse a card Service Code (MSR)"),
 		)
-		.get_matches()
 }

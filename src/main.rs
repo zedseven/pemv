@@ -49,7 +49,7 @@ use atty::{is as is_atty, Stream};
 use termcolor::{ColorChoice, StandardStream};
 
 use crate::{
-	cli::parse_cli_arguments,
+	cli::build_cli,
 	emv::{
 		unit_values::{
 			CardVerificationResults,
@@ -74,7 +74,8 @@ pub trait DisplayBreakdown {
 
 // Entry Point
 fn main() {
-	let matches = parse_cli_arguments();
+	let cli_definition = build_cli();
+	let matches = cli_definition.get_matches();
 
 	let choice = {
 		match matches.value_of("colour").unwrap_or("auto") {
