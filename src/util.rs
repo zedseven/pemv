@@ -32,6 +32,23 @@ pub fn parse_hex_str(hex_asm: &str) -> Vec<u8> {
 	bytes
 }
 
+/// Converts a raw byte slice to [`u32`].
+///
+/// Panics if the slice is too long.
+pub fn byte_slice_to_u32(bytes: &[u8]) -> u32 {
+	const BYTES_PER_32_BITS: usize = 4;
+
+	let provided_bytes_length = bytes.len();
+	assert!(provided_bytes_length <= BYTES_PER_32_BITS);
+
+	let mut all_bytes = [0u8; BYTES_PER_32_BITS];
+	for i in 0..provided_bytes_length {
+		all_bytes[(BYTES_PER_32_BITS - provided_bytes_length) + i] = bytes[i];
+	}
+
+	u32::from_be_bytes(all_bytes)
+}
+
 /// Converts a raw byte slice to [`u64`].
 ///
 /// Panics if the slice is too long.
@@ -43,7 +60,7 @@ pub fn byte_slice_to_u64(bytes: &[u8]) -> u64 {
 
 	let mut all_bytes = [0u8; BYTES_PER_64_BITS];
 	for i in 0..provided_bytes_length {
-		all_bytes[i + (BYTES_PER_64_BITS - provided_bytes_length)] = bytes[i];
+		all_bytes[(BYTES_PER_64_BITS - provided_bytes_length) + i] = bytes[i];
 	}
 
 	u64::from_be_bytes(all_bytes)

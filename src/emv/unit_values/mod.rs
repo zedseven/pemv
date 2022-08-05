@@ -11,7 +11,7 @@ mod tvr;
 use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
 
 // Public Exports
-pub use self::{cvm_results::*, cvr::*, tsi::*, tvr::*};
+pub use self::{cv_rule::*, cvm_results::*, cvr::*, tsi::*, tvr::*};
 use crate::{DisplayBreakdown, BITS_PER_BYTE};
 
 // Utility functions for child implementations

@@ -3,6 +3,8 @@
 //! Information for this can be found in EMV Book 4, under section `A4`.
 
 // Uses
+use std::cmp::Ordering;
+
 use super::{cv_rule::CardholderVerificationRule, EnabledBitRange, Severity, UnitValue};
 use crate::{error::ParseError, util::byte_slice_to_u64};
 
@@ -28,7 +30,8 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodResults {
 
 	fn try_from(raw_bytes: &[u8]) -> Result<Self, Self::Error> {
 		if raw_bytes.len() != Self::NUM_BYTES {
-			return Err(ParseError::WrongByteCount {
+			return Err(ParseError::ByteCountIncorrect {
+				r#type: Ordering::Equal,
 				expected: Self::NUM_BYTES,
 				found: raw_bytes.len(),
 			});
@@ -40,7 +43,7 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodResults {
 
 		Ok(Self {
 			bytes,
-			cv_rule: CardholderVerificationRule::try_from(&bytes[0..=1])?,
+			cv_rule: CardholderVerificationRule::try_from(&bytes[0..2])?,
 			result: {
 				#[allow(clippy::match_same_arms)]
 				match 0b1111_1111 & bytes[2] {

@@ -3,6 +3,8 @@
 //! Information for this can be found in EMV Book 3, under section `C3`.
 
 // Uses
+use std::cmp::Ordering;
+
 use super::{EnabledBitRange, Severity, UnitValue};
 use crate::{error::ParseError, util::byte_slice_to_u64};
 
@@ -48,7 +50,8 @@ impl TryFrom<&[u8]> for CardholderVerificationRule {
 
 	fn try_from(raw_bytes: &[u8]) -> Result<Self, Self::Error> {
 		if raw_bytes.len() != Self::NUM_BYTES {
-			return Err(ParseError::WrongByteCount {
+			return Err(ParseError::ByteCountIncorrect {
+				r#type: Ordering::Equal,
 				expected: Self::NUM_BYTES,
 				found: raw_bytes.len(),
 			});
