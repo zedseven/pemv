@@ -74,8 +74,8 @@ pub trait DisplayBreakdown {
 
 // Entry Point
 fn main() {
-	let cli_definition = build_cli();
-	let matches = cli_definition.get_matches();
+	let mut cli_definition = build_cli();
+	let matches = cli_definition.clone().get_matches();
 
 	let choice = {
 		match matches.value_of("colour").unwrap_or("auto") {
@@ -120,7 +120,8 @@ fn main() {
 			.map(|v| v.display_breakdown(&mut stdout))
 			.err()
 	} else {
-		unreachable!();
+		cli_definition.print_help().expect("unable to print help");
+		return;
 	};
 
 	if let Some(error) = parse_error {
