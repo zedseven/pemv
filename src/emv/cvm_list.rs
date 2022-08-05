@@ -16,7 +16,7 @@ use super::unit_values::{
 use crate::{
 	error::ParseError,
 	output_colours::{bold_colour_spec, header_colour_spec},
-	util::byte_slice_to_u32,
+	util::{byte_slice_to_u32, num_dec_digits},
 	DisplayBreakdown,
 };
 
@@ -61,23 +61,33 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodList {
 
 impl DisplayBreakdown for CardholderVerificationMethodList {
 	fn display_breakdown(&self, stdout: &mut StandardStream) {
+		/// This value is chosen as 3 because common currency denominations have
+		/// 2 digits for the cents (or equivalent) and this allows 1 additional
+		/// digit to represent the whole amount. For example, `$0.00`.
+		const MIN_VALUE_DIGITS: usize = 3;
+
 		let header_colour_spec = header_colour_spec();
 		let bold_colour_spec = bold_colour_spec();
+
+		// Calculate the 0-padding length for the integer values
+		let value_padding_length = num_dec_digits(self.x_value)
+			.max(num_dec_digits(self.y_value))
+			.max(MIN_VALUE_DIGITS);
 
 		// Print the X value
 		stdout.set_color(&header_colour_spec).ok();
 		print!("X Value:");
 		stdout.reset().ok();
 		println!(
-			" {} (implicit decimal point based on application currency)",
-			self.x_value
+			" {:0>1$} (implicit decimal point based on application currency)",
+			self.x_value, value_padding_length
 		);
 
 		// Print the Y value
 		stdout.set_color(&header_colour_spec).ok();
 		print!("Y Value:");
 		stdout.reset().ok();
-		println!(" {}", self.y_value);
+		println!(" {:0>1$}", self.y_value, value_padding_length);
 
 		// Print the CV Rules
 		stdout.set_color(&header_colour_spec).ok();

@@ -1,5 +1,7 @@
 //! Utility functions for internal use by other components of the crate.
 
+use std::iter::successors;
+
 // Uses
 use crate::error::ParseError;
 
@@ -64,4 +66,12 @@ pub fn byte_slice_to_u64(bytes: &[u8]) -> u64 {
 	}
 
 	u64::from_be_bytes(all_bytes)
+}
+
+/// Sourced from https://stackoverflow.com/a/69302957.
+///
+/// Once the `int_log` feature becomes stable, this can be replaced with
+/// [`u32::log10`].
+pub fn num_dec_digits(value: u32) -> usize {
+	successors(Some(value), |&n| (n >= 10).then(|| n / 10)).count()
 }
