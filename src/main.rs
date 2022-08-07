@@ -26,7 +26,6 @@
 	clippy::cast_precision_loss,
 	clippy::cast_sign_loss,
 	clippy::doc_markdown,
-	clippy::identity_op,
 	clippy::module_name_repetitions,
 	clippy::similar_names,
 	clippy::struct_excessive_bools,
@@ -45,13 +44,13 @@ mod output_colours;
 mod util;
 
 // Uses
-use atty::{is as is_atty, Stream};
+use atty::{is as is_tty, Stream};
 use termcolor::{ColorChoice, StandardStream};
 
 use crate::{
 	cli::build_cli,
 	emv::{
-		unit_values::{
+		bitflag_values::{
 			CardVerificationResults,
 			CardholderVerificationMethodResults,
 			TerminalVerificationResults,
@@ -67,6 +66,13 @@ use crate::{
 pub const BITS_PER_BYTE: u8 = 8;
 
 // Traits
+/// A simple trait for displaying a comprehensive breakdown of the value.
+///
+/// Separate from [`Display`] because it represents a more significant operation
+/// than simply printing a small value, and because it can handle coloured
+/// output.
+///
+/// [`Display`]: core::fmt::Display
 pub trait DisplayBreakdown {
 	/// Displays a pretty breakdown of the value and every part's meaning.
 	fn display_breakdown(&self, stdout: &mut StandardStream);
@@ -82,7 +88,7 @@ fn main() {
 			"always" => ColorChoice::Always,
 			"ansi" => ColorChoice::AlwaysAnsi,
 			"auto" => {
-				if is_atty(Stream::Stdout) {
+				if is_tty(Stream::Stdout) {
 					ColorChoice::Auto
 				} else {
 					ColorChoice::Never

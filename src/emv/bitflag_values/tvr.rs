@@ -5,13 +5,13 @@
 // Uses
 use std::cmp::Ordering;
 
-use super::{EnabledBitRange, Severity, UnitValue};
+use super::{BitflagValue, EnabledBitRange, Severity};
 use crate::{error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
 #[derive(Debug)]
 pub struct TerminalVerificationResults {
-	bytes: <Self as UnitValue>::Bytes,
+	bytes: <Self as BitflagValue>::Bytes,
 	// Byte 1 Values
 	pub offline_data_authentication_not_performed: bool,
 	pub sda_failed: bool,
@@ -94,7 +94,7 @@ impl TryFrom<&[u8]> for TerminalVerificationResults {
 	}
 }
 
-impl UnitValue for TerminalVerificationResults {
+impl BitflagValue for TerminalVerificationResults {
 	const NUM_BYTES: usize = 5;
 	const USED_BITS_MASK: &'static [u8] = &[
 		0b1111_1100,
@@ -113,7 +113,7 @@ impl UnitValue for TerminalVerificationResults {
 		byte_slice_to_u64(&self.bytes)
 	}
 
-	fn get_display_information(&self) -> Vec<EnabledBitRange> {
+	fn get_bit_display_information(&self) -> Vec<EnabledBitRange> {
 		let mut enabled_bits = Vec::with_capacity(4);
 
 		if self.offline_data_authentication_not_performed {

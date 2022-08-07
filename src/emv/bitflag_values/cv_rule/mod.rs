@@ -10,13 +10,13 @@ mod cvm_condition;
 use std::cmp::Ordering;
 
 pub use self::{cv_method::*, cvm_condition::*};
-use super::{EnabledBitRange, Severity, UnitValue};
+use super::{BitflagValue, EnabledBitRange, Severity};
 use crate::{error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
 #[derive(Debug)]
 pub struct CardholderVerificationRule {
-	bytes: <Self as UnitValue>::Bytes,
+	bytes: <Self as BitflagValue>::Bytes,
 	// Byte 1 Values
 	pub continue_if_unsuccessful: bool,
 	pub method: Option<CvMethod>,
@@ -61,7 +61,7 @@ impl TryFrom<&[u8]> for CardholderVerificationRule {
 				}
 			},
 			condition: {
-				match 0b1111_1111 & bytes[1] {
+				match bytes[1] {
 					0x00 => Some(CvmCondition::Always),
 					0x01 => Some(CvmCondition::UnattendedCash),
 					0x02 => Some(CvmCondition::NotUnattendedNotManualNotCashback),
@@ -79,7 +79,7 @@ impl TryFrom<&[u8]> for CardholderVerificationRule {
 	}
 }
 
-impl UnitValue for CardholderVerificationRule {
+impl BitflagValue for CardholderVerificationRule {
 	const NUM_BYTES: usize = 2;
 	const USED_BITS_MASK: &'static [u8] = &[0b0111_1111, 0b1111_1111];
 	type Bytes = [u8; Self::NUM_BYTES as usize];
@@ -92,7 +92,7 @@ impl UnitValue for CardholderVerificationRule {
 		byte_slice_to_u64(&self.bytes)
 	}
 
-	fn get_display_information(&self) -> Vec<EnabledBitRange> {
+	fn get_bit_display_information(&self) -> Vec<EnabledBitRange> {
 		let mut enabled_bits = Vec::with_capacity(4);
 
 		if self.continue_if_unsuccessful {

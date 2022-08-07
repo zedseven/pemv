@@ -1,8 +1,8 @@
 //! All EMV-related parsers.
 
 // Modules
+pub mod bitflag_values;
 mod cvm_list;
-pub mod unit_values;
 
 // Public Exports
 pub use cvm_list::*;

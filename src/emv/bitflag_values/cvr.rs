@@ -8,13 +8,13 @@ use std::{
 	fmt::{Debug, Display, Formatter, Result as FmtResult},
 };
 
-use super::{EnabledBitRange, Severity, UnitValue};
+use super::{BitflagValue, EnabledBitRange, Severity};
 use crate::{error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
 #[derive(Debug)]
 pub struct CardVerificationResults {
-	bytes: <Self as UnitValue>::Bytes,
+	bytes: <Self as BitflagValue>::Bytes,
 	// Byte 1 Values
 	pub gen_ac_2_application_cryptogram_type: GenAc2ApplicationCryptogramType,
 	pub gen_ac_1_application_cryptogram_type: GenAc1ApplicationCryptogramType,
@@ -144,7 +144,7 @@ impl TryFrom<&[u8]> for CardVerificationResults {
 	}
 }
 
-impl UnitValue for CardVerificationResults {
+impl BitflagValue for CardVerificationResults {
 	const NUM_BYTES: usize = 5;
 	const USED_BITS_MASK: &'static [u8] = &[
 		0b1111_1111,
@@ -163,7 +163,7 @@ impl UnitValue for CardVerificationResults {
 		byte_slice_to_u64(&self.bytes)
 	}
 
-	fn get_display_information(&self) -> Vec<EnabledBitRange> {
+	fn get_bit_display_information(&self) -> Vec<EnabledBitRange> {
 		let mut enabled_bits = Vec::with_capacity(4);
 
 		enabled_bits.push(EnabledBitRange {

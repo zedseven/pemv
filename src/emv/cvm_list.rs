@@ -7,11 +7,11 @@ use std::cmp::Ordering;
 
 use termcolor::{StandardStream, WriteColor};
 
-use super::unit_values::{
+use super::bitflag_values::{
+	BitflagValue,
 	CardholderVerificationRule,
 	OptionalCvMethod,
 	OptionalCvmCondition,
-	UnitValue,
 };
 use crate::{
 	error::ParseError,

@@ -18,7 +18,10 @@ use crate::{
 	BITS_PER_BYTE,
 };
 
-// Utility functions for child implementations
+// Utility structures for child implementations
+
+/// Represents a single bit or bit range that's enabled, and contains the
+/// meaning & severity of the enabled bit.
 #[derive(Debug)]
 pub struct EnabledBitRange {
 	pub offset: u8,
@@ -27,6 +30,7 @@ pub struct EnabledBitRange {
 	pub severity: Severity,
 }
 
+/// Represents the severity of a bit being enabled.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Severity {
 	Normal,
@@ -34,9 +38,8 @@ pub enum Severity {
 	Error,
 }
 
-/// An EMV value that's complete as a single unit (fixed size and
-/// self-contained).
-pub trait UnitValue
+/// A value that is stored in a bitflag-style format according to the EMV Books.
+pub trait BitflagValue
 where
 	Self: Sized,
 {
@@ -53,18 +56,18 @@ where
 	/// Fetches the raw bytes of the value.
 	fn get_binary_value(&self) -> Self::Bytes;
 
-	// Fetches the numeric representation of the value.
+	/// Fetches the numeric representation of the value.
 	fn get_numeric_value(&self) -> u64;
 
 	/// Fetches the requisite information for display of this value.
 	///
 	/// The returned set is expected to be provided in left-to-right order.
-	fn get_display_information(&self) -> Vec<EnabledBitRange>;
+	fn get_bit_display_information(&self) -> Vec<EnabledBitRange>;
 }
 
 impl<V> DisplayBreakdown for V
 where
-	V: UnitValue,
+	V: BitflagValue,
 {
 	fn display_breakdown(&self, stdout: &mut StandardStream) {
 		let header_colour_spec = header_colour_spec();
@@ -74,7 +77,7 @@ where
 		let bits = self.get_numeric_value();
 		let num_bytes = V::NUM_BYTES as u8;
 		let num_bits = num_bytes * BITS_PER_BYTE;
-		let enabled_bits = self.get_display_information();
+		let enabled_bit_ranges = self.get_bit_display_information();
 
 		//dbg!(enabled_bits);
 
@@ -105,9 +108,9 @@ where
 		// Print the breakdown
 		let mut arm_bits = 0u64;
 		let mut multi_bit_value = false;
-		for enabled_bit in enabled_bits.iter().rev() {
-			arm_bits |= 1 << enabled_bit.offset;
-			if enabled_bit.len > 1 {
+		for enabled_bit_range in enabled_bit_ranges.iter().rev() {
+			arm_bits |= 1 << enabled_bit_range.offset;
+			if enabled_bit_range.len > 1 {
 				multi_bit_value = true;
 			}
 		}
@@ -115,18 +118,18 @@ where
 		// denoting each one's width
 		if multi_bit_value {
 			let mut current_offset = num_bits - 1;
-			for enabled_bit in &enabled_bits {
-				for i in enabled_bit.offset..=current_offset {
+			for enabled_bit_range in &enabled_bit_ranges {
+				for i in enabled_bit_range.offset..=current_offset {
 					if (i + 1) % 8 == 0 && i + 1 < num_bits {
 						print!(" ");
 					}
-					if i != enabled_bit.offset {
+					if i != enabled_bit_range.offset {
 						print!(" ");
 					}
 				}
-				if enabled_bit.len > 1 {
+				if enabled_bit_range.len > 1 {
 					print!("\u{251c}");
-					for _ in 0..(enabled_bit.len - 2) {
+					for _ in 0..(enabled_bit_range.len - 2) {
 						print!("\u{2500}");
 					}
 					print!("\u{2518}");
@@ -135,15 +138,15 @@ where
 				}
 				// This somewhat bizarre condition is to handle the case of, for example:
 				// offset = 7, len = 8 (1 byte, and the final segment)
-				if enabled_bit.offset > enabled_bit.len {
-					current_offset = enabled_bit.offset - enabled_bit.len;
+				if enabled_bit_range.offset > enabled_bit_range.len {
+					current_offset = enabled_bit_range.offset - enabled_bit_range.len;
 				} else {
 					current_offset = 0;
 				}
 			}
 			println!();
 		}
-		for enabled_bit in enabled_bits.iter().rev() {
+		for enabled_bit in enabled_bit_ranges.iter().rev() {
 			// Print leading space
 			for i in 1..(num_bits - enabled_bit.offset) {
 				if arm_bits & (1 << (num_bits - i)) > 0 {
