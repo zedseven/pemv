@@ -7,12 +7,7 @@ use std::cmp::Ordering;
 
 use termcolor::{StandardStream, WriteColor};
 
-use super::bitflag_values::{
-	BitflagValue,
-	CardholderVerificationRule,
-	OptionalCvMethod,
-	OptionalCvmCondition,
-};
+use super::{BitflagValue, CardholderVerificationRule, OptionalCvMethod, OptionalCvmCondition};
 use crate::{
 	error::ParseError,
 	output_colours::{bold_colour_spec, header_colour_spec},

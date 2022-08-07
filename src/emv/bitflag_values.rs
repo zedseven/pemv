@@ -1,18 +1,9 @@
 //! The module for all status value definitions.
 
-// Modules
-mod cci;
-mod cv_rule;
-mod cvm_results;
-mod cvr;
-mod tsi;
-mod tvr;
-
 // Uses
 use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
 
 // Public Exports
-pub use self::{cci::*, cv_rule::*, cvm_results::*, cvr::*, tsi::*, tvr::*};
 use crate::{
 	output_colours::{bold_colour_spec, header_colour_spec},
 	util::print_indentation,

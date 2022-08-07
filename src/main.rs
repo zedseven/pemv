@@ -50,14 +50,11 @@ use termcolor::{ColorChoice, StandardStream};
 use crate::{
 	cli::build_cli,
 	emv::{
-		bitflag_values::{
-			CardVerificationResults,
-			CardholderVerificationMethodResults,
-			TerminalVerificationResults,
-			TransactionStatusInformation,
-		},
+		ccd::{CardVerificationResults, IssuerApplicationData},
 		CardholderVerificationMethodList,
-		IssuerApplicationData,
+		CardholderVerificationMethodResults,
+		TerminalVerificationResults,
+		TransactionStatusInformation,
 	},
 	non_emv::ServiceCode,
 	util::{parse_hex_str, parse_str_to_u16},
@@ -107,11 +104,11 @@ fn main() {
 		TerminalVerificationResults::try_from(parse_hex_str(tvr_str).as_slice())
 			.map(|v| v.display_breakdown(&mut stdout, 0))
 			.err()
-	} else if let Some(iad_str) = matches.value_of("iad") {
+	} else if let Some(iad_str) = matches.value_of("ccd-iad") {
 		IssuerApplicationData::try_from(parse_hex_str(iad_str).as_slice())
 			.map(|v| v.display_breakdown(&mut stdout, 0))
 			.err()
-	} else if let Some(cvr_str) = matches.value_of("cvr") {
+	} else if let Some(cvr_str) = matches.value_of("ccd-cvr") {
 		CardVerificationResults::try_from(parse_hex_str(cvr_str).as_slice())
 			.map(|v| v.display_breakdown(&mut stdout, 0))
 			.err()

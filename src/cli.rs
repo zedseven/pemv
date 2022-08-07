@@ -35,7 +35,6 @@ pub fn build_cli() -> Command<'static> {
 		)
 		.arg(
 			Arg::new("ccd-iad")
-				.short('i')
 				.long("ccd-iad")
 				.takes_value(true)
 				.value_name("IAD")
@@ -43,7 +42,6 @@ pub fn build_cli() -> Command<'static> {
 		)
 		.arg(
 			Arg::new("ccd-cvr")
-				.short('c')
 				.long("ccd-cvr")
 				.takes_value(true)
 				.value_name("CVR")

@@ -7,7 +7,7 @@ use std::cmp::Ordering;
 
 use termcolor::{StandardStream, WriteColor};
 
-use super::bitflag_values::{CardVerificationResults, CommonCoreIdentifier, FormatCode};
+use super::{CardVerificationResults, CommonCoreIdentifier, FormatCode};
 use crate::{
 	error::ParseError,
 	output_colours::header_colour_spec,

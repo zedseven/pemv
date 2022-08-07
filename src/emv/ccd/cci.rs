@@ -8,7 +8,7 @@ use std::{
 	fmt::{Display, Formatter, Result as FmtResult},
 };
 
-use super::{BitflagValue, EnabledBitRange, Severity};
+use super::super::{BitflagValue, EnabledBitRange, Severity};
 use crate::{error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
