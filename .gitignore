@@ -19,3 +19,6 @@
 
 # Install integration files generated locally (man pages, shell completion scripts, etc.)
 /install_integrations/
+
+# Local working files
+TODO.md
