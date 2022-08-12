@@ -3,8 +3,6 @@
 //! Information for this can be found in EMV Book 3, under section `C7`.
 
 // Uses
-use std::cmp::Ordering;
-
 use termcolor::{StandardStream, WriteColor};
 
 use super::{CardVerificationResults, CommonCoreIdentifier, FormatCode};
