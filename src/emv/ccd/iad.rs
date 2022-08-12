@@ -30,11 +30,7 @@ impl TryFrom<&[u8]> for IssuerApplicationData {
 
 	fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
 		if bytes.len() != NUM_BYTES {
-			return Err(ParseError::ByteCountIncorrect {
-				r#type: Ordering::Equal,
-				expected: NUM_BYTES,
-				found: bytes.len(),
-			});
+			return Err(ParseError::NonCcdCompliant);
 		}
 
 		// Byte 0 is the length of EMVCo-defined data in the IAD

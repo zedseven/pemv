@@ -50,10 +50,11 @@ use termcolor::{ColorChoice, StandardStream};
 use crate::{
 	cli::build_cli,
 	emv::{
+		ber_tlv::parse as parse_ber_tlv,
 		ccd::{CardVerificationResults, IssuerApplicationData},
-		parse_ber_tlv,
 		CardholderVerificationMethodList,
 		CardholderVerificationMethodResults,
+		ProcessedEmvBlock,
 		TerminalVerificationResults,
 		TransactionStatusInformation,
 	},
@@ -130,7 +131,10 @@ fn main() {
 		}
 		// EMV Utilities
 		else if let Some(ber_tlv_str) = matches.value_of("ber-tlv") {
-			parse_ber_tlv(parse_hex_str(ber_tlv_str).as_slice()).err()
+			parse_ber_tlv(parse_hex_str(ber_tlv_str).as_slice())
+				.and_then(TryInto::<ProcessedEmvBlock>::try_into)
+				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.err()
 		}
 		// Non-EMV
 		else if let Some(service_code_str) = matches.value_of("service-code") {

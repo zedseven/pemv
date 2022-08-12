@@ -86,6 +86,7 @@ pub fn print_indentation(indentation: u8) {
 /// Pretty-prints bytes as hex.
 pub fn print_bytes(bytes: &[u8], bytes_per_line: usize, indentation: u8) {
 	for line in bytes.chunks(bytes_per_line) {
+		// Print the hex
 		print_indentation(indentation);
 		let mut first = true;
 		for byte in line {
@@ -96,6 +97,56 @@ pub fn print_bytes(bytes: &[u8], bytes_per_line: usize, indentation: u8) {
 			}
 			print!("{:0>2X}", byte);
 		}
+
+		// End the line
 		println!();
+	}
+}
+
+/// Pretty-prints bytes as hex with an ASCII readout next to the hex on each
+/// line.
+pub fn print_bytes_pretty(bytes: &[u8], bytes_per_line: usize, indentation: u8) {
+	for line in bytes.chunks(bytes_per_line) {
+		// Print the hex
+		print_indentation(indentation);
+		let mut first = true;
+		for byte in line {
+			if first {
+				first = false;
+			} else {
+				print!(" ");
+			}
+			print!("{:0>2X}", byte);
+		}
+
+		// Add padding to the end if this is the last line
+		for _ in 0..(bytes_per_line - line.len()) {
+			print!("   ");
+		}
+
+		// Add padding between the hex and ASCII sections
+		print!("  ");
+
+		// Print the ASCII readout, replacing unprintable characters with question marks
+		for &byte in line {
+			let printable_char = match byte {
+				0x20..=0x7E => byte as char,
+				_ => '.',
+			};
+			print!("{}", printable_char);
+		}
+
+		// End the line
+		println!();
+	}
+}
+
+/// Pretty-prints bytes as hex.
+///
+/// This does not add a line ending afterwards, and all bytes are printed on one
+/// line.
+pub fn print_bytes_small(bytes: &[u8]) {
+	for byte in bytes {
+		print!("{:0>2X}", byte);
 	}
 }
