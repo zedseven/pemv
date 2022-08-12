@@ -51,6 +51,7 @@ use crate::{
 	cli::build_cli,
 	emv::{
 		ccd::{CardVerificationResults, IssuerApplicationData},
+		parse_ber_tlv,
 		CardholderVerificationMethodList,
 		CardholderVerificationMethodResults,
 		TerminalVerificationResults,
@@ -100,39 +101,48 @@ fn main() {
 	};
 	let mut stdout = StandardStream::stdout(choice);
 
-	let parse_error = if let Some(tvr_str) = matches.value_of("tvr") {
-		TerminalVerificationResults::try_from(parse_hex_str(tvr_str).as_slice())
-			.map(|v| v.display_breakdown(&mut stdout, 0))
-			.err()
-	} else if let Some(iad_str) = matches.value_of("ccd-iad") {
-		IssuerApplicationData::try_from(parse_hex_str(iad_str).as_slice())
-			.map(|v| v.display_breakdown(&mut stdout, 0))
-			.err()
-	} else if let Some(cvr_str) = matches.value_of("ccd-cvr") {
-		CardVerificationResults::try_from(parse_hex_str(cvr_str).as_slice())
-			.map(|v| v.display_breakdown(&mut stdout, 0))
-			.err()
-	} else if let Some(tsi_str) = matches.value_of("tsi") {
-		TransactionStatusInformation::try_from(parse_hex_str(tsi_str).as_slice())
-			.map(|v| v.display_breakdown(&mut stdout, 0))
-			.err()
-	} else if let Some(cvm_results_str) = matches.value_of("cvm-results") {
-		CardholderVerificationMethodResults::try_from(parse_hex_str(cvm_results_str).as_slice())
-			.map(|v| v.display_breakdown(&mut stdout, 0))
-			.err()
-	} else if let Some(cvm_list_str) = matches.value_of("cvm-list") {
-		CardholderVerificationMethodList::try_from(parse_hex_str(cvm_list_str).as_slice())
-			.map(|v| v.display_breakdown(&mut stdout, 0))
-			.err()
-	} else if let Some(service_code_str) = matches.value_of("service-code") {
-		parse_str_to_u16(service_code_str)
-			.map(ServiceCode::try_from)
-			.and_then(|v| v)
-			.map(|v| v.display_breakdown(&mut stdout, 0))
-			.err()
-	} else {
-		cli_definition.print_help().expect("unable to print help");
-		return;
+	let parse_error = {
+		// EMV Tags
+		if let Some(tvr_str) = matches.value_of("tvr") {
+			TerminalVerificationResults::try_from(parse_hex_str(tvr_str).as_slice())
+				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.err()
+		} else if let Some(iad_str) = matches.value_of("ccd-iad") {
+			IssuerApplicationData::try_from(parse_hex_str(iad_str).as_slice())
+				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.err()
+		} else if let Some(cvr_str) = matches.value_of("ccd-cvr") {
+			CardVerificationResults::try_from(parse_hex_str(cvr_str).as_slice())
+				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.err()
+		} else if let Some(tsi_str) = matches.value_of("tsi") {
+			TransactionStatusInformation::try_from(parse_hex_str(tsi_str).as_slice())
+				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.err()
+		} else if let Some(cvm_results_str) = matches.value_of("cvm-results") {
+			CardholderVerificationMethodResults::try_from(parse_hex_str(cvm_results_str).as_slice())
+				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.err()
+		} else if let Some(cvm_list_str) = matches.value_of("cvm-list") {
+			CardholderVerificationMethodList::try_from(parse_hex_str(cvm_list_str).as_slice())
+				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.err()
+		}
+		// EMV Utilities
+		else if let Some(ber_tlv_str) = matches.value_of("ber-tlv") {
+			parse_ber_tlv(parse_hex_str(ber_tlv_str).as_slice()).err()
+		}
+		// Non-EMV
+		else if let Some(service_code_str) = matches.value_of("service-code") {
+			parse_str_to_u16(service_code_str)
+				.map(ServiceCode::try_from)
+				.and_then(|v| v)
+				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.err()
+		} else {
+			cli_definition.print_help().expect("unable to print help");
+			return;
+		}
 	};
 
 	if let Some(error) = parse_error {

@@ -23,6 +23,8 @@ pub enum ParseError {
 	/// The value provided isn't compliant with the EMV CCD specifications in
 	/// some way. Not necessarily a problem.
 	NonCcdCompliant,
+	/// Something is unsupported and cannot be processed.
+	Unsupported,
 }
 
 impl Display for ParseError {
@@ -59,6 +61,11 @@ impl Display for ParseError {
 				"The value provided isn't compliant with the EMV Common Core Definitions (CCD) in \
 				 some way. This isn't a problem necessarily, but it does mean that the value \
 				 can't be parsed."
+			),
+			Self::Unsupported => write!(
+				f,
+				"The value provided is in some way unsupported. If you have genuine need for the \
+				 unsupported feature, please open an issue on GitHub."
 			),
 		}
 	}

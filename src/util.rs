@@ -34,12 +34,12 @@ pub fn parse_hex_str(hex_asm: &str) -> Vec<u8> {
 	bytes
 }
 
+/// The number of bytes per 32 bits.
+pub const BYTES_PER_32_BITS: usize = 4;
 /// Converts a raw byte slice to [`u32`].
 ///
 /// Panics if the slice is too long.
 pub fn byte_slice_to_u32(bytes: &[u8]) -> u32 {
-	const BYTES_PER_32_BITS: usize = 4;
-
 	let provided_bytes_length = bytes.len();
 	assert!(provided_bytes_length <= BYTES_PER_32_BITS);
 
@@ -51,12 +51,12 @@ pub fn byte_slice_to_u32(bytes: &[u8]) -> u32 {
 	u32::from_be_bytes(all_bytes)
 }
 
+/// The number of bytes per 64 bits.
+pub const BYTES_PER_64_BITS: usize = 8;
 /// Converts a raw byte slice to [`u64`].
 ///
 /// Panics if the slice is too long.
 pub fn byte_slice_to_u64(bytes: &[u8]) -> u64 {
-	const BYTES_PER_64_BITS: usize = 8;
-
 	let provided_bytes_length = bytes.len();
 	assert!(provided_bytes_length <= BYTES_PER_64_BITS);
 

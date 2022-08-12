@@ -117,6 +117,20 @@ pub fn build_cli() -> Command<'static> {
 					 they're unsuccessful.",
 				),
 		)
+		.next_help_heading("EMV UTILITIES")
+		.arg(
+			Arg::new("ber-tlv")
+				.short('b')
+				.long("ber-tlv")
+				.takes_value(true)
+				.value_name("EMV DATA BLOCK")
+				.help("Parse a block of BER-TLV encoded data.")
+				.long_help(
+					"Parse a block of BER-TLV encoded data.\nBER-TLV is the 'canonical' EMV TLV \
+					 data format, but many PIN pad manufacturers have their own variations with \
+					 slight differences.",
+				),
+		)
 		.next_help_heading("NON-EMV")
 		.arg(
 			Arg::new("service-code")
