@@ -5,7 +5,7 @@ use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
 
 // Public Exports
 use crate::{
-	output_colours::{bold_colour_spec, header_colour_spec},
+	output_colours::bold_colour_spec,
 	util::print_indentation,
 	DisplayBreakdown,
 	BITS_PER_BYTE,
@@ -63,7 +63,6 @@ where
 	V: BitflagValue,
 {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
-		let header_colour_spec = header_colour_spec();
 		let bold_colour_spec = bold_colour_spec();
 
 		// Fetch the required data
@@ -72,20 +71,6 @@ where
 		let num_bits = num_bytes * BITS_PER_BYTE;
 		let enabled_bit_ranges = self.get_bit_display_information();
 
-		//dbg!(enabled_bits);
-
-		// Print the hex representation
-		print_indentation(indentation);
-		stdout.set_color(&header_colour_spec).ok();
-		print!("Hex:");
-		stdout.reset().ok();
-		println!(" {:#01$X}", bits, usize::from(num_bytes * 2 + 2));
-
-		// Print the binary representation
-		print_indentation(indentation);
-		stdout.set_color(&header_colour_spec).ok();
-		println!("Breakdown:");
-		stdout.reset().ok();
 		print_indentation(indentation);
 		stdout.set_color(&bold_colour_spec).ok();
 		for offset in (0..num_bits).rev() {
