@@ -129,6 +129,7 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 			indentation: u8,
 			header_colour_spec: &ColorSpec,
 			tag: &[u8],
+			length: usize,
 			name_option: Option<&str>,
 		) {
 			let bold_colour_spec = bold_colour_spec();
@@ -143,7 +144,12 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 			stdout.set_color(&bold_colour_spec).ok();
 			print_bytes_small(tag);
 			stdout.reset().ok();
-			println!(" - {}", name);
+			println!(
+				" - {} byte{} - {}",
+				length,
+				if length == 1 { "" } else { "s" },
+				name
+			);
 		}
 
 		let header_colour_spec = header_colour_spec();
@@ -151,7 +157,14 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 		match self {
 			ProcessedEmvTag::Raw { value } => {
 				// Display the tag name
-				print_tag_name(stdout, indentation, &header_colour_spec, value.tag, None);
+				print_tag_name(
+					stdout,
+					indentation,
+					&header_colour_spec,
+					value.tag,
+					value.data.len(),
+					None,
+				);
 
 				// Display the raw value
 				value.display_breakdown(stdout, indentation);
@@ -163,6 +176,7 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 					indentation,
 					&header_colour_spec,
 					value.tag,
+					value.data.len(),
 					Some(name),
 				);
 
@@ -180,6 +194,7 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 					indentation,
 					&header_colour_spec,
 					value.tag,
+					value.data.len(),
 					Some(name),
 				);
 
@@ -246,6 +261,10 @@ pub struct RawEmvTag<'a> {
 
 impl<'a> DisplayBreakdown for RawEmvTag<'a> {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
+		if self.data.is_empty() {
+			return;
+		}
+
 		let header_colour_spec = header_colour_spec();
 
 		// Display the tag value
