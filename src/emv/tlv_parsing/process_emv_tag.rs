@@ -21,10 +21,7 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 	Ok(match &raw_tag.tag {
 		[0x5F, 0x30] => Some(ProcessedEmvTag::Parsed {
 			name: "Service Code",
-			parsed: Box::new(
-				parse_str_to_u16(bytes_to_str(raw_tag.data).as_str())
-					.and_then(ServiceCode::try_from)?,
-			),
+			parsed: Box::new(process_bcd(raw_tag.data).and_then(ServiceCode::try_from)?),
 			value: raw_tag,
 		}),
 		[0x8E] => Some(ProcessedEmvTag::Parsed {
@@ -190,4 +187,8 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 			},
 		)
 	}))
+}
+
+fn process_bcd(bytes: &[u8]) -> Result<u16, ParseError> {
+	parse_str_to_u16(bytes_to_str(bytes).as_str())
 }
