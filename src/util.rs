@@ -127,7 +127,7 @@ pub fn print_bytes_pretty(bytes: &[u8], bytes_per_line: usize, indentation: u8) 
 		// Add padding between the hex and ASCII sections
 		print!("  ");
 
-		// Print the ASCII readout, replacing unprintable characters with question marks
+		// Print the ASCII readout, replacing unprintable characters
 		for &byte in line {
 			let printable_char = match byte {
 				0x20..=0x7E => byte as char,
