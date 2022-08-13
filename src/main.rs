@@ -132,20 +132,19 @@ fn main() {
 		// EMV Utilities
 		else if let Some(ber_tlv_str) = matches.value_of("ber-tlv") {
 			parse_ber_tlv(parse_hex_str(ber_tlv_str).as_slice(), true)
-				.and_then(TryInto::<ProcessedEmvBlock>::try_into)
+				.and_then(ProcessedEmvBlock::try_from)
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()
 		} else if let Some(ber_tlv_str) = matches.value_of("ber-tlv-simple") {
 			parse_ber_tlv(parse_hex_str(ber_tlv_str).as_slice(), false)
-				.and_then(TryInto::<ProcessedEmvBlock>::try_into)
+				.and_then(ProcessedEmvBlock::try_from)
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()
 		}
 		// Non-EMV
 		else if let Some(service_code_str) = matches.value_of("service-code") {
 			parse_str_to_u16(service_code_str)
-				.map(ServiceCode::try_from)
-				.and_then(|v| v)
+				.and_then(ServiceCode::try_from)
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()
 		} else {

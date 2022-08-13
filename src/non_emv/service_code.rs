@@ -9,7 +9,7 @@ use termcolor::{StandardStream, WriteColor};
 
 use crate::{
 	error::ParseError,
-	output_colours::{bold_colour_spec, header_colour_spec},
+	output_colours::bold_colour_spec,
 	util::print_indentation,
 	DisplayBreakdown,
 };
@@ -190,21 +190,9 @@ impl TryFrom<u16> for ServiceCode {
 
 impl DisplayBreakdown for ServiceCode {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
-		let header_colour_spec = header_colour_spec();
 		let bold_colour_spec = bold_colour_spec();
 
 		// Print the numeric representation
-		print_indentation(indentation);
-		stdout.set_color(&header_colour_spec).ok();
-		print!("Value:");
-		stdout.reset().ok();
-		println!(" {:0>3}", self.number);
-
-		// Print the breakdown
-		print_indentation(indentation);
-		stdout.set_color(&header_colour_spec).ok();
-		println!("Breakdown:");
-		stdout.reset().ok();
 		print_indentation(indentation);
 		stdout.set_color(&bold_colour_spec).ok();
 		println!("{:0>3}", self.number);

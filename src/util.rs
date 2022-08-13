@@ -150,3 +150,21 @@ pub fn print_bytes_small(bytes: &[u8]) {
 		print!("{:0>2X}", byte);
 	}
 }
+
+/// Converts bytes to a string.
+pub fn bytes_to_str(bytes: &[u8]) -> String {
+	fn num_to_char(num: u8) -> char {
+		(match num {
+			0..=9 => num + 0x30,
+			10..=15 => (num - 10) + 0x41,
+			_ => unreachable!("there should be nothing higher than 0xF"),
+		}) as char
+	}
+
+	let mut result = String::with_capacity(bytes.len() * 2);
+	for &byte in bytes {
+		result.push(num_to_char((0b1111_0000 & byte) >> 4));
+		result.push(num_to_char(0b0000_1111 & byte));
+	}
+	result
+}

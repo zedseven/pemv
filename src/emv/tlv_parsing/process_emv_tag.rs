@@ -5,9 +5,12 @@
 use crate::{
 	emv::{ProcessedEmvTag, RawEmvTag},
 	error::ParseError,
+	parse_str_to_u16,
+	util::bytes_to_str,
 	CardholderVerificationMethodList,
 	CardholderVerificationMethodResults,
 	IssuerApplicationData,
+	ServiceCode,
 	TerminalVerificationResults,
 	TransactionStatusInformation,
 };
@@ -16,6 +19,14 @@ use crate::{
 pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError> {
 	// Parseable tags
 	Ok(match &raw_tag.tag {
+		[0x5F, 0x30] => Some(ProcessedEmvTag::Parsed {
+			name: "Service Code",
+			parsed: Box::new(
+				parse_str_to_u16(bytes_to_str(raw_tag.data).as_str())
+					.and_then(ServiceCode::try_from)?,
+			),
+			value: raw_tag,
+		}),
 		[0x8E] => Some(ProcessedEmvTag::Parsed {
 			name: "CVM List",
 			parsed: Box::new(CardholderVerificationMethodList::try_from(raw_tag.data)?),
@@ -142,7 +153,6 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 			[0x70] => Some("READ RECORD Response Message Template"),
 			[0x80] => Some("Response Message Template Format 1"),
 			[0x77] => Some("Response Message Template Format 2"),
-			[0x5F, 0x30] => Some("Service Code"),
 			[0x88] => Some("Short File Identifier (SFI)"),
 			[0x9F, 0x4B] => Some("Signed Dynamic Application Data"),
 			[0x93] => Some("Signed Static Application Data"),

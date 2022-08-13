@@ -71,6 +71,7 @@ where
 		let num_bits = num_bytes * BITS_PER_BYTE;
 		let enabled_bit_ranges = self.get_bit_display_information();
 
+		// Print the binary representation
 		print_indentation(indentation);
 		stdout.set_color(&bold_colour_spec).ok();
 		for offset in (0..num_bits).rev() {
