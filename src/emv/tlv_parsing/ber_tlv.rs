@@ -37,6 +37,9 @@ pub fn parse(bytes: &[u8]) -> Result<RawEmvBlock, ParseError> {
 		}
 		let tag_end_index = index;
 		index += 1;
+		if index >= bytes_len {
+			return Err(ParseError::NonCompliant);
+		}
 
 		// The length is next
 		let length_byte_0 = bytes[index];
