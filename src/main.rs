@@ -131,7 +131,12 @@ fn main() {
 		}
 		// EMV Utilities
 		else if let Some(ber_tlv_str) = matches.value_of("ber-tlv") {
-			parse_ber_tlv(parse_hex_str(ber_tlv_str).as_slice())
+			parse_ber_tlv(parse_hex_str(ber_tlv_str).as_slice(), true)
+				.and_then(TryInto::<ProcessedEmvBlock>::try_into)
+				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.err()
+		} else if let Some(ber_tlv_str) = matches.value_of("ber-tlv-simple") {
+			parse_ber_tlv(parse_hex_str(ber_tlv_str).as_slice(), false)
 				.and_then(TryInto::<ProcessedEmvBlock>::try_into)
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()

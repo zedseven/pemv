@@ -9,7 +9,13 @@ use crate::{
 	util::{byte_slice_to_u32, BYTES_PER_32_BITS},
 };
 
-pub fn parse(bytes: &[u8]) -> Result<RawEmvBlock, ParseError> {
+/// Parses a block of BER-TLV encoded data.
+///
+/// The `support_constructed` argument dictates whether constructed data objects
+/// (nested EMV tags) are supported. Some manufacturer-custom EMV tags indicate
+/// they're constructed but don't actually store nested EMV data, which can
+/// cause problems. Looking at you, Verifone `E3` tag! >:(
+pub fn parse(bytes: &[u8], support_constructed: bool) -> Result<RawEmvBlock, ParseError> {
 	let bytes_len = bytes.len();
 	let mut nodes = Vec::new();
 	let mut index = 0;
@@ -75,8 +81,14 @@ pub fn parse(bytes: &[u8]) -> Result<RawEmvBlock, ParseError> {
 				data,
 			},
 			child_block: match data_object_type {
-				DataObjectType::Primitive => Vec::with_capacity(0).into(),
-				DataObjectType::Constructed => parse(data)?,
+				DataObjectType::Primitive => RawEmvBlock::default(),
+				DataObjectType::Constructed => {
+					if support_constructed {
+						parse(data, support_constructed)?
+					} else {
+						RawEmvBlock::default()
+					}
+				}
 			},
 		});
 

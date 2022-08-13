@@ -37,6 +37,13 @@ impl<'a> From<ProcessedEmvBlock<'a>> for Vec<ProcessedEmvNode<'a>> {
 		block.nodes
 	}
 }
+impl<'a> Default for ProcessedEmvBlock<'a> {
+	fn default() -> Self {
+		Self {
+			nodes: Vec::with_capacity(0),
+		}
+	}
+}
 
 impl<'a> DisplayBreakdown for ProcessedEmvBlock<'a> {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
@@ -378,6 +385,13 @@ impl<'a> From<Vec<RawEmvNode<'a>>> for RawEmvBlock<'a> {
 impl<'a> From<RawEmvBlock<'a>> for Vec<RawEmvNode<'a>> {
 	fn from(block: RawEmvBlock<'a>) -> Self {
 		block.nodes
+	}
+}
+impl<'a> Default for RawEmvBlock<'a> {
+	fn default() -> Self {
+		Self {
+			nodes: Vec::with_capacity(0),
+		}
 	}
 }
 
