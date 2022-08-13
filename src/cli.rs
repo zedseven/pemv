@@ -139,7 +139,7 @@ pub fn build_cli() -> Command<'static> {
 				.value_name("EMV DATA BLOCK")
 				.help(
 					"Parse a block of BER-TLV encoded data that doesn't support constructed \
-					 (nested) EMV data.",
+					 (nested) EMV tags.",
 				)
 				.long_help(
 					"Parse a block of BER-TLV encoded data that doesn't support constructed \
