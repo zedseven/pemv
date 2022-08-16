@@ -35,7 +35,41 @@ pub fn build_cli() -> Command<'static> {
 					 will not be used.",
 				),
 		)
-		.next_help_heading("EMV TAGS")
+		.next_help_heading("EMV UTILITIES")
+		.arg(
+			Arg::new("ber-tlv")
+				.short('b')
+				.long("ber-tlv")
+				.takes_value(true)
+				.value_name("EMV DATA BLOCK")
+				.help("Parse a block of BER-TLV encoded data.")
+				.long_help(
+					"Parse a block of BER-TLV encoded data.\nThe 'BER' stands for \"Basic \
+					 Encoding Rules\", and BER-TLV is the 'canonical' EMV TLV data format. That \
+					 said, some PIN pad manufacturers have their own variations with slight \
+					 differences.",
+				),
+		)
+		.arg(
+			Arg::new("ber-tlv-simple")
+				.short('B')
+				.long("ber-tlv-simple")
+				.takes_value(true)
+				.value_name("EMV DATA BLOCK")
+				.help(
+					"Parse a block of BER-TLV encoded data that doesn't support constructed \
+					 (nested) EMV tags.",
+				)
+				.long_help(
+					"Parse a block of BER-TLV encoded data that doesn't support constructed \
+					 (nested) EMV tags.\nSee the description for `--ber-tlv` for more information \
+					 about the BER-TLV format.\nConstructed data objects are tag values that \
+					 contain more nested TLV tags, and sometimes manufacturer-custom tags (like \
+					 Verifone's `E3`) don't respect this. If the `--ber-tlv` option doesn't work, \
+					 try this.",
+				),
+		)
+		.next_help_heading("INDIVIDUAL EMV TAGS")
 		.arg(
 			Arg::new("tvr")
 				.alias("iac")
@@ -119,40 +153,6 @@ pub fn build_cli() -> Command<'static> {
 					 order. Some methods may only be available for certain payment environments, \
 					 and some methods may specify that the transaction should continue even if \
 					 they're unsuccessful.",
-				),
-		)
-		.next_help_heading("EMV UTILITIES")
-		.arg(
-			Arg::new("ber-tlv")
-				.short('b')
-				.long("ber-tlv")
-				.takes_value(true)
-				.value_name("EMV DATA BLOCK")
-				.help("Parse a block of BER-TLV encoded data.")
-				.long_help(
-					"Parse a block of BER-TLV encoded data.\nThe 'BER' stands for \"Basic \
-					 Encoding Rules\", and BER-TLV is the 'canonical' EMV TLV data format. That \
-					 said, some PIN pad manufacturers have their own variations with slight \
-					 differences.",
-				),
-		)
-		.arg(
-			Arg::new("ber-tlv-simple")
-				.short('B')
-				.long("ber-tlv-simple")
-				.takes_value(true)
-				.value_name("EMV DATA BLOCK")
-				.help(
-					"Parse a block of BER-TLV encoded data that doesn't support constructed \
-					 (nested) EMV tags.",
-				)
-				.long_help(
-					"Parse a block of BER-TLV encoded data that doesn't support constructed \
-					 (nested) EMV tags.\nSee the description for `--ber-tlv` for more information \
-					 about the BER-TLV format.\nConstructed data objects are tag values that \
-					 contain more nested TLV tags, and sometimes manufacturer-custom tags (like \
-					 Verifone's `E3`) don't respect this. If the `--ber-tlv` option doesn't work, \
-					 try this.",
 				),
 		)
 		.next_help_heading("NON-EMV")
