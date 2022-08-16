@@ -130,9 +130,10 @@ pub fn build_cli() -> Command<'static> {
 				.value_name("EMV DATA BLOCK")
 				.help("Parse a block of BER-TLV encoded data.")
 				.long_help(
-					"Parse a block of BER-TLV encoded data.\nBER-TLV is the 'canonical' EMV TLV \
-					 data format, but some PIN pad manufacturers have their own variations with \
-					 slight differences.",
+					"Parse a block of BER-TLV encoded data.\nThe 'BER' stands for \"Basic \
+					 Encoding Rules\", and BER-TLV is the 'canonical' EMV TLV data format. That \
+					 said, some PIN pad manufacturers have their own variations with slight \
+					 differences.",
 				),
 		)
 		.arg(
