@@ -4,7 +4,7 @@
 
 A utility for parsing data related to EMV and payment cards.
 
-If you're using this with a genuine value and part of it is reported as `RFU`
+If you're using this with genuine data and part of it is reported as `RFU`
 (reserved for use), you can [open an issue](https://github.com/zedseven/pemv/issues).
 This could be an indication of something out of date.
 
