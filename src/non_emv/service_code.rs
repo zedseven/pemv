@@ -3,14 +3,18 @@
 //! Information for this can be found in [ISO/IEC 7813](https://www.iso.org/standard/43317.html).
 
 // Uses
-use std::fmt::{Display, Formatter, Result as FmtResult};
+use std::{
+	cmp::Ordering,
+	fmt::{Display, Formatter, Result as FmtResult},
+};
 
 use termcolor::{StandardStream, WriteColor};
 
 use crate::{
 	error::ParseError,
 	output_colours::bold_colour_spec,
-	util::print_indentation,
+	parse_str_to_u16,
+	util::{bytes_to_str, print_indentation},
 	DisplayBreakdown,
 };
 
@@ -185,6 +189,24 @@ impl TryFrom<u16> for ServiceCode {
 			allowed_services: AllowedServices::from(position_3 as u8),
 			pin_requirements: PinRequirements::from(position_3 as u8),
 		})
+	}
+}
+
+impl TryFrom<&[u8]> for ServiceCode {
+	type Error = ParseError;
+
+	fn try_from(raw_bytes: &[u8]) -> Result<Self, Self::Error> {
+		const NUM_BYTES: usize = 2;
+
+		if raw_bytes.len() != NUM_BYTES {
+			return Err(ParseError::ByteCountIncorrect {
+				r#type: Ordering::Equal,
+				expected: NUM_BYTES,
+				found: raw_bytes.len(),
+			});
+		}
+
+		parse_str_to_u16(bytes_to_str(raw_bytes).as_str()).and_then(Self::try_from)
 	}
 }
 
