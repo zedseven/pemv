@@ -118,7 +118,7 @@ pub enum ProcessedEmvTag<'a> {
 	Parsed {
 		name: &'static str,
 		parsed: Box<dyn DisplayBreakdown>,
-		value: RawEmvTag<'a>,
+		raw_tag: RawEmvTag<'a>,
 	},
 }
 
@@ -186,7 +186,7 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 			ProcessedEmvTag::Parsed {
 				name,
 				parsed,
-				value,
+				raw_tag: value,
 			} => {
 				// Display the tag name
 				print_tag_name(

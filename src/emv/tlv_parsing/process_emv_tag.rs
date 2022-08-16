@@ -28,43 +28,43 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 		[0x5F, 0x30] => Some(ProcessedEmvTag::Parsed {
 			name: "Service Code",
 			parsed: Box::new(process_bcd(raw_tag.data).and_then(ServiceCode::try_from)?),
-			value: raw_tag,
+			raw_tag,
 		}),
 		[0x8E] => Some(ProcessedEmvTag::Parsed {
 			name: "CVM List",
 			parsed: Box::new(CardholderVerificationMethodList::try_from(raw_tag.data)?),
-			value: raw_tag,
+			raw_tag,
 		}),
 		[0x95] => Some(ProcessedEmvTag::Parsed {
 			name: "Terminal Verification Results (TVR)",
 			parsed: Box::new(TerminalVerificationResults::try_from(raw_tag.data)?),
-			value: raw_tag,
+			raw_tag,
 		}),
 		[0x9B] => Some(ProcessedEmvTag::Parsed {
 			name: "Transaction Status Information (TSI)",
 			parsed: Box::new(TransactionStatusInformation::try_from(raw_tag.data)?),
-			value: raw_tag,
+			raw_tag,
 		}),
 		[0x9F, 0x0D] => Some(ProcessedEmvTag::Parsed {
 			name: "Issuer Action Code - Default",
 			parsed: Box::new(IssuerActionCodeDefault::try_from(raw_tag.data)?),
-			value: raw_tag,
+			raw_tag,
 		}),
 		[0x9F, 0x0E] => Some(ProcessedEmvTag::Parsed {
 			name: "Issuer Action Code - Denial",
 			parsed: Box::new(IssuerActionCodeDenial::try_from(raw_tag.data)?),
-			value: raw_tag,
+			raw_tag,
 		}),
 		[0x9F, 0x0F] => Some(ProcessedEmvTag::Parsed {
 			name: "Issuer Action Code - Online",
 			parsed: Box::new(IssuerActionCodeOnline::try_from(raw_tag.data)?),
-			value: raw_tag,
+			raw_tag,
 		}),
 		[0x9F, 0x10] => match IssuerApplicationData::try_from(raw_tag.data) {
 			Ok(ccd_iad) => Some(ProcessedEmvTag::Parsed {
 				name: "Issuer Application Data (CCD-Compliant)",
 				parsed: Box::new(ccd_iad),
-				value: raw_tag,
+				raw_tag,
 			}),
 			Err(ParseError::NonCcdCompliant) => Some(ProcessedEmvTag::Annotated {
 				name: "Issuer Application Data (Not CCD-Compliant)",
@@ -75,7 +75,7 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 		[0x9F, 0x34] => Some(ProcessedEmvTag::Parsed {
 			name: "CVM Results",
 			parsed: Box::new(CardholderVerificationMethodResults::try_from(raw_tag.data)?),
-			value: raw_tag,
+			raw_tag,
 		}),
 		_ => None,
 	}
