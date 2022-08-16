@@ -3,16 +3,22 @@
 
 // Uses
 use crate::{
-	emv::{ProcessedEmvTag, RawEmvTag},
+	emv::{
+		ccd::IssuerApplicationData,
+		CardholderVerificationMethodList,
+		CardholderVerificationMethodResults,
+		IssuerActionCodeDefault,
+		IssuerActionCodeDenial,
+		IssuerActionCodeOnline,
+		ProcessedEmvTag,
+		RawEmvTag,
+		TerminalVerificationResults,
+		TransactionStatusInformation,
+	},
 	error::ParseError,
+	non_emv::ServiceCode,
 	parse_str_to_u16,
 	util::bytes_to_str,
-	CardholderVerificationMethodList,
-	CardholderVerificationMethodResults,
-	IssuerApplicationData,
-	ServiceCode,
-	TerminalVerificationResults,
-	TransactionStatusInformation,
 };
 
 /// Process a [`RawEmvTag`] into a [`ProcessedEmvTag`].
@@ -37,6 +43,21 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 		[0x9B] => Some(ProcessedEmvTag::Parsed {
 			name: "Transaction Status Information (TSI)",
 			parsed: Box::new(TransactionStatusInformation::try_from(raw_tag.data)?),
+			value: raw_tag,
+		}),
+		[0x9F, 0x0D] => Some(ProcessedEmvTag::Parsed {
+			name: "Issuer Action Code - Default",
+			parsed: Box::new(IssuerActionCodeDefault::try_from(raw_tag.data)?),
+			value: raw_tag,
+		}),
+		[0x9F, 0x0E] => Some(ProcessedEmvTag::Parsed {
+			name: "Issuer Action Code - Denial",
+			parsed: Box::new(IssuerActionCodeDenial::try_from(raw_tag.data)?),
+			value: raw_tag,
+		}),
+		[0x9F, 0x0F] => Some(ProcessedEmvTag::Parsed {
+			name: "Issuer Action Code - Online",
+			parsed: Box::new(IssuerActionCodeOnline::try_from(raw_tag.data)?),
 			value: raw_tag,
 		}),
 		[0x9F, 0x10] => match IssuerApplicationData::try_from(raw_tag.data) {
@@ -119,9 +140,6 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 			[0x9F, 0x48] => Some("ICC Public Key Remainder"),
 			[0x9F, 0x1E] => Some("Interface Device (IFD/Terminal) Serial Number"),
 			[0x5F, 0x53] => Some("International Bank Account Number (IBAN)"),
-			[0x9F, 0x0D] => Some("Issuer Action Code - Default"),
-			[0x9F, 0x0E] => Some("Issuer Action Code - Denial"),
-			[0x9F, 0x0F] => Some("Issuer Action Code - Online"),
 			[0x91] => Some("Issuer Authentication Data"),
 			[0x9F, 0x11] => Some("Issuer Code Table Index"),
 			[0x5F, 0x28] => Some("Issuer Country Code"),

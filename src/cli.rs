@@ -38,6 +38,8 @@ pub fn build_cli() -> Command<'static> {
 		.next_help_heading("EMV TAGS")
 		.arg(
 			Arg::new("tvr")
+				.alias("iac")
+				.alias("tac")
 				.short('t')
 				.long("tvr")
 				.takes_value(true)
@@ -46,7 +48,9 @@ pub fn build_cli() -> Command<'static> {
 				.long_help(
 					"Parse Terminal Verification Results (tag 0x95).\nIndicates the results of \
 					 almost everything in the transaction, and often elucidates the cause of a \
-					 chip-related issue.",
+					 chip-related issue.\nIssuer Action Codes (IAC, tags 0x9F0D, 0x9F0E, 0x9F0F) \
+					 and Terminal Action Codes (TAC, no EMV tags but often in terminal EMV \
+					 configuration files) can also be parsed using this same option.",
 				),
 		)
 		.arg(

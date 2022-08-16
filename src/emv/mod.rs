@@ -6,6 +6,7 @@ pub mod ccd;
 mod cv_rule;
 mod cvm_list;
 mod cvm_results;
+mod iac;
 mod tlv_parsing;
 mod tsi;
 mod tvr;
@@ -16,6 +17,7 @@ pub use self::{
 	cv_rule::*,
 	cvm_list::*,
 	cvm_results::*,
+	iac::*,
 	tlv_parsing::*,
 	tsi::*,
 	tvr::*,
