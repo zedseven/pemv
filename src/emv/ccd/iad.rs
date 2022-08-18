@@ -13,9 +13,6 @@ use crate::{
 	DisplayBreakdown,
 };
 
-// Constants
-const NUM_BYTES: usize = 32;
-
 // Struct Implementation
 #[derive(Debug)]
 pub struct IssuerApplicationData {
@@ -27,6 +24,8 @@ impl TryFrom<&[u8]> for IssuerApplicationData {
 	type Error = ParseError;
 
 	fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+		const NUM_BYTES: usize = 32;
+
 		if bytes.len() != NUM_BYTES {
 			return Err(ParseError::NonCcdCompliant);
 		}

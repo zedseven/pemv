@@ -8,6 +8,7 @@ mod cvm_list;
 mod cvm_results;
 mod iac;
 mod tlv_parsing;
+mod transaction_type;
 mod tsi;
 mod tvr;
 
@@ -19,6 +20,7 @@ pub use self::{
 	cvm_results::*,
 	iac::*,
 	tlv_parsing::*,
+	transaction_type::*,
 	tsi::*,
 	tvr::*,
 };

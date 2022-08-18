@@ -14,6 +14,7 @@ use crate::{
 		RawEmvTag,
 		TerminalVerificationResults,
 		TransactionStatusInformation,
+		TransactionType,
 	},
 	error::ParseError,
 	non_emv::ServiceCode,
@@ -41,6 +42,11 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 		[0x9B] => Some(ProcessedEmvTag::Parsed {
 			name: "Transaction Status Information (TSI)",
 			parsed: Box::new(TransactionStatusInformation::try_from(raw_tag.data)?),
+			raw_tag,
+		}),
+		[0x9C] => Some(ProcessedEmvTag::Parsed {
+			name: "Transaction Type",
+			parsed: Box::new(TransactionType::try_from(raw_tag.data)?),
 			raw_tag,
 		}),
 		[0x9F, 0x0D] => Some(ProcessedEmvTag::Parsed {
@@ -189,7 +195,6 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 			[0x9F, 0x3D] => Some("Transaction Reference Currency Exponent"),
 			[0x9F, 0x41] => Some("Transaction Sequence Counter"),
 			[0x9F, 0x21] => Some("Transaction Time"),
-			[0x9C] => Some("Transaction Type"),
 			[0x9F, 0x37] => Some("Unpredictable Number"),
 			[0x9F, 0x23] => Some("Upper Consecutive Offline Limit"),
 			_ => None,
