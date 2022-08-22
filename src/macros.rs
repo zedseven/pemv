@@ -143,7 +143,7 @@ macro_rules! non_composite_value_repr_infallible {
 		$(#[$outer])*
         $visibility enum $name {
             $(
-                #[doc = $string]
+                #[doc = concat!($string, " - ", stringify!($value))]
                 $variant = $value,
             )*
         }
