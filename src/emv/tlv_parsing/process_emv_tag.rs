@@ -5,6 +5,7 @@
 use crate::{
 	emv::{
 		ccd::IssuerApplicationData,
+		AdditionalTerminalCapabilities,
 		AuthorisationResponseCode,
 		CardholderVerificationMethodList,
 		CardholderVerificationMethodResults,
@@ -13,6 +14,8 @@ use crate::{
 		IssuerActionCodeOnline,
 		ProcessedEmvTag,
 		RawEmvTag,
+		TerminalCapabilities,
+		TerminalType,
 		TerminalVerificationResults,
 		TransactionStatusInformation,
 		TransactionType,
@@ -96,9 +99,24 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 			}),
 			Err(error) => return Err(error),
 		},
+		[0x9F, 0x33] => Some(ProcessedEmvTag::Parsed {
+			name: "Terminal Capabilities",
+			parsed: Box::new(TerminalCapabilities::try_from(raw_tag.data)?),
+			raw_tag,
+		}),
 		[0x9F, 0x34] => Some(ProcessedEmvTag::Parsed {
 			name: "CVM Results",
 			parsed: Box::new(CardholderVerificationMethodResults::try_from(raw_tag.data)?),
+			raw_tag,
+		}),
+		[0x9F, 0x35] => Some(ProcessedEmvTag::Parsed {
+			name: "Terminal Type",
+			parsed: Box::new(TerminalType::try_from(raw_tag.data)?),
+			raw_tag,
+		}),
+		[0x9F, 0x40] => Some(ProcessedEmvTag::Parsed {
+			name: "Additional Terminal Capabilities",
+			parsed: Box::new(AdditionalTerminalCapabilities::try_from(raw_tag.data)?),
 			raw_tag,
 		}),
 		_ => None,
@@ -108,7 +126,6 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 		match &raw_tag.tag {
 			[0x5F, 0x57] => Some("Account Type"),
 			[0x9F, 0x01] => Some("Acquirer Identifier"),
-			[0x9F, 0x40] => Some("Additional Terminal Capabilities"),
 			[0x81] => Some("Amount, Authorised (Binary)"),
 			[0x9F, 0x02] => Some("Amount, Authorised (Numeric)"),
 			[0x9F, 0x04] => Some("Amount, Other (Binary)"),
@@ -195,12 +212,10 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 			[0x9F, 0x4B] => Some("Signed Dynamic Application Data"),
 			[0x93] => Some("Signed Static Application Data"),
 			[0x9F, 0x4A] => Some("Static Data Authentication Tag List"),
-			[0x9F, 0x33] => Some("Terminal Capabilities"),
 			[0x9F, 0x1A] => Some("Terminal Country Code"),
 			[0x9F, 0x1B] => Some("Terminal Floor Limit"),
 			[0x9F, 0x1C] => Some("Terminal Identification"),
 			[0x9F, 0x1D] => Some("Terminal Risk Management Data"),
-			[0x9F, 0x35] => Some("Terminal Type"),
 			[0x9F, 0x1F] => Some("Track 1 Discretionary Data"),
 			[0x9F, 0x20] => Some("Track 2 Discretionary Data"),
 			[0x57] => Some("Track 2 Equivalent Data"),
