@@ -37,6 +37,7 @@
 
 // Modules
 mod cli;
+mod config;
 mod emv;
 mod error;
 mod macros;
@@ -44,12 +45,14 @@ mod non_emv;
 mod output_colours;
 mod util;
 
+use std::env;
+
 // Uses
-use atty::{is as is_tty, Stream};
-use termcolor::{ColorChoice, StandardStream};
+use termcolor::StandardStream;
 
 use crate::{
 	cli::build_cli,
+	config::{apply_cli_arguments, colour_choice::ColourChoice, Config},
 	emv::{
 		ber_tlv::parse as parse_ber_tlv,
 		ccd::{CardVerificationResults, IssuerApplicationData},
@@ -87,21 +90,14 @@ fn main() {
 	let mut cli_definition = build_cli();
 	let matches = cli_definition.clone().get_matches();
 
-	let choice = {
-		match matches.value_of("colour").unwrap_or("auto") {
-			"always" => ColorChoice::Always,
-			"ansi" => ColorChoice::AlwaysAnsi,
-			"auto" => {
-				if is_tty(Stream::Stdout) {
-					ColorChoice::Auto
-				} else {
-					ColorChoice::Never
-				}
-			}
-			_ => ColorChoice::Never,
-		}
-	};
-	let mut stdout = StandardStream::stdout(choice);
+	let config_figment = apply_cli_arguments(Config::figment(), &matches);
+
+	let colour_choice = config_figment
+		.extract_inner::<ColourChoice>(Config::CLI_COLOUR)
+		.unwrap()
+		.change_based_on_tty()
+		.into();
+	let mut stdout = StandardStream::stdout(colour_choice);
 
 	let parse_error = {
 		// EMV Tags

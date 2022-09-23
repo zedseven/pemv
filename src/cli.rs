@@ -24,12 +24,13 @@ pub fn build_cli() -> Command<'static> {
 				.alias("color")
 				.long("colour")
 				.takes_value(true)
-				.default_value("auto")
-				.possible_values(["auto", "always", "ansi", "never"])
+				.default_value("from_config")
+				.possible_values(["from_config", "auto", "always", "ansi", "never"])
 				.value_name("WHEN")
 				.help("When to use colour in console output.")
 				.long_help(
-					"When to use colour in console output.\nThe `ansi` value is the same as \
+					"When to use colour in console output.\nIf no value is provided by CLI or \
+					 config, it will be treated as `auto`.\nThe `ansi` value is the same as \
 					 `always`, except it specifies that only ANSI colour codes should be used. \
 					 This means on Windows terminals for example, Windows console text attributes \
 					 will not be used.",
