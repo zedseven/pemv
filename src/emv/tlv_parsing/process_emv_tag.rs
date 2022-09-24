@@ -12,6 +12,7 @@ use crate::{
 		IssuerActionCodeDefault,
 		IssuerActionCodeDenial,
 		IssuerActionCodeOnline,
+		PosEntryMode,
 		ProcessedEmvTag,
 		RawEmvTag,
 		TerminalCapabilities,
@@ -137,6 +138,14 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
 			},
 		)?),
+		[0x9F, 0x39] => Some(ProcessedEmvTag::parse_raw(
+			"POS Entry Mode",
+			raw_tag,
+			|data| {
+				PosEntryMode::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)?),
 		[0x9F, 0x40] => Some(ProcessedEmvTag::parse_raw(
 			"Additional Terminal Capabilities",
 			raw_tag,
@@ -229,7 +238,6 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 			[0x9F, 0x16] => Some("Merchant Identifier"),
 			[0x9F, 0x4E] => Some("Merchant Name and Location"),
 			[0x9F, 0x17] => Some("PIN Try Counter"),
-			[0x9F, 0x39] => Some("POS Entry Mode"),
 			[0x9F, 0x38] => Some("Processing Options Data Object List (PDOL)"),
 			[0x70] => Some("READ RECORD Response Message Template"),
 			[0x80] => Some("Response Message Template Format 1"),

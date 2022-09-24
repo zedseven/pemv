@@ -9,6 +9,7 @@ mod cv_rule;
 mod cvm_list;
 mod cvm_results;
 mod iac;
+mod pos_entry_mode;
 mod terminal_capabilities;
 mod terminal_type;
 mod tlv_parsing;
@@ -25,6 +26,7 @@ pub use self::{
 	cvm_list::*,
 	cvm_results::*,
 	iac::*,
+	pos_entry_mode::*,
 	terminal_capabilities::*,
 	terminal_type::*,
 	tlv_parsing::*,
