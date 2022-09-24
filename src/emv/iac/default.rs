@@ -79,6 +79,7 @@ impl DisplayBreakdown for IssuerActionCodeDefault {
 		);
 		stdout.reset().ok();
 
-		self.tvr.display_breakdown(stdout, indentation);
+		self.tvr
+			.display_breakdown_component_value(stdout, indentation);
 	}
 }

@@ -63,95 +63,114 @@ where
 	V: BitflagValue,
 {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
-		let bold_colour_spec = bold_colour_spec();
+		display_breakdown_internal(self, stdout, indentation, false);
+	}
 
-		// Fetch the required data
-		let bits = self.get_numeric_value();
-		let num_bytes = V::NUM_BYTES as u8;
-		let num_bits = num_bytes * BITS_PER_BYTE;
-		let enabled_bit_ranges = self.get_bit_display_information();
+	fn display_breakdown_component_value(&self, stdout: &mut StandardStream, indentation: u8) {
+		display_breakdown_internal(self, stdout, indentation, true);
+	}
+}
 
-		// Print the binary representation
+fn display_breakdown_internal<V>(
+	value: &V,
+	stdout: &mut StandardStream,
+	indentation: u8,
+	is_component_value: bool,
+) where
+	V: BitflagValue,
+{
+	let bold_colour_spec = bold_colour_spec();
+
+	// Fetch the required data
+	let bits = value.get_numeric_value();
+	let num_bytes = V::NUM_BYTES as u8;
+	let num_bits = num_bytes * BITS_PER_BYTE;
+	let enabled_bit_ranges = value.get_bit_display_information();
+
+	// Print the binary representation
+	print_indentation(indentation);
+	stdout.set_color(&bold_colour_spec).ok();
+	for offset in (0..num_bits).rev() {
+		if bits & (1 << offset) > 0 {
+			print!("1");
+		} else {
+			print!("0");
+		}
+		if offset % BITS_PER_BYTE == 0 && offset > 0 {
+			print!(" ");
+		}
+	}
+	println!();
+	stdout.reset().ok();
+
+	// Print the breakdown
+	let mut arm_bits = 0u64;
+	let mut multi_bit_value = false;
+	for enabled_bit_range in enabled_bit_ranges.iter().rev() {
+		arm_bits |= 1 << enabled_bit_range.offset;
+		if enabled_bit_range.len > 1 {
+			multi_bit_value = true;
+		}
+	}
+	// If any enabled bits are multiple bits wide, draw a header line with arms
+	// denoting each one's width
+	if multi_bit_value {
+		let mut current_offset = num_bits - 1;
 		print_indentation(indentation);
-		stdout.set_color(&bold_colour_spec).ok();
-		for offset in (0..num_bits).rev() {
-			if bits & (1 << offset) > 0 {
-				print!("1");
-			} else {
-				print!("0");
+		for enabled_bit_range in &enabled_bit_ranges {
+			for i in enabled_bit_range.offset..=current_offset {
+				if (i + 1) % 8 == 0 && i + 1 < num_bits {
+					print!(" ");
+				}
+				if i != enabled_bit_range.offset {
+					print!(" ");
+				}
 			}
-			if offset % BITS_PER_BYTE == 0 && offset > 0 {
-				print!(" ");
+			if enabled_bit_range.len > 1 {
+				print!("\u{251c}");
+				for _ in 0..(enabled_bit_range.len - 2) {
+					print!("\u{2500}");
+				}
+				print!("\u{2518}");
+			} else {
+				print!("\u{2502}");
+			}
+			// This somewhat bizarre condition is to handle the case of, for example:
+			// offset = 7, len = 8 (1 byte, and the final segment)
+			if enabled_bit_range.offset > enabled_bit_range.len {
+				current_offset = enabled_bit_range.offset - enabled_bit_range.len;
+			} else {
+				current_offset = 0;
 			}
 		}
 		println!();
-		stdout.reset().ok();
-
-		// Print the breakdown
-		let mut arm_bits = 0u64;
-		let mut multi_bit_value = false;
-		for enabled_bit_range in enabled_bit_ranges.iter().rev() {
-			arm_bits |= 1 << enabled_bit_range.offset;
-			if enabled_bit_range.len > 1 {
-				multi_bit_value = true;
+	}
+	for enabled_bit in enabled_bit_ranges.iter().rev() {
+		print_indentation(indentation);
+		// Print leading space
+		for i in 1..(num_bits - enabled_bit.offset) {
+			if arm_bits & (1 << (num_bits - i)) > 0 {
+				print!("\u{2502}");
+			} else {
+				print!(" ");
+			}
+			if (num_bits - i) % 8 == 0 {
+				print!(" ");
 			}
 		}
-		// If any enabled bits are multiple bits wide, draw a header line with arms
-		// denoting each one's width
-		if multi_bit_value {
-			let mut current_offset = num_bits - 1;
-			print_indentation(indentation);
-			for enabled_bit_range in &enabled_bit_ranges {
-				for i in enabled_bit_range.offset..=current_offset {
-					if (i + 1) % 8 == 0 && i + 1 < num_bits {
-						print!(" ");
-					}
-					if i != enabled_bit_range.offset {
-						print!(" ");
-					}
-				}
-				if enabled_bit_range.len > 1 {
-					print!("\u{251c}");
-					for _ in 0..(enabled_bit_range.len - 2) {
-						print!("\u{2500}");
-					}
-					print!("\u{2518}");
-				} else {
-					print!("\u{2502}");
-				}
-				// This somewhat bizarre condition is to handle the case of, for example:
-				// offset = 7, len = 8 (1 byte, and the final segment)
-				if enabled_bit_range.offset > enabled_bit_range.len {
-					current_offset = enabled_bit_range.offset - enabled_bit_range.len;
-				} else {
-					current_offset = 0;
-				}
-			}
-			println!();
-		}
-		for enabled_bit in enabled_bit_ranges.iter().rev() {
-			print_indentation(indentation);
-			// Print leading space
-			for i in 1..(num_bits - enabled_bit.offset) {
-				if arm_bits & (1 << (num_bits - i)) > 0 {
-					print!("\u{2502}");
-				} else {
-					print!(" ");
-				}
-				if (num_bits - i) % 8 == 0 {
-					print!(" ");
-				}
-			}
-			print!("\u{2514} ");
-			stdout
-				.set_color(ColorSpec::new().set_fg(match enabled_bit.severity {
+		print!("\u{2514} ");
+		stdout
+			.set_color(ColorSpec::new().set_fg(if is_component_value {
+				None
+			} else {
+				match enabled_bit.severity {
 					Severity::Normal => None,
 					Severity::Warning => Some(Color::Yellow),
 					Severity::Error => Some(Color::Red),
-				}))
-				.ok();
-			println!("{}", enabled_bit.explanation);
-			stdout.reset().ok();
-		}
+				}
+			}))
+			.ok();
+		println!("{}", enabled_bit.explanation);
+		stdout.reset().ok();
 	}
 }

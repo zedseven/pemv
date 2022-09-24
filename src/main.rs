@@ -82,6 +82,17 @@ pub trait DisplayBreakdown {
 	/// The indentation should be applied to every line. It's used to allow the
 	/// display of nested values.
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8);
+
+	/// Same as [`Self::display_breakdown`], but it displays as if the value is
+	/// a component of a larger display.
+	///
+	/// This is useful for the IAC values - the TVR is rendered as part of the
+	/// value, but error bits aren't really errors in the IACs.
+	///
+	/// The default trait implementation has no difference.
+	fn display_breakdown_component_value(&self, stdout: &mut StandardStream, indentation: u8) {
+		self.display_breakdown(stdout, indentation);
+	}
 }
 
 // Entry Point

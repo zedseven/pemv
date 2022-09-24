@@ -74,6 +74,7 @@ impl DisplayBreakdown for IssuerActionCodeOnline {
 		println!("If any of the following match the TVR, complete the transaction online:");
 		stdout.reset().ok();
 
-		self.tvr.display_breakdown(stdout, indentation);
+		self.tvr
+			.display_breakdown_component_value(stdout, indentation);
 	}
 }
