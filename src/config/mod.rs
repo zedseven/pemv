@@ -2,7 +2,7 @@
 pub mod colour_choice;
 
 // Uses
-use clap::ArgMatches;
+use clap::{ArgMatches, ValueSource};
 use figment::{
 	providers::{Env, Format, Serialized, Toml},
 	value::{Dict, Map},
@@ -107,7 +107,7 @@ impl Provider for Config {
 pub fn apply_cli_arguments(mut figment: Figment, matches: &ArgMatches) -> Figment {
 	// CLI Colour Choice
 	if let Some(colour_choice) = matches.get_one::<String>("colour") {
-		if colour_choice != "from_config" {
+		if matches.value_source("colour").unwrap() != ValueSource::DefaultValue {
 			figment = figment.merge((
 				Config::CLI_COLOUR,
 				ColourChoice::try_from(colour_choice.as_str())
@@ -118,10 +118,12 @@ pub fn apply_cli_arguments(mut figment: Figment, matches: &ArgMatches) -> Figmen
 
 	// Masking Characters
 	if let Some(masking_characters) = matches.get_many::<char>("masking-character") {
-		figment = figment.merge((
-			Config::MASKING_CHARACTERS,
-			masking_characters.copied().collect::<Vec<char>>(),
-		));
+		if matches.value_source("masking-character").unwrap() != ValueSource::DefaultValue {
+			figment = figment.merge((
+				Config::MASKING_CHARACTERS,
+				masking_characters.copied().collect::<Vec<char>>(),
+			));
+		}
 	}
 
 	figment

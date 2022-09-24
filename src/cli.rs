@@ -24,8 +24,9 @@ pub fn build_cli() -> Command<'static> {
 				.alias("color")
 				.long("colour")
 				.takes_value(true)
-				.default_value("from_config")
-				.possible_values(["from_config", "auto", "always", "ansi", "never"])
+				.possible_values(["auto", "always", "ansi", "never"])
+				.default_value("auto")
+				.default_missing_value("always")
 				.value_name("WHEN")
 				.help("When to use colour in console output.")
 				.long_help(
@@ -44,6 +45,7 @@ pub fn build_cli() -> Command<'static> {
 				.short('m')
 				.long("masking-character")
 				.takes_value(true)
+				.default_values(&["*"])
 				.action(ArgAction::Append)
 				.multiple_values(true)
 				.value_name("CHARACTER")
@@ -52,6 +54,12 @@ pub fn build_cli() -> Command<'static> {
 					"The character that will be treated as masked data when parsing. This \
 					 argument can be provided multiple times to specify multiple masking \
 					 characters.",
+				)
+				.long_help(
+					"The character that will be treated as masked data when parsing. This \
+					 argument can be provided multiple times to specify multiple masking \
+					 characters.\nA tag is considered to be masked if the entire contents match \
+					 the masking character.",
 				),
 		)
 		.next_help_heading("EMV UTILITIES")
