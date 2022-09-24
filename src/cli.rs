@@ -59,6 +59,7 @@ pub fn build_cli() -> Command<'static> {
 			Arg::new("ber-tlv")
 				.short('b')
 				.long("ber-tlv")
+				.alias("bertlv")
 				.takes_value(true)
 				.value_name("EMV DATA BLOCK")
 				.help("Parse a block of BER-TLV encoded data.")
@@ -73,6 +74,7 @@ pub fn build_cli() -> Command<'static> {
 			Arg::new("ber-tlv-simple")
 				.short('B')
 				.long("ber-tlv-simple")
+				.alias("bertlv-simple")
 				.takes_value(true)
 				.value_name("EMV DATA BLOCK")
 				.help(
@@ -86,6 +88,19 @@ pub fn build_cli() -> Command<'static> {
 					 contain more nested TLV tags, and sometimes manufacturer-custom tags (like \
 					 Verifone's `E3`) don't respect this. If the `--ber-tlv` option doesn't work, \
 					 try this.",
+				),
+		)
+		.arg(
+			Arg::new("ingenico-tlv")
+				.short('i')
+				.long("ingenico-tlv")
+				.alias("ingenico")
+				.takes_value(true)
+				.value_name("EMV DATA BLOCK")
+				.help("Parse a block of TLV data encoded in the proprietary Ingenico format.")
+				.long_help(
+					"Parse a block of TLV data encoded in the proprietary Ingenico format.\nNote \
+					 that this tool ignores non-EMV tags in the input data.",
 				),
 		)
 		.next_help_heading("INDIVIDUAL EMV TAGS")

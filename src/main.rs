@@ -54,6 +54,7 @@ use crate::{
 	emv::{
 		ber_tlv::parse as parse_ber_tlv,
 		ccd::{CardVerificationResults, IssuerApplicationData},
+		ingenico_tlv::parse as parse_ingenico_tlv,
 		CardholderVerificationMethodList,
 		CardholderVerificationMethodResults,
 		ProcessedEmvBlock,
@@ -146,6 +147,11 @@ fn main() {
 			.and_then(ProcessedEmvBlock::try_from)
 			.map(|v| v.display_breakdown(&mut stdout, 0))
 			.err()
+		} else if let Some(ingenico_tlv_str) = matches.value_of("ingenico-tlv") {
+			parse_ingenico_tlv(ingenico_tlv_str, masking_characters.as_slice())
+				.and_then(ProcessedEmvBlock::try_from)
+				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.err()
 		}
 		// Non-EMV
 		else if let Some(service_code_str) = matches.get_one::<String>("service-code") {

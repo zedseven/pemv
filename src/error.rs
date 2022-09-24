@@ -19,8 +19,7 @@ pub enum ParseError {
 	InvalidBytes,
 	/// The string provided couldn't be parsed as a number.
 	InvalidNumber,
-	/// The value provided isn't compliant with the EMV specifications in some
-	/// way.
+	/// The value provided isn't compliant with the specifications in some way.
 	NonCompliant,
 	/// The value provided isn't compliant with the EMV CCD specifications in
 	/// some way. Not necessarily a problem.
@@ -58,9 +57,9 @@ impl Display for ParseError {
 			),
 			Self::NonCompliant => write!(
 				f,
-				"The value provided isn't compliant with the EMV specifications in some way, or \
-				 this tool is out of date. If you have reason to believe it's the latter, please \
-				 make sure you're using the latest version then open an issue on GitHub."
+				"The value provided isn't compliant with the specifications in some way, or this \
+				 tool is out of date. If you have reason to believe it's the latter, please make \
+				 sure you're using the latest version then open an issue on GitHub."
 			),
 			Self::NonCcdCompliant => write!(
 				f,

@@ -23,7 +23,11 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in *pemv* by you, as defined in the Apache-2.0 license,
 shall be dual licensed as above, without any additional terms or conditions.
 
-### Disclaimer
+### Disclaimers
 EMV® is a registered trademark of [EMVCo LLC](https://www.emvco.com/).
 This tool is not affiliated with, associated with, or endorsed by EMVCo.
 All other trademarks are the property of their respective owners.
+
+Any trademarks featured or referred to by this tool or its documentation
+are the property of their respective trademark holders. These trademark
+holders are not affiliated with this tool in any way.

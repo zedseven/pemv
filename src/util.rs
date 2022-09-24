@@ -33,6 +33,17 @@ pub fn parse_hex_str(hex_asm: &str) -> Vec<u8> {
 	}
 	bytes
 }
+/// Does the exact same thing as [`parse_hex_str`], but it throws an error if
+/// there are any non-hex ASCII characters in the string.
+pub fn parse_hex_str_strict(hex_asm: &str) -> Result<Vec<u8>, ()> {
+	if !hex_asm.is_ascii()
+		|| hex_asm.contains(|c| !matches!(c as u8, b'0'..=b'9' | b'a'..=b'f' | b'A'..=b'F'))
+	{
+		Err(())
+	} else {
+		Ok(parse_hex_str(hex_asm))
+	}
+}
 
 /// The number of bytes per 32 bits.
 pub const BYTES_PER_32_BITS: usize = 4;

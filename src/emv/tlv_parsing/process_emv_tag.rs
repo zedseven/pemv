@@ -28,7 +28,9 @@ use crate::{
 /// Process a [`RawEmvTag`] into a [`ProcessedEmvTag`].
 pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError> {
 	// Parseable tags
-	Ok(match &raw_tag.tag {
+	let raw_tag_clone_0 = raw_tag.clone();
+	let raw_tag_clone_1 = raw_tag.clone();
+	Ok(match raw_tag.tag.as_slice() {
 		[0x5F, 0x30] => Some(ProcessedEmvTag::parse_raw(
 			"Service Code",
 			raw_tag,
@@ -147,7 +149,7 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 	}
 	// Recognisable tags
 	.unwrap_or_else(|| {
-		match &raw_tag.tag {
+		match raw_tag_clone_0.tag.as_slice() {
 			[0x5F, 0x57] => Some("Account Type"),
 			[0x9F, 0x01] => Some("Acquirer Identifier"),
 			[0x81] => Some("Amount, Authorised (Binary)"),
@@ -259,8 +261,13 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 		}
 		.map_or_else(
 			// Unrecognisable tags
-			|| ProcessedEmvTag::Raw { raw_tag },
-			|name| ProcessedEmvTag::Annotated { name, raw_tag },
+			|| ProcessedEmvTag::Raw {
+				raw_tag: raw_tag_clone_0,
+			},
+			|name| ProcessedEmvTag::Annotated {
+				name,
+				raw_tag: raw_tag_clone_1,
+			},
 		)
 	}))
 }

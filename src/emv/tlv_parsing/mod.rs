@@ -5,6 +5,7 @@
 
 // Modules
 pub mod ber_tlv;
+pub mod ingenico_tlv;
 mod process_emv_tag;
 
 // Uses
@@ -20,20 +21,20 @@ use crate::{
 };
 
 /// A processed block of EMV data with annotations and parsing results.
-pub struct ProcessedEmvBlock<'a> {
-	pub nodes: Vec<ProcessedEmvNode<'a>>,
+pub struct ProcessedEmvBlock {
+	pub nodes: Vec<ProcessedEmvNode>,
 }
-impl<'a> From<Vec<ProcessedEmvNode<'a>>> for ProcessedEmvBlock<'a> {
-	fn from(nodes: Vec<ProcessedEmvNode<'a>>) -> Self {
+impl From<Vec<ProcessedEmvNode>> for ProcessedEmvBlock {
+	fn from(nodes: Vec<ProcessedEmvNode>) -> Self {
 		Self { nodes }
 	}
 }
-impl<'a> From<ProcessedEmvBlock<'a>> for Vec<ProcessedEmvNode<'a>> {
-	fn from(block: ProcessedEmvBlock<'a>) -> Self {
+impl From<ProcessedEmvBlock> for Vec<ProcessedEmvNode> {
+	fn from(block: ProcessedEmvBlock) -> Self {
 		block.nodes
 	}
 }
-impl<'a> Default for ProcessedEmvBlock<'a> {
+impl Default for ProcessedEmvBlock {
 	fn default() -> Self {
 		Self {
 			nodes: Vec::with_capacity(0),
@@ -41,7 +42,7 @@ impl<'a> Default for ProcessedEmvBlock<'a> {
 	}
 }
 
-impl<'a> DisplayBreakdown for ProcessedEmvBlock<'a> {
+impl DisplayBreakdown for ProcessedEmvBlock {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		let mut first = true;
 		for node in &self.nodes {
@@ -55,10 +56,10 @@ impl<'a> DisplayBreakdown for ProcessedEmvBlock<'a> {
 	}
 }
 
-impl<'a> TryFrom<RawEmvBlock<'a>> for ProcessedEmvBlock<'a> {
+impl TryFrom<RawEmvBlock> for ProcessedEmvBlock {
 	type Error = ParseError;
 
-	fn try_from(raw_block: RawEmvBlock<'a>) -> Result<Self, Self::Error> {
+	fn try_from(raw_block: RawEmvBlock) -> Result<Self, Self::Error> {
 		let mut nodes = Vec::with_capacity(raw_block.nodes.len());
 		for raw_node in raw_block.nodes {
 			nodes.push(raw_node.try_into()?);
@@ -68,12 +69,12 @@ impl<'a> TryFrom<RawEmvBlock<'a>> for ProcessedEmvBlock<'a> {
 	}
 }
 
-pub struct ProcessedEmvNode<'a> {
-	pub tag: ProcessedEmvTag<'a>,
-	pub child_block: ProcessedEmvBlock<'a>,
+pub struct ProcessedEmvNode {
+	pub tag: ProcessedEmvTag,
+	pub child_block: ProcessedEmvBlock,
 }
 
-impl<'a> DisplayBreakdown for ProcessedEmvNode<'a> {
+impl DisplayBreakdown for ProcessedEmvNode {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		// Display the tag
 		self.tag.display_breakdown(stdout, indentation);
@@ -92,10 +93,10 @@ impl<'a> DisplayBreakdown for ProcessedEmvNode<'a> {
 	}
 }
 
-impl<'a> TryFrom<RawEmvNode<'a>> for ProcessedEmvNode<'a> {
+impl TryFrom<RawEmvNode> for ProcessedEmvNode {
 	type Error = ParseError;
 
-	fn try_from(raw_node: RawEmvNode<'a>) -> Result<Self, Self::Error> {
+	fn try_from(raw_node: RawEmvNode) -> Result<Self, Self::Error> {
 		Ok(Self {
 			tag: raw_node.tag.try_into()?,
 			child_block: raw_node.child_block.try_into()?,
@@ -104,33 +105,31 @@ impl<'a> TryFrom<RawEmvNode<'a>> for ProcessedEmvNode<'a> {
 }
 
 /// A processed EMV tag with as much information as possible about it.
-///
-/// The [`RawEmvTag`] is preserved in all cases because it can carry sub-tags.
-pub enum ProcessedEmvTag<'a> {
+pub enum ProcessedEmvTag {
 	Raw {
-		raw_tag: RawEmvTag<'a>,
+		raw_tag: RawEmvTag,
 	},
 	Annotated {
 		name: &'static str,
-		raw_tag: RawEmvTag<'a>,
+		raw_tag: RawEmvTag,
 	},
 	Parsed {
 		name: &'static str,
 		parsed: Box<dyn DisplayBreakdown>,
-		raw_tag: RawEmvTag<'a>,
+		raw_tag: RawEmvTag,
 	},
 }
 
-impl<'a> ProcessedEmvTag<'a> {
+impl ProcessedEmvTag {
 	pub fn parse_raw<P>(
 		name: &'static str,
-		raw_tag: RawEmvTag<'a>,
+		raw_tag: RawEmvTag,
 		parsing_fn: P,
 	) -> Result<Self, ParseError>
 	where
-		P: Fn(&'a [u8]) -> Result<Box<dyn DisplayBreakdown>, ParseError>,
+		P: Fn(&[u8]) -> Result<Box<dyn DisplayBreakdown>, ParseError>,
 	{
-		match raw_tag.data {
+		match &raw_tag.data {
 			EmvData::Normal(data) => Ok(Self::Parsed {
 				name,
 				parsed: parsing_fn(data)?,
@@ -152,16 +151,16 @@ impl<'a> ProcessedEmvTag<'a> {
 	pub fn parse_raw_unrecognised<P, E>(
 		name_recognised: &'static str,
 		name_unrecognised: &'static str,
-		raw_tag: RawEmvTag<'a>,
+		raw_tag: RawEmvTag,
 		parsing_fn: P,
 		is_unrecognised_error: E,
 	) -> Result<Self, ParseError>
 	where
-		P: Fn(&'a [u8]) -> Result<Box<dyn DisplayBreakdown>, ParseError>,
+		P: Fn(&[u8]) -> Result<Box<dyn DisplayBreakdown>, ParseError>,
 		E: Fn(&ParseError) -> bool,
 	{
-		match raw_tag.data {
-			EmvData::Normal(data) => match parsing_fn(data) {
+		match &raw_tag.data {
+			EmvData::Normal(data) => match parsing_fn(data.as_slice()) {
 				Ok(parsed) => Ok(Self::Parsed {
 					name: name_recognised,
 					parsed,
@@ -185,12 +184,12 @@ impl<'a> ProcessedEmvTag<'a> {
 		}
 	}
 
-	pub fn annotate_raw(name: &'static str, raw_tag: RawEmvTag<'a>) -> Self {
+	pub fn annotate_raw(name: &'static str, raw_tag: RawEmvTag) -> Self {
 		Self::Annotated { name, raw_tag }
 	}
 }
 
-impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
+impl DisplayBreakdown for ProcessedEmvTag {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		fn print_tag_name(
 			stdout: &mut StandardStream,
@@ -233,7 +232,7 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 					stdout,
 					indentation,
 					&header_colour_spec,
-					raw_tag.tag,
+					raw_tag.tag.as_slice(),
 					raw_tag.data.len(),
 					None,
 				);
@@ -247,7 +246,7 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 					stdout,
 					indentation,
 					&header_colour_spec,
-					raw_tag.tag,
+					raw_tag.tag.as_slice(),
 					raw_tag.data.len(),
 					Some(name),
 				);
@@ -265,7 +264,7 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 					stdout,
 					indentation,
 					&header_colour_spec,
-					raw_tag.tag,
+					raw_tag.tag.as_slice(),
 					raw_tag.data.len(),
 					Some(name),
 				);
@@ -284,29 +283,29 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 	}
 }
 
-impl<'a> TryFrom<RawEmvTag<'a>> for ProcessedEmvTag<'a> {
+impl TryFrom<RawEmvTag> for ProcessedEmvTag {
 	type Error = ParseError;
 
-	fn try_from(value: RawEmvTag<'a>) -> Result<Self, Self::Error> {
+	fn try_from(value: RawEmvTag) -> Result<Self, Self::Error> {
 		process_emv_tag(value)
 	}
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct RawEmvBlock<'a> {
-	pub nodes: Vec<RawEmvNode<'a>>,
+pub struct RawEmvBlock {
+	pub nodes: Vec<RawEmvNode>,
 }
-impl<'a> From<Vec<RawEmvNode<'a>>> for RawEmvBlock<'a> {
-	fn from(nodes: Vec<RawEmvNode<'a>>) -> Self {
+impl From<Vec<RawEmvNode>> for RawEmvBlock {
+	fn from(nodes: Vec<RawEmvNode>) -> Self {
 		Self { nodes }
 	}
 }
-impl<'a> From<RawEmvBlock<'a>> for Vec<RawEmvNode<'a>> {
-	fn from(block: RawEmvBlock<'a>) -> Self {
+impl From<RawEmvBlock> for Vec<RawEmvNode> {
+	fn from(block: RawEmvBlock) -> Self {
 		block.nodes
 	}
 }
-impl<'a> Default for RawEmvBlock<'a> {
+impl Default for RawEmvBlock {
 	fn default() -> Self {
 		Self {
 			nodes: Vec::with_capacity(0),
@@ -315,26 +314,26 @@ impl<'a> Default for RawEmvBlock<'a> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct RawEmvNode<'a> {
-	pub tag: RawEmvTag<'a>,
-	pub child_block: RawEmvBlock<'a>,
+pub struct RawEmvNode {
+	pub tag: RawEmvTag,
+	pub child_block: RawEmvBlock,
 }
 
 /// A raw EMV tag-value pair, with no meaning associated with it.
 ///
 /// This can be further parsed based on the tag value.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct RawEmvTag<'a> {
-	pub tag: &'a [u8],
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RawEmvTag {
+	pub tag: Vec<u8>,
 	pub class: TagClass,
 	pub data_object_type: DataObjectType,
-	pub data: EmvData<'a>,
+	pub data: EmvData,
 }
 
-impl<'a> DisplayBreakdown for RawEmvTag<'a> {
+impl DisplayBreakdown for RawEmvTag {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		let header_colour_spec = header_colour_spec();
-		match self.data {
+		match &self.data {
 			EmvData::Normal(data) => {
 				if data.is_empty() {
 					return;
@@ -345,7 +344,7 @@ impl<'a> DisplayBreakdown for RawEmvTag<'a> {
 				stdout.set_color(&header_colour_spec).ok();
 				println!("Raw:");
 				stdout.reset().ok();
-				print_bytes_pretty(data, 16, indentation + 1);
+				print_bytes_pretty(data.as_slice(), 16, indentation + 1);
 			}
 			EmvData::Masked => {
 				print_indentation(indentation);
@@ -375,28 +374,46 @@ pub enum DataObjectType {
 
 /// EMV data, encoding the ability for data to be masked and therefore
 /// inaccessible.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum EmvData<'a> {
-	Normal(&'a [u8]),
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum EmvData {
+	Normal(Vec<u8>),
 	Masked,
 }
 
-impl<'a> EmvData<'a> {
+impl EmvData {
 	/// Returns the data length, or `None` if unknown.
-	pub fn len(self) -> Option<usize> {
+	pub fn len(&self) -> Option<usize> {
 		match self {
 			EmvData::Normal(data) => Some(data.len()),
 			EmvData::Masked => None,
 		}
 	}
 
-	pub fn from(data: &'a [u8], masking_characters: &[char]) -> Self {
-		for masking_char in masking_characters {
-			if data.iter().all(|byte| *byte as char == *masking_char) {
-				return Self::Masked;
-			}
+	pub fn from_u8_check_for_masked(data: Vec<u8>, masking_characters: &[char]) -> Self {
+		if is_masked_u8(data.as_slice(), masking_characters) {
+			Self::Masked
+		} else {
+			Self::Normal(data)
 		}
-
-		Self::Normal(data)
 	}
+}
+
+pub fn is_masked_u8(data: &[u8], masking_characters: &[char]) -> bool {
+	for masking_char in masking_characters {
+		if data.iter().all(|byte| *byte as char == *masking_char) {
+			return true;
+		}
+	}
+
+	false
+}
+
+pub fn is_masked_str(data: &str, masking_characters: &[char]) -> bool {
+	for masking_char in masking_characters {
+		if data.chars().all(|c| c == *masking_char) {
+			return true;
+		}
+	}
+
+	false
 }
