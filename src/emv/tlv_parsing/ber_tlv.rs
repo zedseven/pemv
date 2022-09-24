@@ -10,16 +10,7 @@ use crate::{
 };
 
 /// Parses a block of BER-TLV encoded data.
-///
-/// The `support_constructed` argument dictates whether constructed data objects
-/// (nested EMV tags) are supported. Some manufacturer-custom EMV tags indicate
-/// they're constructed but don't actually store nested EMV data, which can
-/// cause problems. Looking at you, Verifone `E3` tag! >:(
-pub fn parse(
-	bytes: &[u8],
-	support_constructed: bool,
-	masking_characters: &[char],
-) -> Result<RawEmvBlock, ParseError> {
+pub fn parse(bytes: &[u8], masking_characters: &[char]) -> Result<RawEmvBlock, ParseError> {
 	let bytes_len = bytes.len();
 	let mut nodes = Vec::new();
 	let mut index = 0;
@@ -72,22 +63,14 @@ pub fn parse(
 		let data = &bytes[index..(index + length)];
 
 		// Push the resulting tag to the list
+		let tag_data = EmvData::from_u8_check_for_masked(data.to_vec(), masking_characters);
 		nodes.push(RawEmvNode {
+			child_block: get_child_block(data_object_type, &tag_data, masking_characters),
 			tag: RawEmvTag {
 				tag: bytes[tag_start_index..=tag_end_index].to_vec(),
 				class,
 				data_object_type,
-				data: EmvData::from_u8_check_for_masked(data.to_vec(), masking_characters),
-			},
-			child_block: match data_object_type {
-				DataObjectType::Primitive => RawEmvBlock::default(),
-				DataObjectType::Constructed => {
-					if support_constructed {
-						parse(data, support_constructed, masking_characters)?
-					} else {
-						RawEmvBlock::default()
-					}
-				}
+				data: tag_data,
 			},
 		});
 
@@ -109,4 +92,22 @@ pub fn parse_tag_metadata(tag_byte_0: u8) -> Result<(TagClass, DataObjectType), 
 	};
 
 	Ok((class, data_object_type))
+}
+
+/// Descends into the tag data to try to parse it as a constructed data object,
+/// if `data_object_type` is [`DataObjectType::Constructed`].
+///
+/// Otherwise, it returns [`RawEmvBlock::default`].
+pub fn get_child_block(
+	data_object_type: DataObjectType,
+	tag_data: &EmvData,
+	masking_characters: &[char],
+) -> RawEmvBlock {
+	match data_object_type {
+		DataObjectType::Primitive => RawEmvBlock::default(),
+		DataObjectType::Constructed => match tag_data {
+			EmvData::Normal(data) => parse(data, masking_characters).unwrap_or_default(),
+			EmvData::Masked => RawEmvBlock::default(),
+		},
+	}
 }

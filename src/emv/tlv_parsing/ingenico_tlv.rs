@@ -1,9 +1,15 @@
 //! The module for Ingenico-proprietary TLV parsing.
 
 // Uses
-use super::{ber_tlv::parse_tag_metadata, EmvData, RawEmvBlock, RawEmvNode, RawEmvTag};
+use super::{
+	ber_tlv::{get_child_block, parse_tag_metadata},
+	is_masked_str,
+	EmvData,
+	RawEmvBlock,
+	RawEmvNode,
+	RawEmvTag,
+};
 use crate::{
-	emv::is_masked_str,
 	error::ParseError,
 	util::{byte_slice_to_u32, parse_hex_str_strict, BYTES_PER_32_BITS},
 };
@@ -93,7 +99,7 @@ pub fn parse(data: &str, masking_characters: &[char]) -> Result<RawEmvBlock, Par
 				// hex)
 				let char_length = length * 2;
 				index += 1;
-				if index + char_length >= data_len {
+				if index + char_length > data_len {
 					return Err(ParseError::NonCompliant);
 				}
 				let tag_data_str = &data[index..(index + char_length)];
@@ -119,13 +125,13 @@ pub fn parse(data: &str, masking_characters: &[char]) -> Result<RawEmvBlock, Par
 			continue;
 		}
 		nodes.push(RawEmvNode {
+			child_block: get_child_block(data_object_type, &tag_data, masking_characters),
 			tag: RawEmvTag {
 				tag: tag_id_bytes,
 				class,
 				data_object_type,
 				data: tag_data,
 			},
-			child_block: RawEmvBlock::default(),
 		});
 	}
 

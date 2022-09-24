@@ -132,16 +132,6 @@ fn main() {
 		else if let Some(ber_tlv_str) = matches.get_one::<String>("ber-tlv") {
 			parse_ber_tlv(
 				parse_hex_str(ber_tlv_str).as_slice(),
-				true,
-				masking_characters.as_slice(),
-			)
-			.and_then(ProcessedEmvBlock::try_from)
-			.map(|v| v.display_breakdown(&mut stdout, 0))
-			.err()
-		} else if let Some(ber_tlv_str) = matches.get_one::<String>("ber-tlv-simple") {
-			parse_ber_tlv(
-				parse_hex_str(ber_tlv_str).as_slice(),
-				false,
 				masking_characters.as_slice(),
 			)
 			.and_then(ProcessedEmvBlock::try_from)

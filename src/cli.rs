@@ -78,26 +78,6 @@ pub fn build_cli() -> Command<'static> {
 				),
 		)
 		.arg(
-			Arg::new("ber-tlv-simple")
-				.short('B')
-				.long("ber-tlv-simple")
-				.alias("bertlv-simple")
-				.takes_value(true)
-				.value_name("EMV DATA BLOCK")
-				.help(
-					"Parse a block of BER-TLV encoded data that doesn't support constructed \
-					 (nested) EMV tags.",
-				)
-				.long_help(
-					"Parse a block of BER-TLV encoded data that doesn't support constructed \
-					 (nested) EMV tags.\nSee the description for `--ber-tlv` for more information \
-					 about the BER-TLV format.\nConstructed data objects are tag values that \
-					 contain more nested TLV tags, and sometimes manufacturer-custom tags (like \
-					 Verifone's `E3`) don't respect this. If the `--ber-tlv` option doesn't work, \
-					 try this.",
-				),
-		)
-		.arg(
 			Arg::new("ingenico-tlv")
 				.short('i')
 				.long("ingenico-tlv")
