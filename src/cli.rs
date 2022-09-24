@@ -1,7 +1,7 @@
 // Provides the CLI for the program.
 
 // Uses
-use clap::{value_parser, Arg, ArgAction, Command};
+use clap::{builder::NonEmptyStringValueParser, value_parser, Arg, ArgAction, Command};
 
 // Constants
 pub const APPLICATION_PROPER_NAME: &str = "ParseEMV";
@@ -72,6 +72,7 @@ pub fn build_cli() -> Command<'static> {
 				.alias("parse")
 				.takes_value(true)
 				.value_name("EMV DATA BLOCK")
+				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse a block of TLV data, attempting to find the format automatically."),
 		)
 		.arg(
@@ -81,6 +82,7 @@ pub fn build_cli() -> Command<'static> {
 				.alias("bertlv")
 				.takes_value(true)
 				.value_name("EMV DATA BLOCK")
+				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse a block of BER-TLV encoded data.")
 				.long_help(
 					"Parse a block of BER-TLV encoded data.\nThe 'BER' stands for \"Basic \
@@ -96,6 +98,7 @@ pub fn build_cli() -> Command<'static> {
 				.alias("ingenico")
 				.takes_value(true)
 				.value_name("EMV DATA BLOCK")
+				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse a block of TLV data encoded in the proprietary Ingenico format.")
 				.long_help(
 					"Parse a block of TLV data encoded in the proprietary Ingenico format.\nNote \
@@ -111,6 +114,7 @@ pub fn build_cli() -> Command<'static> {
 				.long("tvr")
 				.takes_value(true)
 				.value_name("TVR")
+				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse Terminal Verification Results (tag 0x95).")
 				.long_help(
 					"Parse Terminal Verification Results (tag 0x95).\nIndicates the results of \
@@ -126,6 +130,7 @@ pub fn build_cli() -> Command<'static> {
 				.long("ccd-iad")
 				.takes_value(true)
 				.value_name("IAD")
+				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse CCD-compliant Issuer Application Data (tag 0x9F10).")
 				.long_help(
 					"Parse CCD-compliant Issuer Application Data (tag 0x9F10).\nCommon Core \
@@ -141,6 +146,7 @@ pub fn build_cli() -> Command<'static> {
 				.long("ccd-cvr")
 				.takes_value(true)
 				.value_name("CVR")
+				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse CCD-compliant Card Verification Results (part of tag 0x9F10).")
 				.long_help(
 					"Parse CCD-compliant Card Verification Results (part of tag 0x9F10).\nSee the \
@@ -154,6 +160,7 @@ pub fn build_cli() -> Command<'static> {
 				.long("tsi")
 				.takes_value(true)
 				.value_name("TSI")
+				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse Transaction Status Information (tag 0x9B).")
 				.long_help(
 					"Parse Transaction Status Information (tag 0x9B).\nIndicates the functions \
@@ -168,6 +175,7 @@ pub fn build_cli() -> Command<'static> {
 				.long("cvm-results")
 				.takes_value(true)
 				.value_name("CVM RESULTS")
+				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse Cardholder Verification Method (CVM) Results (tag 0x9F34).")
 				.long_help(
 					"Parse Cardholder Verification Method (CVM) Results (tag 0x9F34).\nThis \
@@ -179,6 +187,7 @@ pub fn build_cli() -> Command<'static> {
 				.long("cvm-list")
 				.takes_value(true)
 				.value_name("CVM LIST")
+				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse a Cardholder Verification Method (CVM) List (tag 0x8E).")
 				.long_help(
 					"Parse a Cardholder Verification Method (CVM) List (tag 0x8E).\nThis list on \
@@ -194,6 +203,7 @@ pub fn build_cli() -> Command<'static> {
 				.long("service-code")
 				.takes_value(true)
 				.value_name("SERVICE CODE")
+				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse a card Service Code (MSR, or EMV tag 0x5F30).")
 				.long_help(
 					"Parse a card Service Code (MSR, or EMV tag 0x5F30).\nThis specifies the \
