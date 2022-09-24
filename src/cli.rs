@@ -63,6 +63,18 @@ pub fn build_cli() -> Command<'static> {
 		)
 		.next_help_heading("EMV UTILITIES")
 		.arg(
+			Arg::new("auto-tlv")
+				.short('a')
+				.long("auto-tlv")
+				.alias("auto")
+				.alias("parse-auto-tlv")
+				.alias("parse-tlv")
+				.alias("parse")
+				.takes_value(true)
+				.value_name("EMV DATA BLOCK")
+				.help("Parse a block of TLV data, attempting to find the format automatically."),
+		)
+		.arg(
 			Arg::new("ber-tlv")
 				.short('b')
 				.long("ber-tlv")

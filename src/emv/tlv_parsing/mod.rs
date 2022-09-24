@@ -4,11 +4,14 @@
 //! that information is focused on BER-TLV format in particular.
 
 // Modules
+pub mod auto_tlv;
 pub mod ber_tlv;
 pub mod ingenico_tlv;
 mod process_emv_tag;
 
 // Uses
+use std::fmt::{Display, Formatter, Result as FormatResult};
+
 use termcolor::{ColorSpec, StandardStream, WriteColor};
 
 use self::process_emv_tag::process_emv_tag;
@@ -416,4 +419,19 @@ pub fn is_masked_str(data: &str, masking_characters: &[char]) -> bool {
 	}
 
 	false
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum TlvFormat {
+	BerTlv,
+	Ingenico,
+}
+
+impl Display for TlvFormat {
+	fn fmt(&self, f: &mut Formatter<'_>) -> FormatResult {
+		f.write_str(match self {
+			TlvFormat::BerTlv => "BER-TLV",
+			TlvFormat::Ingenico => "Ingenico",
+		})
+	}
 }

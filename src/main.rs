@@ -46,12 +46,13 @@ mod output_colours;
 mod util;
 
 // Uses
-use termcolor::StandardStream;
+use termcolor::{StandardStream, WriteColor};
 
 use crate::{
 	cli::build_cli,
 	config::{apply_cli_arguments, colour_choice::ColourChoice, Config},
 	emv::{
+		auto_tlv::parse as parse_auto_tlv,
 		ber_tlv::parse as parse_ber_tlv,
 		ccd::{CardVerificationResults, IssuerApplicationData},
 		ingenico_tlv::parse as parse_ingenico_tlv,
@@ -62,6 +63,7 @@ use crate::{
 		TransactionStatusInformation,
 	},
 	non_emv::ServiceCode,
+	output_colours::header_colour_spec,
 	util::{parse_hex_str, parse_str_to_u16},
 };
 
@@ -140,7 +142,22 @@ fn main() {
 				.err()
 		}
 		// EMV Utilities
-		else if let Some(ber_tlv_str) = matches.get_one::<String>("ber-tlv") {
+		else if let Some(tlv_str) = matches.get_one::<String>("auto-tlv") {
+			parse_auto_tlv(tlv_str, masking_characters.as_slice())
+				.and_then(|(format, v)| {
+					let result = ProcessedEmvBlock::try_from(v);
+					if result.is_ok() {
+						stdout.set_color(&header_colour_spec()).ok();
+						print!("TLV Format: ");
+						stdout.reset().ok();
+						println!("{}", format);
+						println!();
+					}
+					result
+				})
+				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.err()
+		} else if let Some(ber_tlv_str) = matches.get_one::<String>("ber-tlv") {
 			parse_ber_tlv(
 				parse_hex_str(ber_tlv_str).as_slice(),
 				masking_characters.as_slice(),
