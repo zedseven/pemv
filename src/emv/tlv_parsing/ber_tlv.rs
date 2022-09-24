@@ -3,7 +3,7 @@
 //! Information for this can be found in EMV Book 3, under `Annex B`.
 
 // Uses
-use super::{DataObjectType, RawEmvBlock, RawEmvNode, RawEmvTag};
+use super::{DataObjectType, EmvData, RawEmvBlock, RawEmvNode, RawEmvTag};
 use crate::{
 	error::ParseError,
 	util::{byte_slice_to_u32, BYTES_PER_32_BITS},
@@ -15,7 +15,11 @@ use crate::{
 /// (nested EMV tags) are supported. Some manufacturer-custom EMV tags indicate
 /// they're constructed but don't actually store nested EMV data, which can
 /// cause problems. Looking at you, Verifone `E3` tag! >:(
-pub fn parse(bytes: &[u8], support_constructed: bool) -> Result<RawEmvBlock, ParseError> {
+pub fn parse<'a>(
+	bytes: &'a [u8],
+	support_constructed: bool,
+	masking_characters: &[char],
+) -> Result<RawEmvBlock<'a>, ParseError> {
 	let bytes_len = bytes.len();
 	let mut nodes = Vec::new();
 	let mut index = 0;
@@ -78,13 +82,13 @@ pub fn parse(bytes: &[u8], support_constructed: bool) -> Result<RawEmvBlock, Par
 				tag: &bytes[tag_start_index..=tag_end_index],
 				class,
 				data_object_type,
-				data,
+				data: EmvData::from(data, masking_characters),
 			},
 			child_block: match data_object_type {
 				DataObjectType::Primitive => RawEmvBlock::default(),
 				DataObjectType::Constructed => {
 					if support_constructed {
-						parse(data, support_constructed)?
+						parse(data, support_constructed, masking_characters)?
 					} else {
 						RawEmvBlock::default()
 					}

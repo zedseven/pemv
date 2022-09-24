@@ -121,6 +121,75 @@ pub enum ProcessedEmvTag<'a> {
 	},
 }
 
+impl<'a> ProcessedEmvTag<'a> {
+	pub fn parse_raw<P>(
+		name: &'static str,
+		raw_tag: RawEmvTag<'a>,
+		parsing_fn: P,
+	) -> Result<Self, ParseError>
+	where
+		P: Fn(&'a [u8]) -> Result<Box<dyn DisplayBreakdown>, ParseError>,
+	{
+		match raw_tag.data {
+			EmvData::Normal(data) => Ok(Self::Parsed {
+				name,
+				parsed: parsing_fn(data)?,
+				raw_tag,
+			}),
+			EmvData::Masked => Ok(Self::Annotated { name, raw_tag }),
+		}
+	}
+
+	/// Same as [`Self::parse_raw`], but handles an error with a different
+	/// annotation if `is_unrecognised_error` returns `true`. If it returns
+	/// `false`, the function returns the error instead.
+	///
+	/// `name_recognised` is used if the value could be successfully parsed.
+	///
+	/// `name_unrecognised` is used if the value could not be successfully
+	/// parsed, and `parsing_fn` returned an error that matched
+	/// `is_unrecognised_error`.
+	pub fn parse_raw_unrecognised<P, E>(
+		name_recognised: &'static str,
+		name_unrecognised: &'static str,
+		raw_tag: RawEmvTag<'a>,
+		parsing_fn: P,
+		is_unrecognised_error: E,
+	) -> Result<Self, ParseError>
+	where
+		P: Fn(&'a [u8]) -> Result<Box<dyn DisplayBreakdown>, ParseError>,
+		E: Fn(&ParseError) -> bool,
+	{
+		match raw_tag.data {
+			EmvData::Normal(data) => match parsing_fn(data) {
+				Ok(parsed) => Ok(Self::Parsed {
+					name: name_recognised,
+					parsed,
+					raw_tag,
+				}),
+				Err(error) => {
+					if is_unrecognised_error(&error) {
+						Ok(Self::Annotated {
+							name: name_unrecognised,
+							raw_tag,
+						})
+					} else {
+						Err(error)
+					}
+				}
+			},
+			EmvData::Masked => Ok(Self::Annotated {
+				name: name_recognised,
+				raw_tag,
+			}),
+		}
+	}
+
+	pub fn annotate_raw(name: &'static str, raw_tag: RawEmvTag<'a>) -> Self {
+		Self::Annotated { name, raw_tag }
+	}
+}
+
 impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		fn print_tag_name(
@@ -128,7 +197,7 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 			indentation: u8,
 			header_colour_spec: &ColorSpec,
 			tag: &[u8],
-			length: usize,
+			length: Option<usize>,
 			name_option: Option<&str>,
 		) {
 			let bold_colour_spec = bold_colour_spec();
@@ -143,12 +212,16 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 			stdout.set_color(&bold_colour_spec).ok();
 			print_bytes_small(tag);
 			stdout.reset().ok();
-			println!(
-				" - {} byte{} - {}",
-				length,
-				if length == 1 { "" } else { "s" },
-				name
-			);
+			if let Some(len) = length {
+				println!(
+					" - {} byte{} - {}",
+					len,
+					if len == 1 { "" } else { "s" },
+					name
+				);
+			} else {
+				println!(" - ?? bytes - {}", name);
+			}
 		}
 
 		let header_colour_spec = header_colour_spec();
@@ -255,23 +328,32 @@ pub struct RawEmvTag<'a> {
 	pub tag: &'a [u8],
 	pub class: TagClass,
 	pub data_object_type: DataObjectType,
-	pub data: &'a [u8],
+	pub data: EmvData<'a>,
 }
 
 impl<'a> DisplayBreakdown for RawEmvTag<'a> {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
-		if self.data.is_empty() {
-			return;
-		}
-
 		let header_colour_spec = header_colour_spec();
+		match self.data {
+			EmvData::Normal(data) => {
+				if data.is_empty() {
+					return;
+				}
 
-		// Display the tag value
-		print_indentation(indentation);
-		stdout.set_color(&header_colour_spec).ok();
-		println!("Raw:");
-		stdout.reset().ok();
-		print_bytes_pretty(self.data, 16, indentation + 1);
+				// Display the tag value
+				print_indentation(indentation);
+				stdout.set_color(&header_colour_spec).ok();
+				println!("Raw:");
+				stdout.reset().ok();
+				print_bytes_pretty(data, 16, indentation + 1);
+			}
+			EmvData::Masked => {
+				print_indentation(indentation);
+				stdout.set_color(&header_colour_spec).ok();
+				println!("* Masked *");
+				stdout.reset().ok();
+			}
+		}
 	}
 }
 
@@ -289,4 +371,32 @@ pub enum TagClass: u8, ParseError::NonCompliant {
 pub enum DataObjectType {
 	Primitive,
 	Constructed,
+}
+
+/// EMV data, encoding the ability for data to be masked and therefore
+/// inaccessible.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum EmvData<'a> {
+	Normal(&'a [u8]),
+	Masked,
+}
+
+impl<'a> EmvData<'a> {
+	/// Returns the data length, or `None` if unknown.
+	pub fn len(self) -> Option<usize> {
+		match self {
+			EmvData::Normal(data) => Some(data.len()),
+			EmvData::Masked => None,
+		}
+	}
+
+	pub fn from(data: &'a [u8], masking_characters: &[char]) -> Self {
+		for masking_char in masking_characters {
+			if data.iter().all(|byte| *byte as char == *masking_char) {
+				return Self::Masked;
+			}
+		}
+
+		Self::Normal(data)
+	}
 }

@@ -22,103 +22,127 @@ use crate::{
 	},
 	error::ParseError,
 	non_emv::ServiceCode,
+	DisplayBreakdown,
 };
 
 /// Process a [`RawEmvTag`] into a [`ProcessedEmvTag`].
 pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError> {
 	// Parseable tags
 	Ok(match &raw_tag.tag {
-		[0x5F, 0x30] => Some(ProcessedEmvTag::Parsed {
-			name: "Service Code",
-			parsed: Box::new(ServiceCode::try_from(raw_tag.data)?),
+		[0x5F, 0x30] => Some(ProcessedEmvTag::parse_raw(
+			"Service Code",
 			raw_tag,
-		}),
-		[0x8A] => match AuthorisationResponseCode::try_from(raw_tag.data) {
-			Ok(recognised_response_code) => Some(ProcessedEmvTag::Parsed {
-				name: "Authorisation Response Code",
-				parsed: Box::new(recognised_response_code),
-				raw_tag,
-			}),
-			Err(ParseError::Unrecognised) => Some(ProcessedEmvTag::Annotated {
-				name: "Authorisation Response Code (Unrecognised - likely payment system-specific)",
-				raw_tag,
-			}),
-			Err(error) => return Err(error),
-		},
-		[0x8E] => Some(ProcessedEmvTag::Parsed {
-			name: "CVM List",
-			parsed: Box::new(CardholderVerificationMethodList::try_from(raw_tag.data)?),
+			|data| {
+				ServiceCode::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)?),
+		[0x8A] => Some(ProcessedEmvTag::parse_raw_unrecognised(
+			"Authorisation Response Code",
+			"Authorisation Response Code (Unrecognised - likely payment system-specific)",
 			raw_tag,
-		}),
-		[0x95] => Some(ProcessedEmvTag::Parsed {
-			name: "Terminal Verification Results (TVR)",
-			parsed: Box::new(TerminalVerificationResults::try_from(raw_tag.data)?),
+			|data| {
+				AuthorisationResponseCode::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+			|error| matches!(error, ParseError::Unrecognised),
+		)?),
+		[0x8E] => Some(ProcessedEmvTag::parse_raw("CVM List", raw_tag, |data| {
+			CardholderVerificationMethodList::try_from(data)
+				.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+		})?),
+		[0x95] => Some(ProcessedEmvTag::parse_raw(
+			"Terminal Verification Results (TVR)",
 			raw_tag,
-		}),
-		[0x9B] => Some(ProcessedEmvTag::Parsed {
-			name: "Transaction Status Information (TSI)",
-			parsed: Box::new(TransactionStatusInformation::try_from(raw_tag.data)?),
+			|data| {
+				TerminalVerificationResults::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)?),
+		[0x9B] => Some(ProcessedEmvTag::parse_raw(
+			"Transaction Status Information (TSI)",
 			raw_tag,
-		}),
-		[0x9C] => match TransactionType::try_from(raw_tag.data) {
-			Ok(recognised_transaction_type) => Some(ProcessedEmvTag::Parsed {
-				name: "Transaction Type",
-				parsed: Box::new(recognised_transaction_type),
-				raw_tag,
-			}),
-			Err(ParseError::Unrecognised) => Some(ProcessedEmvTag::Annotated {
-				name: "Transaction Type (Unrecognised - likely payment system-specific)",
-				raw_tag,
-			}),
-			Err(error) => return Err(error),
-		},
-		[0x9F, 0x0D] => Some(ProcessedEmvTag::Parsed {
-			name: "Issuer Action Code - Default",
-			parsed: Box::new(IssuerActionCodeDefault::try_from(raw_tag.data)?),
+			|data| {
+				TransactionStatusInformation::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)?),
+		[0x9C] => Some(ProcessedEmvTag::parse_raw_unrecognised(
+			"Transaction Type",
+			"Transaction Type (Unrecognised - likely payment system-specific)",
 			raw_tag,
-		}),
-		[0x9F, 0x0E] => Some(ProcessedEmvTag::Parsed {
-			name: "Issuer Action Code - Denial",
-			parsed: Box::new(IssuerActionCodeDenial::try_from(raw_tag.data)?),
+			|data| {
+				TransactionType::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+			|error| matches!(error, ParseError::Unrecognised),
+		)?),
+		[0x9F, 0x0D] => Some(ProcessedEmvTag::parse_raw(
+			"Issuer Action Code - Default",
 			raw_tag,
-		}),
-		[0x9F, 0x0F] => Some(ProcessedEmvTag::Parsed {
-			name: "Issuer Action Code - Online",
-			parsed: Box::new(IssuerActionCodeOnline::try_from(raw_tag.data)?),
+			|data| {
+				IssuerActionCodeDefault::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)?),
+		[0x9F, 0x0E] => Some(ProcessedEmvTag::parse_raw(
+			"Issuer Action Code - Denial",
 			raw_tag,
-		}),
-		[0x9F, 0x10] => match IssuerApplicationData::try_from(raw_tag.data) {
-			Ok(ccd_iad) => Some(ProcessedEmvTag::Parsed {
-				name: "Issuer Application Data (CCD-Compliant)",
-				parsed: Box::new(ccd_iad),
-				raw_tag,
-			}),
-			Err(ParseError::NonCcdCompliant) => Some(ProcessedEmvTag::Annotated {
-				name: "Issuer Application Data (Not CCD-Compliant)",
-				raw_tag,
-			}),
-			Err(error) => return Err(error),
-		},
-		[0x9F, 0x33] => Some(ProcessedEmvTag::Parsed {
-			name: "Terminal Capabilities",
-			parsed: Box::new(TerminalCapabilities::try_from(raw_tag.data)?),
+			|data| {
+				IssuerActionCodeDenial::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)?),
+		[0x9F, 0x0F] => Some(ProcessedEmvTag::parse_raw(
+			"Issuer Action Code - Online",
 			raw_tag,
-		}),
-		[0x9F, 0x34] => Some(ProcessedEmvTag::Parsed {
-			name: "CVM Results",
-			parsed: Box::new(CardholderVerificationMethodResults::try_from(raw_tag.data)?),
+			|data| {
+				IssuerActionCodeOnline::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)?),
+		[0x9F, 0x10] => Some(ProcessedEmvTag::parse_raw_unrecognised(
+			"Issuer Application Data (CCD-Compliant)",
+			"Issuer Application Data (Not CCD-Compliant)",
 			raw_tag,
-		}),
-		[0x9F, 0x35] => Some(ProcessedEmvTag::Parsed {
-			name: "Terminal Type",
-			parsed: Box::new(TerminalType::try_from(raw_tag.data)?),
+			|data| {
+				IssuerApplicationData::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+			|error| matches!(error, ParseError::NonCcdCompliant),
+		)?),
+		[0x9F, 0x33] => Some(ProcessedEmvTag::parse_raw(
+			"Terminal Capabilities",
 			raw_tag,
-		}),
-		[0x9F, 0x40] => Some(ProcessedEmvTag::Parsed {
-			name: "Additional Terminal Capabilities",
-			parsed: Box::new(AdditionalTerminalCapabilities::try_from(raw_tag.data)?),
+			|data| {
+				TerminalCapabilities::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)?),
+		[0x9F, 0x34] => Some(ProcessedEmvTag::parse_raw(
+			"CVM Results",
 			raw_tag,
-		}),
+			|data| {
+				CardholderVerificationMethodResults::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)?),
+		[0x9F, 0x35] => Some(ProcessedEmvTag::parse_raw(
+			"Terminal Type",
+			raw_tag,
+			|data| {
+				TerminalType::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)?),
+		[0x9F, 0x40] => Some(ProcessedEmvTag::parse_raw(
+			"Additional Terminal Capabilities",
+			raw_tag,
+			|data| {
+				AdditionalTerminalCapabilities::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)?),
 		_ => None,
 	}
 	// Recognisable tags
