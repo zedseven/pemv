@@ -81,7 +81,7 @@ impl From<ColourChoice> for &str {
 }
 
 impl ColourChoice {
-	/// Changes the value to `Never` if `stdout` is a tty.
+	/// Changes the value to `Never` if `stdout` isn't a tty.
 	#[must_use]
 	pub fn change_based_on_tty(self) -> Self {
 		#[allow(clippy::wildcard_enum_match_arm)]

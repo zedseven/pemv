@@ -45,8 +45,6 @@ mod non_emv;
 mod output_colours;
 mod util;
 
-use std::env;
-
 // Uses
 use termcolor::StandardStream;
 
@@ -101,50 +99,52 @@ fn main() {
 
 	let parse_error = {
 		// EMV Tags
-		if let Some(tvr_str) = matches.value_of("tvr") {
+		if let Some(tvr_str) = matches.get_one::<String>("tvr") {
 			TerminalVerificationResults::try_from(parse_hex_str(tvr_str).as_slice())
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()
-		} else if let Some(iad_str) = matches.value_of("ccd-iad") {
+		} else if let Some(iad_str) = matches.get_one::<String>("ccd-iad") {
 			IssuerApplicationData::try_from(parse_hex_str(iad_str).as_slice())
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()
-		} else if let Some(cvr_str) = matches.value_of("ccd-cvr") {
+		} else if let Some(cvr_str) = matches.get_one::<String>("ccd-cvr") {
 			CardVerificationResults::try_from(parse_hex_str(cvr_str).as_slice())
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()
-		} else if let Some(tsi_str) = matches.value_of("tsi") {
+		} else if let Some(tsi_str) = matches.get_one::<String>("tsi") {
 			TransactionStatusInformation::try_from(parse_hex_str(tsi_str).as_slice())
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()
-		} else if let Some(cvm_results_str) = matches.value_of("cvm-results") {
+		} else if let Some(cvm_results_str) = matches.get_one::<String>("cvm-results") {
 			CardholderVerificationMethodResults::try_from(parse_hex_str(cvm_results_str).as_slice())
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()
-		} else if let Some(cvm_list_str) = matches.value_of("cvm-list") {
+		} else if let Some(cvm_list_str) = matches.get_one::<String>("cvm-list") {
 			CardholderVerificationMethodList::try_from(parse_hex_str(cvm_list_str).as_slice())
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()
 		}
 		// EMV Utilities
-		else if let Some(ber_tlv_str) = matches.value_of("ber-tlv") {
+		else if let Some(ber_tlv_str) = matches.get_one::<String>("ber-tlv") {
 			parse_ber_tlv(parse_hex_str(ber_tlv_str).as_slice(), true)
 				.and_then(ProcessedEmvBlock::try_from)
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()
-		} else if let Some(ber_tlv_str) = matches.value_of("ber-tlv-simple") {
+		} else if let Some(ber_tlv_str) = matches.get_one::<String>("ber-tlv-simple") {
 			parse_ber_tlv(parse_hex_str(ber_tlv_str).as_slice(), false)
 				.and_then(ProcessedEmvBlock::try_from)
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()
 		}
 		// Non-EMV
-		else if let Some(service_code_str) = matches.value_of("service-code") {
+		else if let Some(service_code_str) = matches.get_one::<String>("service-code") {
 			parse_str_to_u16(service_code_str)
 				.and_then(ServiceCode::try_from)
 				.map(|v| v.display_breakdown(&mut stdout, 0))
 				.err()
-		} else {
+		}
+		// Default behaviour when no options are provided
+		else {
 			cli_definition.print_help().expect("unable to print help");
 			return;
 		}

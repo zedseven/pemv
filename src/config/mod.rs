@@ -106,14 +106,22 @@ impl Provider for Config {
 /// environment variables -> configuration file
 pub fn apply_cli_arguments(mut figment: Figment, matches: &ArgMatches) -> Figment {
 	// CLI Colour Choice
-	if let Some(colour_choice) = matches.value_of("colour") {
+	if let Some(colour_choice) = matches.get_one::<String>("colour") {
 		if colour_choice != "from_config" {
 			figment = figment.merge((
 				Config::CLI_COLOUR,
-				TryInto::<ColourChoice>::try_into(colour_choice)
+				ColourChoice::try_from(colour_choice.as_str())
 					.expect("this value's validity is enforced by clap"),
 			));
 		}
+	}
+
+	// Masking Characters
+	if let Some(masking_characters) = matches.get_many::<char>("masking-character") {
+		figment = figment.merge((
+			Config::MASKING_CHARACTERS,
+			masking_characters.copied().collect::<Vec<char>>(),
+		));
 	}
 
 	figment

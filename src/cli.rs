@@ -1,7 +1,7 @@
 // Provides the CLI for the program.
 
 // Uses
-use clap::{Arg, Command};
+use clap::{value_parser, Arg, ArgAction, Command};
 
 // Constants
 pub const APPLICATION_PROPER_NAME: &str = "ParseEMV";
@@ -34,6 +34,24 @@ pub fn build_cli() -> Command<'static> {
 					 `always`, except it specifies that only ANSI colour codes should be used. \
 					 This means on Windows terminals for example, Windows console text attributes \
 					 will not be used.",
+				),
+		)
+		.arg(
+			Arg::new("masking-character")
+				.alias("masking-char")
+				.alias("mask-char")
+				.alias("masking")
+				.short('m')
+				.long("masking-character")
+				.takes_value(true)
+				.action(ArgAction::Append)
+				.multiple_values(true)
+				.value_name("CHARACTER")
+				.value_parser(value_parser!(char))
+				.help(
+					"The character that will be treated as masked data when parsing. This \
+					 argument can be provided multiple times to specify multiple masking \
+					 characters.",
 				),
 		)
 		.next_help_heading("EMV UTILITIES")
