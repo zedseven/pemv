@@ -17,7 +17,7 @@ use crate::{
 };
 
 // Struct Implementation
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ServiceCode {
 	number: u16,
 	interchange: Interchange,
@@ -169,5 +169,35 @@ impl DisplayBreakdown for ServiceCode {
 		print!("Technology:");
 		stdout.reset().ok();
 		println!("               {}", self.technology);
+	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use super::{
+		AllowedServices,
+		AuthorisationProcessing,
+		Interchange,
+		PinRequirements,
+		ServiceCode,
+		Technology,
+	};
+
+	// Tests
+	#[test]
+	fn parse_basic() {
+		let expected = Ok(ServiceCode {
+			number: 220,
+			interchange: Interchange::International,
+			technology: Technology::IntegratedCircuitCard,
+			authorisation_processing: AuthorisationProcessing::ByIssuer,
+			allowed_services: AllowedServices::NoRestrictions,
+			pin_requirements: PinRequirements::None,
+		});
+		let result = ServiceCode::try_from(220);
+
+		assert_eq!(expected, result);
 	}
 }
