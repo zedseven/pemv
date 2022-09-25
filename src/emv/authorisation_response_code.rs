@@ -10,17 +10,12 @@ use std::{cmp::Ordering, str::from_utf8 as str_from_utf8};
 
 use termcolor::StandardStream;
 
-use crate::{
-	error::ParseError,
-	non_composite_value_no_repr_fallible,
-	util::print_indentation,
-	DisplayBreakdown,
-};
+use crate::{enum_no_repr_fallible, error::ParseError, util::print_indentation, DisplayBreakdown};
 
 // Enum Implementation
-non_composite_value_no_repr_fallible! {
+enum_no_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum AuthorisationResponseCode: &str, ParseError::Unrecognised {
+pub enum AuthorisationResponseCode: &str, ParseError, { |_| ParseError::Unrecognised } {
 	Approval                            = "00"        => "Approval",
 	Call                                = "01"        => "Call",
 	CallSpecial                         = "02"        => "Call - Special Conditions",

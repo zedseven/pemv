@@ -8,8 +8,8 @@ use std::cmp::Ordering;
 use termcolor::{StandardStream, WriteColor};
 
 use crate::{
+	enum_no_repr_infallible,
 	error::ParseError,
-	non_composite_value_no_repr_infallible,
 	output_colours::bold_colour_spec,
 	parse_str_to_u16,
 	util::{bytes_to_str, print_indentation},
@@ -27,7 +27,7 @@ pub struct ServiceCode {
 	pin_requirements: PinRequirements,
 }
 
-non_composite_value_no_repr_infallible! {
+enum_no_repr_infallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Interchange: u8 {
 	International = 1 | 2 => "International",
@@ -38,7 +38,7 @@ pub enum Interchange: u8 {
 }
 }
 
-non_composite_value_no_repr_infallible! {
+enum_no_repr_infallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Technology: u8 {
 	IntegratedCircuitCard = 2 | 6 => "Integrated circuit card (ICC)",
@@ -46,7 +46,7 @@ pub enum Technology: u8 {
 }
 }
 
-non_composite_value_no_repr_infallible! {
+enum_no_repr_infallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum AuthorisationProcessing: u8 {
 	Normal                          = 0 => "Normal",
@@ -57,7 +57,7 @@ pub enum AuthorisationProcessing: u8 {
 }
 }
 
-non_composite_value_no_repr_infallible! {
+enum_no_repr_infallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum AllowedServices: u8 {
 	NoRestrictions       = 0 | 1 | 6 => "No restrictions",
@@ -68,7 +68,7 @@ pub enum AllowedServices: u8 {
 }
 }
 
-non_composite_value_no_repr_infallible! {
+enum_no_repr_infallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum PinRequirements: u8 {
 	None                  = 0 | 3 | 5 => "None",

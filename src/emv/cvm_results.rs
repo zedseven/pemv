@@ -6,7 +6,7 @@
 use std::{cmp::Ordering, fmt::Debug};
 
 use super::{cv_rule::CardholderVerificationRule, BitflagValue, EnabledBitRange, Severity};
-use crate::{error::ParseError, non_composite_value_repr_fallible, util::byte_slice_to_u64};
+use crate::{enum_repr_fallible, error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
 #[derive(Debug)]
@@ -18,9 +18,9 @@ pub struct CardholderVerificationMethodResults {
 	pub result: CvmResult,
 }
 
-non_composite_value_repr_fallible! {
+enum_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum CvmResult: u8, ParseError::NonCompliant {
+pub enum CvmResult: u8, ParseError, { |_| ParseError::NonCompliant } {
 	Unknown    = 0b00 => "Unknown",
 	Failed     = 0b01 => "Failed",
 	Successful = 0b10 => "Successful",

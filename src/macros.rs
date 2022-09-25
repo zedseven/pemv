@@ -7,28 +7,29 @@
 /// This version supports fallible conversion, so not all patterns must be
 /// present.
 #[macro_export]
-macro_rules! non_composite_value_no_repr_fallible {
+macro_rules! enum_no_repr_fallible {
 	(
 		$(#[$outer:meta])*
-		$visibility:vis enum $name:ident: $typ:ty, $error:path {
-	        $($variant:ident = $value:pat => $string:literal,)*
+		$visibility:vis enum $name:ident: $typ:ty, $error_type:ty, {$error_fn:expr} {
+	        $($variant:ident = $pattern:pat => $string:literal,)*
 	    }
 	) => {
 		$(#[$outer])*
         $visibility enum $name {
             $(
-                #[doc = concat!($string, " - ", stringify!($value))]
+                #[doc = concat!($string, " - ", stringify!($pattern))]
                 $variant,
             )*
         }
 
         impl TryFrom<$typ> for $name {
-            type Error = ParseError;
+            type Error = $error_type;
 
-			fn try_from(value: $typ) -> Result<Self, ParseError> {
+			fn try_from(value: $typ) -> Result<Self, $error_type> {
+	            #[allow(clippy::redundant_closure_call)]
 				match value {
-					$($value => Ok(Self::$variant),)*
-					_ => Err($error),
+					$($pattern => Ok(Self::$variant),)*
+					_ => Err(($error_fn)(value)),
 				}
 			}
         }
@@ -50,17 +51,17 @@ macro_rules! non_composite_value_no_repr_fallible {
 /// This version supports infallible conversion, so all patterns must be
 /// present.
 #[macro_export]
-macro_rules! non_composite_value_no_repr_infallible {
+macro_rules! enum_no_repr_infallible {
 	(
 		$(#[$outer:meta])*
 		$visibility:vis enum $name:ident: $typ:ty {
-	        $($variant:ident = $value:pat => $string:literal,)*
+	        $($variant:ident = $pattern:pat => $string:literal,)*
 	    }
 	) => {
 		$(#[$outer])*
         $visibility enum $name {
             $(
-                #[doc = concat!($string, " - ", stringify!($value))]
+                #[doc = concat!($string, " - ", stringify!($pattern))]
                 $variant,
             )*
         }
@@ -68,7 +69,7 @@ macro_rules! non_composite_value_no_repr_infallible {
         impl From<$typ> for $name {
 			fn from(value: $typ) -> Self {
 				match value {
-					$($value => Self::$variant,)*
+					$($pattern => Self::$variant,)*
 				}
 			}
         }
@@ -89,10 +90,10 @@ macro_rules! non_composite_value_no_repr_infallible {
 /// This version supports fallible conversion, so not all patterns must be
 /// present.
 #[macro_export]
-macro_rules! non_composite_value_repr_fallible {
+macro_rules! enum_repr_fallible {
 	(
 		$(#[$outer:meta])*
-		$visibility:vis enum $name:ident: $typ:ty, $error:path {
+		$visibility:vis enum $name:ident: $typ:ty, $error_type:ty, {$error_fn:expr} {
 	        $($variant:ident = $value:literal => $string:literal,)*
 	    }
 	) => {
@@ -106,12 +107,13 @@ macro_rules! non_composite_value_repr_fallible {
         }
 
         impl TryFrom<$typ> for $name {
-            type Error = ParseError;
+            type Error = $error_type;
 
-			fn try_from(value: $typ) -> Result<Self, ParseError> {
+			fn try_from(value: $typ) -> Result<Self, $error_type> {
+	            #[allow(clippy::redundant_closure_call)]
 				match value {
 					$($value => Ok(Self::$variant),)*
-					_ => Err($error),
+					_ => Err(($error_fn)(value)),
 				}
 			}
         }
@@ -132,7 +134,7 @@ macro_rules! non_composite_value_repr_fallible {
 /// This version supports infallible conversion, so all patterns must be
 /// present.
 #[macro_export]
-macro_rules! non_composite_value_repr_infallible {
+macro_rules! enum_repr_infallible {
 	(
 		$(#[$outer:meta])*
 		$visibility:vis enum $name:ident: $typ:ty {

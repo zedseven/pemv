@@ -6,7 +6,7 @@
 use std::{cmp::Ordering, fmt::Debug};
 
 use super::super::{BitflagValue, EnabledBitRange, Severity};
-use crate::{error::ParseError, non_composite_value_repr_fallible, util::byte_slice_to_u64};
+use crate::{enum_repr_fallible, error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
 #[derive(Debug)]
@@ -42,9 +42,9 @@ pub struct CardVerificationResults {
 	pub unable_to_go_online: bool,
 }
 
-non_composite_value_repr_fallible! {
+enum_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum GenAc1ApplicationCryptogramType: u8, ParseError::NonCcdCompliant {
+pub enum GenAc1ApplicationCryptogramType: u8, ParseError, { |_| ParseError::NonCcdCompliant } {
 	Aac  = 0b00 => "AAC (Application Authentication Cryptogram)",
 	Tc   = 0b01 => "TC (Transaction Certificate)",
 	Arqc = 0b10 => "ARQC (Authorization Request Cryptogram)",
@@ -52,9 +52,9 @@ pub enum GenAc1ApplicationCryptogramType: u8, ParseError::NonCcdCompliant {
 }
 }
 
-non_composite_value_repr_fallible! {
+enum_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum GenAc2ApplicationCryptogramType: u8, ParseError::NonCcdCompliant {
+pub enum GenAc2ApplicationCryptogramType: u8, ParseError, { |_| ParseError::NonCcdCompliant } {
 	Aac                     = 0b00 => "AAC (Application Authentication Cryptogram)",
 	Tc                      = 0b01 => "TC (Transaction Certificate)",
 	SecondGenAcNotRequested = 0b10 => "Second GENERATE AC not requested",

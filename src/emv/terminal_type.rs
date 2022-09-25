@@ -7,17 +7,12 @@ use std::cmp::Ordering;
 
 use termcolor::StandardStream;
 
-use crate::{
-	error::ParseError,
-	non_composite_value_repr_fallible,
-	util::print_indentation,
-	DisplayBreakdown,
-};
+use crate::{enum_repr_fallible, error::ParseError, util::print_indentation, DisplayBreakdown};
 
 // Enum Implementation
-non_composite_value_repr_fallible! {
+enum_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum TerminalType: u8, ParseError::Unrecognised {
+pub enum TerminalType: u8, ParseError, { |_| ParseError::Unrecognised } {
 	AttendedOnlineOnlyFinancialInstitution = 0x11
 		=> "Attended, Online-Only, Controlled by a Financial Institution",
 	AttendedOfflineWithOnlineCapabilitiesFinancialInstitution = 0x12

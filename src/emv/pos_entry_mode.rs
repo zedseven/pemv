@@ -11,17 +11,12 @@ use std::cmp::Ordering;
 
 use termcolor::StandardStream;
 
-use crate::{
-	error::ParseError,
-	non_composite_value_no_repr_fallible,
-	util::print_indentation,
-	DisplayBreakdown,
-};
+use crate::{enum_no_repr_fallible, error::ParseError, util::print_indentation, DisplayBreakdown};
 
 // Enum Implementation
-non_composite_value_no_repr_fallible! {
+enum_no_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum PosEntryMode: u8, ParseError::Unrecognised {
+pub enum PosEntryMode: u8, ParseError, { |_| ParseError::Unrecognised } {
 	Unknown                      = 0x00        => "Unknown",
 	Manual                       = 0x01        => "Manual (keyed entry)",
 	MagneticStripe               = 0x02        => "Magnetic Stripe Reader (MSR)",

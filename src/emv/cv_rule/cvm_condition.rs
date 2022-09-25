@@ -5,12 +5,12 @@
 // Uses
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 
-use crate::{error::ParseError, non_composite_value_repr_fallible};
+use crate::{enum_repr_fallible, error::ParseError};
 
-non_composite_value_repr_fallible! {
+enum_repr_fallible! {
 /// A Cardholder Verification Method Condition.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum CvmCondition: u8, ParseError::NonCompliant {
+pub enum CvmCondition: u8, ParseError, { |_| ParseError::NonCompliant } {
 	Always                            = 0x00 => "Always",
 	UnattendedCash                    = 0x01 => "If unattended cash",
 	NotUnattendedNotManualNotCashback = 0x02 => "If not unattended cash and not manual cash and \

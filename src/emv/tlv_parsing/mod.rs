@@ -16,8 +16,8 @@ use termcolor::{ColorSpec, StandardStream, WriteColor};
 
 use self::process_emv_tag::process_emv_tag;
 use crate::{
+	enum_repr_fallible,
 	error::ParseError,
-	non_composite_value_repr_fallible,
 	output_colours::{bold_colour_spec, header_colour_spec},
 	util::{print_bytes_pretty, print_bytes_small, print_indentation},
 	DisplayBreakdown,
@@ -359,9 +359,9 @@ impl DisplayBreakdown for RawEmvTag {
 	}
 }
 
-non_composite_value_repr_fallible! {
+enum_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum TagClass: u8, ParseError::NonCompliant {
+pub enum TagClass: u8, ParseError, { |_| ParseError::NonCompliant } {
 	Universal       = 0b00 => "Universal",
 	Application     = 0b01 => "Application",
 	ContextSpecific = 0b10 => "Context-Specific",
@@ -401,7 +401,13 @@ impl EmvData {
 	}
 }
 
+pub const MASKING_CHAR_MINIMUM: usize = 2;
+
 pub fn is_masked_u8(data: &[u8], masking_characters: &[char]) -> bool {
+	if data.len() < MASKING_CHAR_MINIMUM {
+		return false;
+	}
+
 	for masking_char in masking_characters {
 		if data.iter().all(|byte| *byte as char == *masking_char) {
 			return true;
@@ -412,6 +418,10 @@ pub fn is_masked_u8(data: &[u8], masking_characters: &[char]) -> bool {
 }
 
 pub fn is_masked_str(data: &str, masking_characters: &[char]) -> bool {
+	if data.len() < MASKING_CHAR_MINIMUM {
+		return false;
+	}
+
 	for masking_char in masking_characters {
 		if data.chars().all(|c| c == *masking_char) {
 			return true;

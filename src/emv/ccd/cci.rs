@@ -6,7 +6,7 @@
 use std::cmp::Ordering;
 
 use super::super::{BitflagValue, EnabledBitRange, Severity};
-use crate::{error::ParseError, non_composite_value_repr_fallible, util::byte_slice_to_u64};
+use crate::{enum_repr_fallible, error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
 #[derive(Debug)]
@@ -17,16 +17,16 @@ pub struct CommonCoreIdentifier {
 	pub cryptogram_version: CryptogramVersion,
 }
 
-non_composite_value_repr_fallible! {
+enum_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum FormatCode: u8, ParseError::NonCcdCompliant {
+pub enum FormatCode: u8, ParseError, { |_| ParseError::NonCcdCompliant } {
 	A = 0b1010 => "Format A",
 }
 }
 
-non_composite_value_repr_fallible! {
+enum_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum CryptogramVersion: u8, ParseError::NonCcdCompliant {
+pub enum CryptogramVersion: u8, ParseError, { |_| ParseError::NonCcdCompliant } {
 	TripleDes = 0b0101 => "Triple DES (3DES)",
 	Aes       = 0b0110 => "AES",
 }

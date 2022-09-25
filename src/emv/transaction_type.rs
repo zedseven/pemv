@@ -11,17 +11,12 @@ use std::cmp::Ordering;
 
 use termcolor::StandardStream;
 
-use crate::{
-	error::ParseError,
-	non_composite_value_repr_fallible,
-	util::print_indentation,
-	DisplayBreakdown,
-};
+use crate::{enum_repr_fallible, error::ParseError, util::print_indentation, DisplayBreakdown};
 
 // Enum Implementation
-non_composite_value_repr_fallible! {
+enum_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum TransactionType: u8, ParseError::Unrecognised {
+pub enum TransactionType: u8, ParseError, { |_| ParseError::Unrecognised } {
 	Purchase         = 0x00 => "Purchase",
 	CashAdvance      = 0x01 => "Cash Advance",
 	Void             = 0x02 => "Void",

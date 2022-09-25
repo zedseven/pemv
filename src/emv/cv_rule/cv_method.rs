@@ -5,12 +5,12 @@
 // Uses
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 
-use crate::{error::ParseError, non_composite_value_repr_fallible};
+use crate::{enum_repr_fallible, error::ParseError};
 
-non_composite_value_repr_fallible! {
+enum_repr_fallible! {
 /// A Cardholder Verification Method.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum CvMethod: u8, ParseError::NonCompliant {
+pub enum CvMethod: u8, ParseError, { |_| ParseError::NonCompliant } {
 	FailCvmProcessing          = 0b00_0000 => "Fail CVM processing",
 	PlaintextPin               = 0b00_0001 => "Plaintext PIN verification performed by ICC",
 	EncipheredPinOnline        = 0b00_0010 => "Enciphered PIN verified online",
