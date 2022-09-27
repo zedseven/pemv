@@ -19,7 +19,7 @@ use crate::{
 const MIN_BYTES: usize = 8;
 
 // Struct Implementation
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct CardholderVerificationMethodList {
 	pub x_value: u32,
 	pub y_value: u32,
@@ -54,6 +54,7 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodList {
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for CardholderVerificationMethodList {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		/// This value is chosen as 3 because common currency denominations have

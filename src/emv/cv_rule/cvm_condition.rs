@@ -9,7 +9,7 @@ use crate::{enum_repr_fallible, error::ParseError};
 
 enum_repr_fallible! {
 /// A Cardholder Verification Method Condition.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum CvmCondition: u8, ParseError, { |_| ParseError::NonCompliant } {
 	Always                            = 0x00 => "Always",
 	UnattendedCash                    = 0x01 => "If unattended cash",
@@ -31,7 +31,7 @@ pub enum CvmCondition: u8, ParseError, { |_| ParseError::NonCompliant } {
 
 /// A somewhat dumb workaround to have a [`Display`] impl on
 /// [`Option<CvmCondition>`].
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub struct OptionalCvmCondition {
 	internal: Option<CvmCondition>,
 }

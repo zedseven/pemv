@@ -65,6 +65,7 @@ impl TryFrom<&[u8]> for IssuerActionCodeOnline {
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for IssuerActionCodeOnline {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		let header_colour_spec = header_colour_spec();
@@ -76,5 +77,31 @@ impl DisplayBreakdown for IssuerActionCodeOnline {
 
 		self.tvr
 			.display_breakdown_component_value(stdout, indentation);
+	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use super::IssuerActionCodeOnline;
+	use crate::emv::TerminalVerificationResults;
+
+	// Tests
+	/// Ensures the parsed value here matches the same parsed value in the TVR.
+	#[test]
+	fn iac_matches_tvr() {
+		let raw_value = [0xFF; 5];
+		let expected = TerminalVerificationResults::try_from(raw_value.as_slice())
+			.expect("not testing the TVR code here");
+		let result = IssuerActionCodeOnline::try_from(raw_value.as_slice())
+			.expect("any errors should already be tested by the TVR testing");
+
+		assert_eq!(expected, result.tvr);
+	}
+	/// Ensures there's no panic.
+	#[test]
+	fn default_value_is_ok() {
+		IssuerActionCodeOnline::default();
 	}
 }

@@ -15,7 +15,7 @@ use crate::{enum_no_repr_fallible, error::ParseError, util::print_indentation, D
 
 // Enum Implementation
 enum_no_repr_fallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum PosEntryMode: u8, ParseError, { |_| ParseError::Unrecognised } {
 	Unknown                      = 0x00        => "Unknown",
 	Manual                       = 0x01        => "Manual (keyed entry)",
@@ -55,9 +55,25 @@ impl TryFrom<&[u8]> for PosEntryMode {
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for PosEntryMode {
 	fn display_breakdown(&self, _: &mut StandardStream, indentation: u8) {
 		print_indentation(indentation);
 		println!("{}", self);
 	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use crate::enum_byte_slice_result_matches_true_value_result;
+
+	// Tests
+	enum_byte_slice_result_matches_true_value_result!(
+		super::PosEntryMode,
+		1,
+		0x80,
+		[0x80].as_slice()
+	);
 }

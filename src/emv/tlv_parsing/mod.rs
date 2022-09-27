@@ -45,6 +45,7 @@ impl Default for ProcessedEmvBlock {
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for ProcessedEmvBlock {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		let mut first = true;
@@ -77,6 +78,7 @@ pub struct ProcessedEmvNode {
 	pub child_block: ProcessedEmvBlock,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for ProcessedEmvNode {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		// Display the tag
@@ -192,6 +194,7 @@ impl ProcessedEmvTag {
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for ProcessedEmvTag {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		fn print_tag_name(
@@ -294,7 +297,7 @@ impl TryFrom<RawEmvTag> for ProcessedEmvTag {
 	}
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct RawEmvBlock {
 	pub nodes: Vec<RawEmvNode>,
 }
@@ -316,7 +319,7 @@ impl Default for RawEmvBlock {
 	}
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct RawEmvNode {
 	pub tag: RawEmvTag,
 	pub child_block: RawEmvBlock,
@@ -325,7 +328,7 @@ pub struct RawEmvNode {
 /// A raw EMV tag-value pair, with no meaning associated with it.
 ///
 /// This can be further parsed based on the tag value.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct RawEmvTag {
 	pub tag: Vec<u8>,
 	pub class: TagClass,
@@ -333,6 +336,7 @@ pub struct RawEmvTag {
 	pub data: EmvData,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for RawEmvTag {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		let header_colour_spec = header_colour_spec();
@@ -360,7 +364,7 @@ impl DisplayBreakdown for RawEmvTag {
 }
 
 enum_repr_fallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum TagClass: u8, ParseError, { |_| ParseError::NonCompliant } {
 	Universal       = 0b00 => "Universal",
 	Application     = 0b01 => "Application",
@@ -369,7 +373,7 @@ pub enum TagClass: u8, ParseError, { |_| ParseError::NonCompliant } {
 }
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum DataObjectType {
 	Primitive,
 	Constructed,
@@ -377,7 +381,7 @@ pub enum DataObjectType {
 
 /// EMV data, encoding the ability for data to be masked and therefore
 /// inaccessible.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum EmvData {
 	Normal(Vec<u8>),
 	Masked,
@@ -431,7 +435,7 @@ pub fn is_masked_str(data: &str, masking_characters: &[char]) -> bool {
 	false
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum TlvFormat {
 	BerTlv,
 	Ingenico,

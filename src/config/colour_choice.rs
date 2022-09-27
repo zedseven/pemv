@@ -9,7 +9,7 @@ use crate::error::ParseError;
 /// serialisation.
 ///
 /// [`ColorChoice`]: termcolor::ColorChoice
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Deserialize, Serialize)]
 pub enum ColourChoice {
 	/// Try very hard to emit colors. This includes emitting ANSI colors
 	/// on Windows if the console API is unavailable.

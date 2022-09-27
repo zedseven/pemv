@@ -15,6 +15,7 @@ lto = true
 [dependencies]
 atty = "0.2"
 clap = "3.2"
+derivative = "2.2"
 figment = { version = "0.10", features = ["toml", "env"] }
 serde = "1.0"
 serde_derive = "1.0"

@@ -1,6 +1,7 @@
 //! The module for the trait that defines the interface for bitflag values.
 
 // Uses
+use derivative::Derivative;
 use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
 
 // Public Exports
@@ -15,16 +16,19 @@ use crate::{
 
 /// Represents a single bit or bit range that's enabled, and contains the
 /// meaning & severity of the enabled bit.
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, Derivative)]
+#[derivative(PartialEq, Hash)]
 pub struct EnabledBitRange {
 	pub offset: u8,
 	pub len: u8,
+	#[derivative(PartialEq = "ignore")]
+	#[derivative(Hash = "ignore")]
 	pub explanation: String,
 	pub severity: Severity,
 }
 
 /// Represents the severity of a bit being enabled.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Severity {
 	Normal,
 	Warning,
@@ -62,15 +66,18 @@ impl<V> DisplayBreakdown for V
 where
 	V: BitflagValue,
 {
+	#[cfg(not(tarpaulin_include))]
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		display_breakdown_internal(self, stdout, indentation, false);
 	}
 
+	#[cfg(not(tarpaulin_include))]
 	fn display_breakdown_component_value(&self, stdout: &mut StandardStream, indentation: u8) {
 		display_breakdown_internal(self, stdout, indentation, true);
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 fn display_breakdown_internal<V>(
 	value: &V,
 	stdout: &mut StandardStream,

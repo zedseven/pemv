@@ -11,7 +11,7 @@ use crate::{enum_repr_fallible, error::ParseError, util::print_indentation, Disp
 
 // Enum Implementation
 enum_repr_fallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum TerminalType: u8, ParseError, { |_| ParseError::Unrecognised } {
 	AttendedOnlineOnlyFinancialInstitution = 0x11
 		=> "Attended, Online-Only, Controlled by a Financial Institution",
@@ -68,6 +68,7 @@ impl TryFrom<&[u8]> for TerminalType {
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for TerminalType {
 	fn display_breakdown(&self, _: &mut StandardStream, indentation: u8) {
 		print_indentation(indentation);

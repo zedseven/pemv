@@ -15,7 +15,7 @@ use crate::{enum_repr_fallible, error::ParseError, util::print_indentation, Disp
 
 // Enum Implementation
 enum_repr_fallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum TransactionType: u8, ParseError, { |_| ParseError::Unrecognised } {
 	Purchase         = 0x00 => "Purchase",
 	CashAdvance      = 0x01 => "Cash Advance",
@@ -46,6 +46,7 @@ impl TryFrom<&[u8]> for TransactionType {
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for TransactionType {
 	fn display_breakdown(&self, _: &mut StandardStream, indentation: u8) {
 		print_indentation(indentation);

@@ -5,27 +5,32 @@
 // Uses
 use std::cmp::Ordering;
 
+use derivative::Derivative;
+
 use super::super::{BitflagValue, EnabledBitRange, Severity};
 use crate::{enum_repr_fallible, error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, Derivative)]
+#[derivative(PartialEq, Hash)]
 pub struct CommonCoreIdentifier {
-	bytes: <Self as BitflagValue>::Bytes,
+	#[derivative(PartialEq = "ignore")]
+	#[derivative(Hash = "ignore")]
+	pub(crate) bytes: <Self as BitflagValue>::Bytes, // TODO: Remove all this nonsense
 	// Byte 1 Values
 	pub iad_format_code: FormatCode,
 	pub cryptogram_version: CryptogramVersion,
 }
 
 enum_repr_fallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum FormatCode: u8, ParseError, { |_| ParseError::NonCcdCompliant } {
 	A = 0b1010 => "Format A",
 }
 }
 
 enum_repr_fallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum CryptogramVersion: u8, ParseError, { |_| ParseError::NonCcdCompliant } {
 	TripleDes = 0b0101 => "Triple DES (3DES)",
 	Aes       = 0b0110 => "AES",
@@ -57,6 +62,7 @@ impl TryFrom<&[u8]> for CommonCoreIdentifier {
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl BitflagValue for CommonCoreIdentifier {
 	const NUM_BYTES: usize = 1;
 	const USED_BITS_MASK: &'static [u8] = &[0b1111_1111];
@@ -87,5 +93,36 @@ impl BitflagValue for CommonCoreIdentifier {
 		});
 
 		enabled_bits
+	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use super::{CommonCoreIdentifier, CryptogramVersion, FormatCode};
+	use crate::{error::ParseError, wrong_byte_count};
+
+	// Tests
+	wrong_byte_count!(super::CommonCoreIdentifier, 1);
+
+	#[test]
+	fn parse_from_bytes_valid() {
+		let expected = Ok(CommonCoreIdentifier {
+			bytes: [0b1010_0110],
+			iad_format_code: FormatCode::A,
+			cryptogram_version: CryptogramVersion::Aes,
+		});
+		let result = CommonCoreIdentifier::try_from([0b1010_0110].as_slice());
+
+		assert_eq!(expected, result);
+	}
+
+	#[test]
+	fn parse_from_bytes_non_ccd_compliant() {
+		let expected = Err(ParseError::NonCcdCompliant);
+		let result = CommonCoreIdentifier::try_from([0b1000_1010].as_slice());
+
+		assert_eq!(expected, result);
 	}
 }

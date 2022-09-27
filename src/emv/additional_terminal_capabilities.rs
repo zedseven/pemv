@@ -5,12 +5,17 @@
 // Uses
 use std::cmp::Ordering;
 
+use derivative::Derivative;
+
 use super::{BitflagValue, EnabledBitRange, Severity};
 use crate::{error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, Derivative)]
+#[derivative(PartialEq, Hash)]
 pub struct AdditionalTerminalCapabilities {
+	#[derivative(PartialEq = "ignore")]
+	#[derivative(Hash = "ignore")]
 	bytes: <Self as BitflagValue>::Bytes,
 	// Byte 1 (Transaction Type Capabilities) Values
 	pub txn_cash: bool,
@@ -343,4 +348,16 @@ impl BitflagValue for AdditionalTerminalCapabilities {
 
 		enabled_bits
 	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use crate::{bitflag_display_bits, bitflag_unique_values, wrong_byte_count};
+
+	// Tests
+	wrong_byte_count!(super::AdditionalTerminalCapabilities, 5);
+	bitflag_unique_values!(super::AdditionalTerminalCapabilities, 5);
+	bitflag_display_bits!(super::AdditionalTerminalCapabilities, 5);
 }

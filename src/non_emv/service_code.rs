@@ -17,7 +17,7 @@ use crate::{
 };
 
 // Struct Implementation
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ServiceCode {
 	number: u16,
 	interchange: Interchange,
@@ -28,7 +28,7 @@ pub struct ServiceCode {
 }
 
 enum_no_repr_infallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Interchange: u8 {
 	International = 1 | 2 => "International",
 	National      = 5 | 6 => "National",
@@ -39,7 +39,7 @@ pub enum Interchange: u8 {
 }
 
 enum_no_repr_infallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Technology: u8 {
 	IntegratedCircuitCard = 2 | 6 => "Integrated circuit card (ICC)",
 	MagneticStripeOnly    = _     => "Magnetic stripe only (MSR)",
@@ -47,7 +47,7 @@ pub enum Technology: u8 {
 }
 
 enum_no_repr_infallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum AuthorisationProcessing: u8 {
 	Normal                          = 0 => "Normal",
 	ByIssuer                        = 2 => "By issuer only (no offline authorisation)",
@@ -58,7 +58,7 @@ pub enum AuthorisationProcessing: u8 {
 }
 
 enum_no_repr_infallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum AllowedServices: u8 {
 	NoRestrictions       = 0 | 1 | 6 => "No restrictions",
 	GoodsAndServicesOnly = 2 | 5 | 7 => "Goods and services only",
@@ -69,7 +69,7 @@ pub enum AllowedServices: u8 {
 }
 
 enum_no_repr_infallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum PinRequirements: u8 {
 	PinRequired           = 0 | 3 | 5 => "PIN required",
 	PromptIfPinpadPresent = 6 | 7     => "Prompt for PIN if PIN pad is present",
@@ -172,7 +172,6 @@ impl DisplayBreakdown for ServiceCode {
 		println!("               {}", self.technology);
 	}
 }
-// Coverage-Excluded Section End
 
 // Unit Tests
 #[cfg(test)]

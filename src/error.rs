@@ -7,7 +7,7 @@ use std::{
 };
 
 /// An error that occurred during parsing.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum ParseError {
 	/// The wrong number of bytes were present.
 	ByteCountIncorrect {

@@ -9,13 +9,18 @@ mod cvm_condition;
 // Uses
 use std::cmp::Ordering;
 
+use derivative::Derivative;
+
 pub use self::{cv_method::*, cvm_condition::*};
 use super::{BitflagValue, EnabledBitRange, Severity};
 use crate::{error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, Derivative)]
+#[derivative(PartialEq, Hash)]
 pub struct CardholderVerificationRule {
+	#[derivative(PartialEq = "ignore")]
+	#[derivative(Hash = "ignore")]
 	bytes: <Self as BitflagValue>::Bytes,
 	// Byte 1 Values
 	pub continue_if_unsuccessful: bool,

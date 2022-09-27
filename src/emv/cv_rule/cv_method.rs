@@ -9,7 +9,7 @@ use crate::{enum_repr_fallible, error::ParseError};
 
 enum_repr_fallible! {
 /// A Cardholder Verification Method.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum CvMethod: u8, ParseError, { |_| ParseError::NonCompliant } {
 	FailCvmProcessing          = 0b00_0000 => "Fail CVM processing",
 	PlaintextPin               = 0b00_0001 => "Plaintext PIN verification performed by ICC",
@@ -27,7 +27,7 @@ pub enum CvMethod: u8, ParseError, { |_| ParseError::NonCompliant } {
 
 /// A somewhat dumb workaround to have a [`Display`] impl on
 /// [`Option<CvMethod>`].
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub struct OptionalCvMethod {
 	internal: Option<CvMethod>,
 }

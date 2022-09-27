@@ -5,12 +5,17 @@
 // Uses
 use std::{cmp::Ordering, fmt::Debug};
 
+use derivative::Derivative;
+
 use super::{cv_rule::CardholderVerificationRule, BitflagValue, EnabledBitRange, Severity};
 use crate::{enum_repr_fallible, error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, Derivative)]
+#[derivative(PartialEq, Hash)]
 pub struct CardholderVerificationMethodResults {
+	#[derivative(PartialEq = "ignore")]
+	#[derivative(Hash = "ignore")]
 	bytes: <Self as BitflagValue>::Bytes,
 	// CV Rule
 	pub cv_rule: CardholderVerificationRule,
@@ -19,7 +24,7 @@ pub struct CardholderVerificationMethodResults {
 }
 
 enum_repr_fallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum CvmResult: u8, ParseError, { |_| ParseError::NonCompliant } {
 	Unknown    = 0b00 => "Unknown",
 	Failed     = 0b01 => "Failed",

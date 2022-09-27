@@ -14,7 +14,7 @@ use crate::{enum_no_repr_fallible, error::ParseError, util::print_indentation, D
 
 // Enum Implementation
 enum_no_repr_fallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum AuthorisationResponseCode: &str, ParseError, { |_| ParseError::Unrecognised } {
 	Approval                            = "00"        => "Approval",
 	Call                                = "01"        => "Call",
@@ -104,6 +104,7 @@ impl TryFrom<&[u8]> for AuthorisationResponseCode {
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for AuthorisationResponseCode {
 	fn display_breakdown(&self, _: &mut StandardStream, indentation: u8) {
 		print_indentation(indentation);

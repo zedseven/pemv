@@ -5,13 +5,18 @@
 // Uses
 use std::{cmp::Ordering, fmt::Debug};
 
+use derivative::Derivative;
+
 use super::super::{BitflagValue, EnabledBitRange, Severity};
 use crate::{enum_repr_fallible, error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, Derivative)]
+#[derivative(PartialEq, Hash)]
 pub struct CardVerificationResults {
-	bytes: <Self as BitflagValue>::Bytes,
+	#[derivative(PartialEq = "ignore")]
+	#[derivative(Hash = "ignore")]
+	pub(crate) bytes: <Self as BitflagValue>::Bytes, // TODO: Remove all this nonsense
 	// Byte 1 Values
 	pub gen_ac_2_application_cryptogram_type: GenAc2ApplicationCryptogramType,
 	pub gen_ac_1_application_cryptogram_type: GenAc1ApplicationCryptogramType,
@@ -43,7 +48,7 @@ pub struct CardVerificationResults {
 }
 
 enum_repr_fallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum GenAc1ApplicationCryptogramType: u8, ParseError, { |_| ParseError::NonCcdCompliant } {
 	Aac  = 0b00 => "AAC (Application Authentication Cryptogram)",
 	Tc   = 0b01 => "TC (Transaction Certificate)",
@@ -53,7 +58,7 @@ pub enum GenAc1ApplicationCryptogramType: u8, ParseError, { |_| ParseError::NonC
 }
 
 enum_repr_fallible! {
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum GenAc2ApplicationCryptogramType: u8, ParseError, { |_| ParseError::NonCcdCompliant } {
 	Aac                     = 0b00 => "AAC (Application Authentication Cryptogram)",
 	Tc                      = 0b01 => "TC (Transaction Certificate)",
@@ -334,4 +339,16 @@ impl BitflagValue for CardVerificationResults {
 
 		enabled_bits
 	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use crate::{bitflag_display_bits, bitflag_unique_values, wrong_byte_count};
+
+	// Tests
+	wrong_byte_count!(super::CardVerificationResults, 5);
+	bitflag_unique_values!(super::CardVerificationResults, 5);
+	bitflag_display_bits!(super::CardVerificationResults, 5);
 }

@@ -5,12 +5,17 @@
 // Uses
 use std::cmp::Ordering;
 
+use derivative::Derivative;
+
 use super::{BitflagValue, EnabledBitRange, Severity};
 use crate::{error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, Derivative)]
+#[derivative(PartialEq, Hash)]
 pub struct TerminalCapabilities {
+	#[derivative(PartialEq = "ignore")]
+	#[derivative(Hash = "ignore")]
 	bytes: <Self as BitflagValue>::Bytes,
 	// Byte 1 (Card Data Input Capabilities) Values
 	pub input_manual_key_entry: bool,
@@ -179,4 +184,16 @@ impl BitflagValue for TerminalCapabilities {
 
 		enabled_bits
 	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use crate::{bitflag_display_bits, bitflag_unique_values, wrong_byte_count};
+
+	// Tests
+	wrong_byte_count!(super::TerminalCapabilities, 3);
+	bitflag_unique_values!(super::TerminalCapabilities, 3);
+	bitflag_display_bits!(super::TerminalCapabilities, 3);
 }

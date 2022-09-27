@@ -5,12 +5,17 @@
 // Uses
 use std::cmp::Ordering;
 
+use derivative::Derivative;
+
 use super::{BitflagValue, EnabledBitRange, Severity};
 use crate::{error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, Derivative)]
+#[derivative(PartialEq, Hash)]
 pub struct TerminalVerificationResults {
+	#[derivative(PartialEq = "ignore")]
+	#[derivative(Hash = "ignore")]
 	bytes: <Self as BitflagValue>::Bytes,
 	// Byte 1 Values
 	pub offline_data_authentication_not_performed: bool,
@@ -329,4 +334,16 @@ impl BitflagValue for TerminalVerificationResults {
 
 		enabled_bits
 	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use crate::{bitflag_display_bits, bitflag_unique_values, wrong_byte_count};
+
+	// Tests
+	wrong_byte_count!(super::TerminalVerificationResults, 5);
+	bitflag_unique_values!(super::TerminalVerificationResults, 5);
+	bitflag_display_bits!(super::TerminalVerificationResults, 5);
 }

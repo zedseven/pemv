@@ -14,7 +14,7 @@ use crate::{
 };
 
 // Struct Implementation
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct IssuerApplicationData {
 	pub cci: CommonCoreIdentifier,
 	pub format_specific_data: FormatSpecificData,
@@ -47,7 +47,7 @@ impl TryFrom<&[u8]> for IssuerApplicationData {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum FormatSpecificData {
 	A {
 		dki: u8,
@@ -99,6 +99,7 @@ impl PartialEq<FormatSpecificData> for FormatCode {
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for IssuerApplicationData {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		let header_colour_spec = header_colour_spec();
@@ -145,5 +146,181 @@ impl DisplayBreakdown for IssuerApplicationData {
 				print_bytes(&issuer_discretionary_data[..], 16, indentation + 1);
 			}
 		}
+	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use super::{
+		super::{
+			CardVerificationResults,
+			CommonCoreIdentifier,
+			CryptogramVersion,
+			FormatCode,
+			GenAc1ApplicationCryptogramType,
+			GenAc2ApplicationCryptogramType,
+		},
+		FormatSpecificData,
+		IssuerApplicationData,
+	};
+	use crate::error::ParseError;
+
+	// Tests
+	#[test]
+	fn ccd_compliant() {
+		let expected = Ok(IssuerApplicationData {
+			cci: CommonCoreIdentifier {
+				bytes: [0b1010_0101],
+				iad_format_code: FormatCode::A,
+				cryptogram_version: CryptogramVersion::TripleDes,
+			},
+			format_specific_data: FormatSpecificData::A {
+				dki: 1,
+				cvr: CardVerificationResults {
+					bytes: [
+						0b1010_0010,
+						0b0011_0000,
+						0b0011_0000,
+						0b0001_0000,
+						0b0000_0000,
+					],
+					gen_ac_2_application_cryptogram_type:
+						GenAc2ApplicationCryptogramType::SecondGenAcNotRequested,
+					gen_ac_1_application_cryptogram_type: GenAc1ApplicationCryptogramType::Arqc,
+					cda_performed: false,
+					offline_dda_performed: false,
+					issuer_authentication_not_performed: true,
+					issuer_authentication_failed: false,
+					pin_try_count: 3,
+					offline_pin_verification_performed: false,
+					offline_pin_verification_failed: false,
+					pin_try_limit_exceeded: false,
+					last_online_transaction_not_completed: false,
+					offline_transaction_count_limit_lower_exceeded: false,
+					offline_transaction_count_limit_upper_exceeded: false,
+					offline_cumulative_amount_limit_lower_exceeded: true,
+					offline_cumulative_amount_limit_upper_exceeded: true,
+					issuer_discretionary_bit_1: false,
+					issuer_discretionary_bit_2: false,
+					issuer_discretionary_bit_3: false,
+					issuer_discretionary_bit_4: false,
+					successful_issuer_script_commands_with_secure_messaging: 1,
+					issuer_script_processing_failed: false,
+					offline_data_authentication_failed_on_previous_transaction: false,
+					go_online_on_next_transaction: false,
+					unable_to_go_online: false,
+				},
+				counter_bytes: [0x00; 8],
+				issuer_discretionary_data: [
+					0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+					0x00, 0x00,
+				],
+			},
+		});
+		let result = IssuerApplicationData::try_from(
+			[
+				0x0F, 0xA5, 0x01, 0xA2, 0x30, 0x30, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x0F, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00,
+			]
+			.as_slice(),
+		);
+
+		assert_eq!(expected, result);
+	}
+
+	/// This tests with data that's not even the right length.
+	#[test]
+	fn non_ccd_compliant_wrong_byte_count() {
+		let expected = Err(ParseError::NonCcdCompliant);
+		let result = IssuerApplicationData::try_from([0x00; 7].as_slice());
+
+		assert_eq!(expected, result);
+	}
+
+	/// This tests with data that is the right length, but has the wrong
+	/// internal structure.
+	#[test]
+	fn non_ccd_compliant_invalid_structure() {
+		let expected = Err(ParseError::NonCcdCompliant);
+		let result = IssuerApplicationData::try_from(
+			[
+				0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00,
+			]
+			.as_slice(),
+		);
+
+		assert_eq!(expected, result);
+	}
+
+	/// This tests with data that is the right length and has the right internal
+	/// structure, but the actual data to parse is invalid.
+	#[test]
+	fn non_ccd_compliant_valid_structure() {
+		let expected = Err(ParseError::NonCcdCompliant);
+		let result = IssuerApplicationData::try_from(
+			[
+				0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00, 0x00, 0x00, 0x00,
+			]
+			.as_slice(),
+		);
+
+		assert_eq!(expected, result);
+	}
+
+	#[test]
+	fn comparing_format_codes() {
+		let format_code = FormatCode::A;
+		let format_specific_data = FormatSpecificData::A {
+			dki: 1,
+			cvr: CardVerificationResults {
+				bytes: [
+					0b1010_0010,
+					0b0011_0000,
+					0b0011_0000,
+					0b0001_0000,
+					0b0000_0000,
+				],
+				gen_ac_2_application_cryptogram_type:
+					GenAc2ApplicationCryptogramType::SecondGenAcNotRequested,
+				gen_ac_1_application_cryptogram_type: GenAc1ApplicationCryptogramType::Arqc,
+				cda_performed: false,
+				offline_dda_performed: false,
+				issuer_authentication_not_performed: true,
+				issuer_authentication_failed: false,
+				pin_try_count: 3,
+				offline_pin_verification_performed: false,
+				offline_pin_verification_failed: false,
+				pin_try_limit_exceeded: false,
+				last_online_transaction_not_completed: false,
+				offline_transaction_count_limit_lower_exceeded: false,
+				offline_transaction_count_limit_upper_exceeded: false,
+				offline_cumulative_amount_limit_lower_exceeded: true,
+				offline_cumulative_amount_limit_upper_exceeded: true,
+				issuer_discretionary_bit_1: false,
+				issuer_discretionary_bit_2: false,
+				issuer_discretionary_bit_3: false,
+				issuer_discretionary_bit_4: false,
+				successful_issuer_script_commands_with_secure_messaging: 1,
+				issuer_script_processing_failed: false,
+				offline_data_authentication_failed_on_previous_transaction: false,
+				go_online_on_next_transaction: false,
+				unable_to_go_online: false,
+			},
+			counter_bytes: [0x00; 8],
+			issuer_discretionary_data: [
+				0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				0x00,
+			],
+		};
+
+		assert_eq!(format_code, format_specific_data);
+		assert_eq!(format_specific_data, format_code);
 	}
 }

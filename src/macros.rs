@@ -34,11 +34,23 @@ macro_rules! enum_no_repr_fallible {
 			}
         }
 
+		#[cfg(not(tarpaulin_include))]
 		impl std::fmt::Display for $name {
 			fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 				f.write_str(match self {
 					$(Self::$variant => $string,)*
 				})
+			}
+		}
+
+		#[cfg(tarpaulin)]
+		#[cfg(not(tarpaulin_include))]
+		impl $name {
+			pub fn cover_all_enum_variants() {
+				$(
+					Self::$variant.to_string();
+					Self::$variant.clone();
+				)*
 			}
 		}
     };
@@ -74,11 +86,23 @@ macro_rules! enum_no_repr_infallible {
 			}
         }
 
+		#[cfg(not(tarpaulin_include))]
 		impl std::fmt::Display for $name {
 			fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 				f.write_str(match self {
 					$(Self::$variant => $string,)*
 				})
+			}
+		}
+
+		#[cfg(tarpaulin)]
+		#[cfg(not(tarpaulin_include))]
+		impl $name {
+			pub fn cover_all_enum_variants() {
+				$(
+					Self::$variant.to_string();
+					Self::$variant.clone();
+				)*
 			}
 		}
     };
@@ -118,11 +142,23 @@ macro_rules! enum_repr_fallible {
 			}
         }
 
+		#[cfg(not(tarpaulin_include))]
 		impl std::fmt::Display for $name {
 			fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 				f.write_str(match self {
 					$(Self::$variant => $string,)*
 				})
+			}
+		}
+
+		#[cfg(tarpaulin)]
+		#[cfg(not(tarpaulin_include))]
+		impl $name {
+			pub fn cover_all_enum_variants() {
+				$(
+					Self::$variant.to_string();
+					Self::$variant.clone();
+				)*
 			}
 		}
     };
@@ -158,11 +194,23 @@ macro_rules! enum_repr_infallible {
 			}
         }
 
+		#[cfg(not(tarpaulin_include))]
 		impl std::fmt::Display for $name {
 			fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 				f.write_str(match self {
 					$(Self::$variant => $string,)*
 				})
+			}
+		}
+
+		#[cfg(tarpaulin)]
+		#[cfg(not(tarpaulin_include))]
+		impl $name {
+			pub fn cover_all_enum_variants() {
+				$(
+					Self::$variant.to_string();
+					Self::$variant.clone();
+				)*
 			}
 		}
     };

@@ -35,6 +35,8 @@
 	unused_macros
 )]
 
+extern crate core;
+
 // Modules
 mod cli;
 mod config;
@@ -43,6 +45,7 @@ mod error;
 mod macros;
 mod non_emv;
 mod output_colours;
+mod testing_macros;
 mod util;
 
 // Uses
@@ -189,5 +192,84 @@ fn main() {
 
 	if let Some(error) = parse_error {
 		eprintln!("{}", error);
+	}
+}
+
+// Unit Tests
+/// This is because Tarpaulin currently recognises every enum variant line
+/// as uncovered because the [`Display`] impl was never called in testing.
+///
+/// It also marks each fallible enum's error function as uncovered, so that's
+/// also handled here.
+///
+/// `#[cfg(not(tarpaulin_include))]` doesn't work here unfortunately, and
+/// the number of 'uncovered' lines is too large to ignore. (>50% of lines
+/// in some files)
+#[cfg(test)]
+#[cfg(tarpaulin)]
+mod tests {
+	// Uses
+	use crate::{
+		emv::{
+			ccd::{
+				CryptogramVersion,
+				FormatCode,
+				GenAc1ApplicationCryptogramType,
+				GenAc2ApplicationCryptogramType,
+			},
+			AuthorisationResponseCode,
+			CvMethod,
+			CvmCondition,
+			CvmResult,
+			PosEntryMode,
+			TagClass,
+			TerminalType,
+			TransactionType,
+		},
+		non_emv::{
+			AllowedServices,
+			AuthorisationProcessing,
+			Interchange,
+			PinRequirements,
+			Technology,
+		},
+	};
+
+	#[test]
+	fn cover_all_enum_variants() {
+		AllowedServices::cover_all_enum_variants();
+		AllowedServices::try_from(0xFF);
+		AuthorisationProcessing::cover_all_enum_variants();
+		AuthorisationProcessing::try_from(0xFF);
+		AuthorisationResponseCode::cover_all_enum_variants();
+		AuthorisationResponseCode::try_from("");
+		CryptogramVersion::cover_all_enum_variants();
+		CryptogramVersion::try_from(0xFF);
+		CvmCondition::cover_all_enum_variants();
+		CvmCondition::try_from(0xFF);
+		CvMethod::cover_all_enum_variants();
+		CvMethod::try_from(0xFF);
+		CvmResult::cover_all_enum_variants();
+		CvmResult::try_from(0xFF);
+		FormatCode::cover_all_enum_variants();
+		FormatCode::try_from(0xFF);
+		GenAc1ApplicationCryptogramType::cover_all_enum_variants();
+		GenAc1ApplicationCryptogramType::try_from(0xFF);
+		GenAc2ApplicationCryptogramType::cover_all_enum_variants();
+		GenAc2ApplicationCryptogramType::try_from(0xFF);
+		Interchange::cover_all_enum_variants();
+		Interchange::try_from(0xFF);
+		PinRequirements::cover_all_enum_variants();
+		PinRequirements::try_from(0xFF);
+		PosEntryMode::cover_all_enum_variants();
+		PosEntryMode::try_from(0xFF);
+		TagClass::cover_all_enum_variants();
+		TagClass::try_from(0xFF);
+		Technology::cover_all_enum_variants();
+		Technology::try_from(0xFF);
+		TerminalType::cover_all_enum_variants();
+		TerminalType::try_from(0xFF);
+		TransactionType::cover_all_enum_variants();
+		TransactionType::try_from(0xFF);
 	}
 }
