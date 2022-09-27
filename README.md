@@ -1,6 +1,7 @@
 # pemv
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](LICENSE-MIT)
 [![# Issues](https://img.shields.io/github/issues/zedseven/pemv.svg?logo=github)](https://github.com/zedseven/pemv/issues)
+[![Continuous Integration Status](https://img.shields.io/github/workflow/status/zedseven/pemv/Integrity?logo=github-actions&logoColor=white)](https://github.com/zedseven/pemv/actions)
 [![Code Coverage](https://img.shields.io/codecov/c/github/zedseven/pemv?logo=codecov&logoColor=white)](https://app.codecov.io/gh/zedseven/pemv)
 
 A utility for parsing data related to EMV and payment cards.
