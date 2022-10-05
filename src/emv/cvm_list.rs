@@ -7,7 +7,13 @@ use std::cmp::Ordering;
 
 use termcolor::{StandardStream, WriteColor};
 
-use super::{BitflagValue, CardholderVerificationRule, OptionalCvMethod, OptionalCvmCondition};
+use super::{
+	BitflagValue,
+	CardholderVerificationRule,
+	CvmCondition,
+	OptionalCvMethod,
+	OptionalCvmCondition,
+};
 use crate::{
 	error::ParseError,
 	output_colours::{bold_colour_spec, header_colour_spec},
@@ -73,22 +79,32 @@ impl DisplayBreakdown for CardholderVerificationMethodList {
 			.max(num_dec_digits(self.y_value))
 			.max(MIN_VALUE_DIGITS);
 
-		// Print the X value
-		print_indentation(indentation);
-		stdout.set_color(&header_colour_spec).ok();
-		print!("X Value:");
-		stdout.reset().ok();
-		println!(
-			" {:0>1$} (implicit decimal point based on application currency)",
-			self.x_value, value_padding_length
-		);
+		// Only display the X and Y values if one of them is non-zero or one of the CVM
+		// conditions references them, since most of the time they go unused
+		if self.x_value != 0
+			|| self.y_value != 0
+			|| self.cv_rules.iter().any(|cv_rule| {
+				cv_rule
+					.condition
+					.map_or(false, CvmCondition::references_x_or_y_value)
+			}) {
+			// Print the X value
+			print_indentation(indentation);
+			stdout.set_color(&header_colour_spec).ok();
+			print!("X Value:");
+			stdout.reset().ok();
+			println!(
+				" {:0>1$} (implicit decimal point based on application currency)",
+				self.x_value, value_padding_length
+			);
 
-		// Print the Y value
-		print_indentation(indentation);
-		stdout.set_color(&header_colour_spec).ok();
-		print!("Y Value:");
-		stdout.reset().ok();
-		println!(" {:0>1$}", self.y_value, value_padding_length);
+			// Print the Y value
+			print_indentation(indentation);
+			stdout.set_color(&header_colour_spec).ok();
+			print!("Y Value:");
+			stdout.reset().ok();
+			println!(" {:0>1$}", self.y_value, value_padding_length);
+		}
 
 		// Print the CV Rules
 		print_indentation(indentation);

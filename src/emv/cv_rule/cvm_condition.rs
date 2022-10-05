@@ -29,6 +29,20 @@ pub enum CvmCondition: u8, ParseError, { |_| ParseError::NonCompliant } {
 }
 }
 
+impl CvmCondition {
+	/// Simply determines if the CVM condition is one that references the X or Y
+	/// value from the CVM list.
+	pub fn references_x_or_y_value(self) -> bool {
+		matches!(
+			self,
+			Self::InApplicationCurrencyUnderX
+				| Self::InApplicationCurrencyOverX
+				| Self::InApplicationCurrencyUnderY
+				| Self::InApplicationCurrencyOverY
+		)
+	}
+}
+
 /// A somewhat dumb workaround to have a [`Display`] impl on
 /// [`Option<CvmCondition>`].
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
