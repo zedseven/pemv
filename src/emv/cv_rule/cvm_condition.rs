@@ -36,24 +36,28 @@ pub struct OptionalCvmCondition {
 	internal: Option<CvmCondition>,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl From<Option<CvmCondition>> for OptionalCvmCondition {
 	fn from(value: Option<CvmCondition>) -> Self {
 		Self { internal: value }
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl From<OptionalCvmCondition> for Option<CvmCondition> {
 	fn from(value: OptionalCvmCondition) -> Self {
 		value.internal
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Debug for OptionalCvmCondition {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		write!(f, "{:?}", self.internal)
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Display for OptionalCvmCondition {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		if let Some(method) = &self.internal {

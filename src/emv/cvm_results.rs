@@ -56,6 +56,7 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodResults {
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl BitflagValue for CardholderVerificationMethodResults {
 	const NUM_BYTES: usize = 3;
 	const USED_BITS_MASK: &'static [u8] = &[0b0111_1111, 0b1111_1111, 0b1111_1111];
@@ -86,5 +87,38 @@ impl BitflagValue for CardholderVerificationMethodResults {
 		});
 
 		enabled_bits
+	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use super::{
+		super::{CardholderVerificationRule, CvMethod, CvmCondition},
+		CardholderVerificationMethodResults,
+		CvmResult,
+	};
+	use crate::wrong_byte_count;
+
+	// Tests
+	wrong_byte_count!(super::CardholderVerificationMethodResults, 3);
+
+	#[test]
+	fn parse_from_bytes_valid() {
+		let expected = Ok(CardholderVerificationMethodResults {
+			bytes: [0b0101_1110, 0x03, 0b10],
+			cv_rule: CardholderVerificationRule {
+				bytes: [0b0101_1110, 0x03],
+				continue_if_unsuccessful: true,
+				method: Some(CvMethod::Signature),
+				condition: Some(CvmCondition::TerminalSupported),
+			},
+			result: CvmResult::Successful,
+		});
+		let result =
+			CardholderVerificationMethodResults::try_from([0b0101_1110, 0x03, 0b10].as_slice());
+
+		assert_eq!(expected, result);
 	}
 }

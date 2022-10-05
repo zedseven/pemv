@@ -53,3 +53,19 @@ impl DisplayBreakdown for TransactionType {
 		println!("{}", self);
 	}
 }
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use crate::{enum_byte_slice_result_matches_true_value_result, wrong_byte_count};
+
+	// Tests
+	wrong_byte_count!(super::TransactionType, 1);
+	enum_byte_slice_result_matches_true_value_result!(
+		super::TransactionType,
+		1,
+		0x20,
+		[0x20].as_slice()
+	);
+}

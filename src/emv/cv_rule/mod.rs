@@ -21,7 +21,7 @@ use crate::{error::ParseError, util::byte_slice_to_u64};
 pub struct CardholderVerificationRule {
 	#[derivative(PartialEq = "ignore")]
 	#[derivative(Hash = "ignore")]
-	bytes: <Self as BitflagValue>::Bytes,
+	pub(crate) bytes: <Self as BitflagValue>::Bytes, // TODO: Remove all this nonsense
 	// Byte 1 Values
 	pub continue_if_unsuccessful: bool,
 	pub method: Option<CvMethod>,
@@ -54,6 +54,11 @@ impl TryFrom<&[u8]> for CardholderVerificationRule {
 	}
 }
 
+// Not included in coverage because the bit display values have no value in
+// testing here. Normally we test to ensure there are no duplicate or misplaced
+// values, but that's only helpful for true bitflag types where every bit is
+// unique.
+#[cfg(not(tarpaulin_include))]
 impl BitflagValue for CardholderVerificationRule {
 	const NUM_BYTES: usize = 2;
 	const USED_BITS_MASK: &'static [u8] = &[0b0111_1111, 0b1111_1111];
@@ -92,5 +97,29 @@ impl BitflagValue for CardholderVerificationRule {
 		});
 
 		enabled_bits
+	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use super::{CardholderVerificationRule, CvMethod, CvmCondition};
+	use crate::wrong_byte_count;
+
+	// Tests
+	wrong_byte_count!(super::CardholderVerificationRule, 2);
+
+	#[test]
+	fn parse_from_bytes_valid() {
+		let expected = Ok(CardholderVerificationRule {
+			bytes: [0b0101_1110, 0x03],
+			continue_if_unsuccessful: true,
+			method: Some(CvMethod::Signature),
+			condition: Some(CvmCondition::TerminalSupported),
+		});
+		let result = CardholderVerificationRule::try_from([0b0101_1110, 0x03].as_slice());
+
+		assert_eq!(expected, result);
 	}
 }

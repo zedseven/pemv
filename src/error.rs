@@ -15,6 +15,7 @@ pub enum ParseError {
 		expected: usize,
 		found: usize,
 	},
+	ByteCountNotDivisibleIntoComponents,
 	/// The bytes provided are not valid.
 	InvalidBytes,
 	/// The string provided couldn't be parsed as a number.
@@ -50,6 +51,11 @@ impl Display for ParseError {
 				},
 				expected,
 				found
+			),
+			Self::ByteCountNotDivisibleIntoComponents => write!(
+				f,
+				"The number of bytes provided is not divisible into the components of the value. \
+				 Please check the format of the input data."
 			),
 			Self::InvalidBytes => write!(f, "The bytes provided are not valid."),
 			Self::InvalidNumber => write!(

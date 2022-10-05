@@ -32,24 +32,28 @@ pub struct OptionalCvMethod {
 	internal: Option<CvMethod>,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl From<Option<CvMethod>> for OptionalCvMethod {
 	fn from(value: Option<CvMethod>) -> Self {
 		Self { internal: value }
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl From<OptionalCvMethod> for Option<CvMethod> {
 	fn from(value: OptionalCvMethod) -> Self {
 		value.internal
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Debug for OptionalCvMethod {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		write!(f, "{:?}", self.internal)
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Display for OptionalCvMethod {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		if let Some(method) = &self.internal {

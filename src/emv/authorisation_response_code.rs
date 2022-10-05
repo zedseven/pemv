@@ -111,3 +111,32 @@ impl DisplayBreakdown for AuthorisationResponseCode {
 		println!("{}", self);
 	}
 }
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use super::AuthorisationResponseCode;
+	use crate::{
+		enum_byte_slice_result_matches_true_value_result,
+		error::ParseError,
+		wrong_byte_count,
+	};
+
+	// Tests
+	wrong_byte_count!(super::AuthorisationResponseCode, 2);
+	enum_byte_slice_result_matches_true_value_result!(
+		super::AuthorisationResponseCode,
+		2,
+		"05",
+		b"05".as_slice()
+	);
+
+	#[test]
+	fn invalid_utf8() {
+		let expected = Err(ParseError::InvalidNumber);
+		let result = AuthorisationResponseCode::try_from([0x00, 0x9F].as_slice());
+
+		assert_eq!(expected, result);
+	}
+}

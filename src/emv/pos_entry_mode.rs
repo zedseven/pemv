@@ -67,9 +67,10 @@ impl DisplayBreakdown for PosEntryMode {
 #[cfg(test)]
 mod tests {
 	// Uses
-	use crate::enum_byte_slice_result_matches_true_value_result;
+	use crate::{enum_byte_slice_result_matches_true_value_result, wrong_byte_count};
 
 	// Tests
+	wrong_byte_count!(super::PosEntryMode, 1);
 	enum_byte_slice_result_matches_true_value_result!(
 		super::PosEntryMode,
 		1,

@@ -37,6 +37,9 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodList {
 				found: bytes.len(),
 			});
 		}
+		if (bytes.len() - MIN_BYTES) % CardholderVerificationRule::NUM_BYTES != 0 {
+			return Err(ParseError::ByteCountNotDivisibleIntoComponents);
+		}
 
 		let x_value = byte_slice_to_u32(&bytes[0..4]);
 		let y_value = byte_slice_to_u32(&bytes[4..8]);
@@ -127,5 +130,131 @@ impl DisplayBreakdown for CardholderVerificationMethodList {
 				}
 			);
 		}
+	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use std::cmp::Ordering;
+
+	use super::{
+		super::{CardholderVerificationRule, CvMethod, CvmCondition},
+		CardholderVerificationMethodList,
+	};
+	use crate::error::ParseError;
+
+	// Tests
+	#[test]
+	fn parse_from_bytes_empty() {
+		let expected = Ok(CardholderVerificationMethodList {
+			x_value: 0,
+			y_value: 0,
+			cv_rules: vec![],
+		});
+		let result = CardholderVerificationMethodList::try_from([0x00; 8].as_slice());
+
+		assert_eq!(expected, result);
+	}
+
+	#[test]
+	fn parse_from_bytes_valid() {
+		let expected = Ok(CardholderVerificationMethodList {
+			x_value: 0x2A,
+			y_value: 0x7B,
+			cv_rules: vec![
+				CardholderVerificationRule {
+					bytes: [0b0000_0100, 0x03],
+					continue_if_unsuccessful: false,
+					method: Some(CvMethod::EncipheredPin),
+					condition: Some(CvmCondition::TerminalSupported),
+				},
+				CardholderVerificationRule {
+					bytes: [0b0101_1110, 0x03],
+					continue_if_unsuccessful: true,
+					method: Some(CvMethod::Signature),
+					condition: Some(CvmCondition::TerminalSupported),
+				},
+				CardholderVerificationRule {
+					bytes: [0b0000_0000, 0x03],
+					continue_if_unsuccessful: false,
+					method: Some(CvMethod::FailCvmProcessing),
+					condition: Some(CvmCondition::Always),
+				},
+			],
+		});
+		let result = CardholderVerificationMethodList::try_from(
+			[
+				0x00,
+				0x00,
+				0x00,
+				0x2A,
+				0x00,
+				0x00,
+				0x00,
+				0x7B,
+				0b0000_0100,
+				0x03,
+				0b0101_1110,
+				0x03,
+				0b0000_0000,
+				0x00,
+			]
+			.as_slice(),
+		);
+
+		assert_eq!(expected, result);
+	}
+
+	#[test]
+	fn parse_from_bytes_invalid_too_short() {
+		let expected = Err(ParseError::ByteCountIncorrect {
+			r#type: Ordering::Greater,
+			expected: 8,
+			found: 3,
+		});
+		let result = CardholderVerificationMethodList::try_from([0x00; 3].as_slice());
+
+		assert_eq!(expected, result);
+	}
+
+	#[test]
+	fn parse_from_bytes_invalid_wrong_parity() {
+		let expected = Err(ParseError::ByteCountNotDivisibleIntoComponents);
+		let result = CardholderVerificationMethodList::try_from([0x00; 9].as_slice());
+
+		assert_eq!(expected, result);
+	}
+
+	#[test]
+	fn parse_from_bytes_unknown_cvm_condition() {
+		let expected = Ok(CardholderVerificationMethodList {
+			x_value: 0,
+			y_value: 0,
+			cv_rules: vec![CardholderVerificationRule {
+				bytes: [0b0000_0010, 0x35],
+				continue_if_unsuccessful: false,
+				method: Some(CvMethod::EncipheredPinOnline),
+				condition: None,
+			}],
+		});
+		let result = CardholderVerificationMethodList::try_from(
+			[
+				0x00,
+				0x00,
+				0x00,
+				0x00,
+				0x00,
+				0x00,
+				0x00,
+				0x00,
+				0b0000_0010,
+				0x35,
+			]
+			.as_slice(),
+		);
+
+		assert_eq!(expected, result);
 	}
 }
