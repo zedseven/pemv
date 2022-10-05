@@ -81,3 +81,27 @@ impl Display for OptionalCvmCondition {
 		}
 	}
 }
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use super::CvmCondition;
+
+	// Tests
+	#[test]
+	fn references_x_or_y_value_true() {
+		let expected = true;
+		let result = CvmCondition::InApplicationCurrencyOverY.references_x_or_y_value();
+
+		assert_eq!(expected, result);
+	}
+
+	#[test]
+	fn references_x_or_y_value_false() {
+		let expected = false;
+		let result = CvmCondition::TerminalSupported.references_x_or_y_value();
+
+		assert_eq!(expected, result);
+	}
+}
