@@ -14,8 +14,8 @@ pub struct TerminalCapabilities: 3 {
 	// Card Data Input Capabilities
 	0 {
 		pub input_manual_key_entry: bool = 0b1000_0000 => "Manual key entry",
-		pub input_magnetic_stripe: bool =  0b0100_0000 => "Magnetic stripe",
-		pub input_icc: bool =              0b0010_0000 => "IC with contacts",
+		pub input_magnetic_stripe: bool =  0b0100_0000 => "Magnetic stripe (MSR)",
+		pub input_icc: bool =              0b0010_0000 => "IC with contacts (ICC)",
 	}
 	// CVM Capabilities
 	1 {

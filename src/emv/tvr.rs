@@ -15,15 +15,15 @@ pub struct TerminalVerificationResults: 5 {
 		pub offline_data_authentication_not_performed: bool = 0b1000_0000
 			=> "Offline data authentication was not performed",
 		pub sda_failed: bool =                                0b0100_0000
-			=> (Error, "SDA failed"),
+			=> (Error, "SDA (Static Data Authentication) failed"),
 		pub icc_data_missing: bool =                          0b0010_0000
 			=> (Error, "ICC data missing"),
 		pub terminal_card_exception: bool =                   0b0001_0000
 			=> (Error, "Card appears on terminal exception file"),
 		pub dda_failed: bool =                                0b0000_1000
-			=> (Error, "DDA failed"),
+			=> (Error, "DDA (Dynamic Data Authentication) failed"),
 		pub cda_failed: bool =                                0b0000_0100
-			=> (Error, "CDA failed"),
+			=> (Error, "CDA (Combined Data Authentication) failed"),
 	}
 	1 {
 		pub icc_terminal_version_mismatch: bool = 0b1000_0000
@@ -41,7 +41,7 @@ pub struct TerminalVerificationResults: 5 {
 		pub cardholder_verification_unsuccessful: bool = 0b1000_0000
 			=> (Warning, "Cardholder verification was not successful"),
 		pub unrecognized_cvm: bool =                     0b0100_0000
-			=> (Warning, "Unrecognised CVM"),
+			=> (Warning, "Unrecognised CVM (Cardholder Verification Method)"),
 		pub pin_try_limit_exceeded: bool =               0b0010_0000
 			=> (Error, "PIN try limit exceeded"),
 		pub pin_entry_required_but_no_pinpad: bool =     0b0001_0000
@@ -66,7 +66,7 @@ pub struct TerminalVerificationResults: 5 {
 	}
 	4 {
 		pub default_tdol_used: bool =                            0b1000_0000
-			=> "Default TDOL used",
+			=> "Default TDOL (Transaction Certificate Data Object List) used",
 		pub issuer_authentication_failed: bool =                 0b0100_0000
 			=> (Error, "Issuer authentication failed"),
 		pub script_processing_failed_before_final_gen_ac: bool = 0b0010_0000

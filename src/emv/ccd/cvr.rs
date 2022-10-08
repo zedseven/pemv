@@ -17,9 +17,9 @@ pub struct CardVerificationResults: 5 {
 		pub gen_ac_1_application_cryptogram_type: GenAc1ApplicationCryptogramType = (0b0011_0000 >> 4)
 			=> (Normal, "Application cryptogram type returned in 1st GENERATE AC: {}"),
 		pub cda_performed: bool =                                                    0b0000_1000
-			=> "CDA performed",
+			=> "CDA (Combined Data Authentication) performed",
 		pub offline_dda_performed: bool =                                            0b0000_0100
-			=> "Offline DDA performed",
+			=> "Offline DDA (Dynamic Data Authentication) performed",
 		pub issuer_authentication_not_performed: bool =                              0b0000_0010
 			=> (Warning, "Issuer authentication not performed"),
 		pub issuer_authentication_failed: bool =                                     0b0000_0001
