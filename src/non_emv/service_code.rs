@@ -120,7 +120,7 @@ impl TryFrom<&[u8]> for ServiceCode {
 
 #[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for ServiceCode {
-	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
+	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8, _: bool) {
 		let bold_colour_spec = bold_colour_spec();
 
 		// Print the numeric representation

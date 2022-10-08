@@ -67,7 +67,7 @@ impl TryFrom<&[u8]> for IssuerActionCodeOnline {
 
 #[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for IssuerActionCodeOnline {
-	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
+	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8, _: bool) {
 		let header_colour_spec = header_colour_spec();
 
 		print_indentation(indentation);
@@ -75,8 +75,7 @@ impl DisplayBreakdown for IssuerActionCodeOnline {
 		println!("If any of the following match the TVR, complete the transaction online:");
 		stdout.reset().ok();
 
-		self.tvr
-			.display_breakdown_component_value(stdout, indentation);
+		self.tvr.display_breakdown(stdout, indentation, false);
 	}
 }
 

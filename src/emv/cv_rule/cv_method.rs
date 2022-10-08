@@ -25,11 +25,10 @@ pub enum CvMethod: u8, ParseError, { |_| ParseError::NonCompliant } {
 }
 }
 
-/// A somewhat dumb workaround to have a [`Display`] impl on
-/// [`Option<CvMethod>`].
+/// A somewhat dumb workaround to have custom impls on [`Option<CvMethod>`].
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub struct OptionalCvMethod {
-	internal: Option<CvMethod>,
+	pub internal: Option<CvMethod>,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -43,6 +42,22 @@ impl From<Option<CvMethod>> for OptionalCvMethod {
 impl From<OptionalCvMethod> for Option<CvMethod> {
 	fn from(value: OptionalCvMethod) -> Self {
 		value.internal
+	}
+}
+
+#[cfg(not(tarpaulin_include))]
+impl From<u8> for OptionalCvMethod {
+	fn from(value: u8) -> Self {
+		Self {
+			internal: CvMethod::try_from(value).ok(),
+		}
+	}
+}
+
+#[cfg(not(tarpaulin_include))]
+impl From<OptionalCvMethod> for u8 {
+	fn from(value: OptionalCvMethod) -> Self {
+		value.internal.map_or(0, Into::into)
 	}
 }
 

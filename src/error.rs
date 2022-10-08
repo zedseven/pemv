@@ -3,6 +3,7 @@
 // Uses
 use std::{
 	cmp::Ordering,
+	convert::Infallible,
 	fmt::{Display, Formatter, Result as FmtResult},
 };
 
@@ -30,6 +31,15 @@ pub enum ParseError {
 	/// Something is unrecognised and cannot be processed. Not necessarily a
 	/// problem.
 	Unrecognised,
+}
+
+// This is for type compatibility, so that a `Result<T, Infallible>` can be
+// converted to a `Result<T, ParseError>`.
+#[cfg(not(tarpaulin_include))]
+impl From<Infallible> for ParseError {
+	fn from(_: Infallible) -> Self {
+		unreachable!("because the input type is Infallible, this case should never actually occur");
+	}
 }
 
 #[cfg(not(tarpaulin_include))]

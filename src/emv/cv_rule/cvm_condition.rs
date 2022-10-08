@@ -47,7 +47,7 @@ impl CvmCondition {
 /// [`Option<CvmCondition>`].
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 pub struct OptionalCvmCondition {
-	internal: Option<CvmCondition>,
+	pub internal: Option<CvmCondition>,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -61,6 +61,22 @@ impl From<Option<CvmCondition>> for OptionalCvmCondition {
 impl From<OptionalCvmCondition> for Option<CvmCondition> {
 	fn from(value: OptionalCvmCondition) -> Self {
 		value.internal
+	}
+}
+
+#[cfg(not(tarpaulin_include))]
+impl From<u8> for OptionalCvmCondition {
+	fn from(value: u8) -> Self {
+		Self {
+			internal: CvmCondition::try_from(value).ok(),
+		}
+	}
+}
+
+#[cfg(not(tarpaulin_include))]
+impl From<OptionalCvmCondition> for u8 {
+	fn from(value: OptionalCvmCondition) -> Self {
+		value.internal.map_or(0, Into::into)
 	}
 }
 

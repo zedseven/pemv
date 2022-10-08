@@ -70,7 +70,7 @@ impl TryFrom<&[u8]> for TerminalType {
 
 #[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for TerminalType {
-	fn display_breakdown(&self, _: &mut StandardStream, indentation: u8) {
+	fn display_breakdown(&self, _: &mut StandardStream, indentation: u8, _: bool) {
 		print_indentation(indentation);
 		println!("{}", self);
 	}

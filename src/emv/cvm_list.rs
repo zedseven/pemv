@@ -7,13 +7,7 @@ use std::cmp::Ordering;
 
 use termcolor::{StandardStream, WriteColor};
 
-use super::{
-	BitflagValue,
-	CardholderVerificationRule,
-	CvmCondition,
-	OptionalCvMethod,
-	OptionalCvmCondition,
-};
+use super::{BitflagValue, CardholderVerificationRule, CvmCondition};
 use crate::{
 	error::ParseError,
 	output_colours::{bold_colour_spec, header_colour_spec},
@@ -65,7 +59,7 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodList {
 
 #[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for CardholderVerificationMethodList {
-	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
+	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8, _: bool) {
 		/// This value is chosen as 3 because common currency denominations have
 		/// 2 digits for the cents (or equivalent) and this allows 1 additional
 		/// digit to represent the whole amount. For example, `$0.00`.
@@ -86,6 +80,7 @@ impl DisplayBreakdown for CardholderVerificationMethodList {
 			|| self.cv_rules.iter().any(|cv_rule| {
 				cv_rule
 					.condition
+					.internal
 					.map_or(false, CvmCondition::references_x_or_y_value)
 			}) {
 			// Print the X value
@@ -123,14 +118,14 @@ impl DisplayBreakdown for CardholderVerificationMethodList {
 			stdout.set_color(&bold_colour_spec).ok();
 			print!("Method:         ");
 			stdout.reset().ok();
-			println!(" {}", OptionalCvMethod::from(cv_rule.method));
+			println!(" {}", cv_rule.method);
 
 			// Print the condition
 			print_indentation(indentation + 1);
 			stdout.set_color(&bold_colour_spec).ok();
 			print!("Condition:      ");
 			stdout.reset().ok();
-			println!(" {}", OptionalCvmCondition::from(cv_rule.condition));
+			println!(" {}", cv_rule.condition);
 
 			// Print whether to continue if unsuccessful
 			print_indentation(indentation + 1);
@@ -181,22 +176,19 @@ mod tests {
 			y_value: 0x7B,
 			cv_rules: vec![
 				CardholderVerificationRule {
-					bytes: [0b0000_0100, 0x03],
 					continue_if_unsuccessful: false,
-					method: Some(CvMethod::EncipheredPin),
-					condition: Some(CvmCondition::TerminalSupported),
+					method: Some(CvMethod::EncipheredPin).into(),
+					condition: Some(CvmCondition::TerminalSupported).into(),
 				},
 				CardholderVerificationRule {
-					bytes: [0b0101_1110, 0x03],
 					continue_if_unsuccessful: true,
-					method: Some(CvMethod::Signature),
-					condition: Some(CvmCondition::TerminalSupported),
+					method: Some(CvMethod::Signature).into(),
+					condition: Some(CvmCondition::TerminalSupported).into(),
 				},
 				CardholderVerificationRule {
-					bytes: [0b0000_0000, 0x03],
 					continue_if_unsuccessful: false,
-					method: Some(CvMethod::FailCvmProcessing),
-					condition: Some(CvmCondition::Always),
+					method: Some(CvMethod::FailCvmProcessing).into(),
+					condition: Some(CvmCondition::Always).into(),
 				},
 			],
 		});
@@ -249,10 +241,9 @@ mod tests {
 			x_value: 0,
 			y_value: 0,
 			cv_rules: vec![CardholderVerificationRule {
-				bytes: [0b0000_0010, 0x35],
 				continue_if_unsuccessful: false,
-				method: Some(CvMethod::EncipheredPinOnline),
-				condition: None,
+				method: Some(CvMethod::EncipheredPinOnline).into(),
+				condition: None.into(),
 			}],
 		});
 		let result = CardholderVerificationMethodList::try_from(

@@ -87,18 +87,12 @@ pub trait DisplayBreakdown {
 	///
 	/// The indentation should be applied to every line. It's used to allow the
 	/// display of nested values.
-	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8);
-
-	/// Same as [`Self::display_breakdown`], but it displays as if the value is
-	/// a component of a larger display.
-	///
-	/// This is useful for the IAC values - the TVR is rendered as part of the
-	/// value, but error bits aren't really errors in the IACs.
-	///
-	/// The default trait implementation has no difference.
-	fn display_breakdown_component_value(&self, stdout: &mut StandardStream, indentation: u8) {
-		self.display_breakdown(stdout, indentation);
-	}
+	fn display_breakdown(
+		&self,
+		stdout: &mut StandardStream,
+		indentation: u8,
+		show_severity_colours: bool,
+	);
 }
 
 // Entry Point
@@ -123,27 +117,27 @@ fn main() {
 		// EMV Tags
 		if let Some(tvr_str) = matches.get_one::<String>("tvr") {
 			TerminalVerificationResults::try_from(parse_hex_str(tvr_str).as_slice())
-				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.map(|v| v.display_breakdown(&mut stdout, 0, true))
 				.err()
 		} else if let Some(iad_str) = matches.get_one::<String>("ccd-iad") {
 			IssuerApplicationData::try_from(parse_hex_str(iad_str).as_slice())
-				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.map(|v| v.display_breakdown(&mut stdout, 0, true))
 				.err()
 		} else if let Some(cvr_str) = matches.get_one::<String>("ccd-cvr") {
 			CardVerificationResults::try_from(parse_hex_str(cvr_str).as_slice())
-				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.map(|v| v.display_breakdown(&mut stdout, 0, true))
 				.err()
 		} else if let Some(tsi_str) = matches.get_one::<String>("tsi") {
 			TransactionStatusInformation::try_from(parse_hex_str(tsi_str).as_slice())
-				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.map(|v| v.display_breakdown(&mut stdout, 0, true))
 				.err()
 		} else if let Some(cvm_results_str) = matches.get_one::<String>("cvm-results") {
 			CardholderVerificationMethodResults::try_from(parse_hex_str(cvm_results_str).as_slice())
-				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.map(|v| v.display_breakdown(&mut stdout, 0, true))
 				.err()
 		} else if let Some(cvm_list_str) = matches.get_one::<String>("cvm-list") {
 			CardholderVerificationMethodList::try_from(parse_hex_str(cvm_list_str).as_slice())
-				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.map(|v| v.display_breakdown(&mut stdout, 0, true))
 				.err()
 		}
 		// EMV Utilities
@@ -160,7 +154,7 @@ fn main() {
 					}
 					result
 				})
-				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.map(|v| v.display_breakdown(&mut stdout, 0, true))
 				.err()
 		} else if let Some(ber_tlv_str) = matches.get_one::<String>("ber-tlv") {
 			parse_ber_tlv(
@@ -168,19 +162,19 @@ fn main() {
 				masking_characters.as_slice(),
 			)
 			.and_then(ProcessedEmvBlock::try_from)
-			.map(|v| v.display_breakdown(&mut stdout, 0))
+			.map(|v| v.display_breakdown(&mut stdout, 0, true))
 			.err()
 		} else if let Some(ingenico_tlv_str) = matches.value_of("ingenico-tlv") {
 			parse_ingenico_tlv(ingenico_tlv_str, masking_characters.as_slice())
 				.and_then(ProcessedEmvBlock::try_from)
-				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.map(|v| v.display_breakdown(&mut stdout, 0, true))
 				.err()
 		}
 		// Non-EMV
 		else if let Some(service_code_str) = matches.get_one::<String>("service-code") {
 			parse_str_to_u16(service_code_str)
 				.and_then(ServiceCode::try_from)
-				.map(|v| v.display_breakdown(&mut stdout, 0))
+				.map(|v| v.display_breakdown(&mut stdout, 0, true))
 				.err()
 		}
 		// Default behaviour when no options are provided

@@ -5,18 +5,12 @@
 // Uses
 use std::{cmp::Ordering, fmt::Debug};
 
-use derivative::Derivative;
-
 use super::{cv_rule::CardholderVerificationRule, BitflagValue, EnabledBitRange, Severity};
-use crate::{enum_repr_fallible, error::ParseError, util::byte_slice_to_u64};
+use crate::{enum_repr_fallible, error::ParseError};
 
 // Struct Implementation
-#[derive(Clone, Debug, Eq, Derivative)]
-#[derivative(PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct CardholderVerificationMethodResults {
-	#[derivative(PartialEq = "ignore")]
-	#[derivative(Hash = "ignore")]
-	bytes: <Self as BitflagValue>::Bytes,
 	// CV Rule
 	pub cv_rule: CardholderVerificationRule,
 	// Byte 3 Values
@@ -49,27 +43,24 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodResults {
 		}
 
 		Ok(Self {
-			bytes,
 			cv_rule: CardholderVerificationRule::try_from(&bytes[0..2])?,
 			result: CvmResult::try_from(bytes[2])?,
 		})
 	}
 }
 
-#[cfg(not(tarpaulin_include))]
 impl BitflagValue for CardholderVerificationMethodResults {
 	const NUM_BYTES: usize = 3;
 	const USED_BITS_MASK: &'static [u8] = &[0b0111_1111, 0b1111_1111, 0b1111_1111];
-	type Bytes = [u8; Self::NUM_BYTES as usize];
 
-	fn get_binary_value(&self) -> Self::Bytes {
-		self.bytes
+	fn get_binary_representation(&self) -> Vec<u8> {
+		let mut result = self.cv_rule.get_binary_representation();
+		result.extend([self.result as u8]);
+
+		result
 	}
 
-	fn get_numeric_value(&self) -> u64 {
-		byte_slice_to_u64(&self.bytes)
-	}
-
+	#[cfg(not(tarpaulin_include))]
 	fn get_bit_display_information(&self) -> Vec<EnabledBitRange> {
 		let mut enabled_bits = Vec::with_capacity(4);
 
@@ -107,12 +98,10 @@ mod tests {
 	#[test]
 	fn parse_from_bytes_valid() {
 		let expected = Ok(CardholderVerificationMethodResults {
-			bytes: [0b0101_1110, 0x03, 0b10],
 			cv_rule: CardholderVerificationRule {
-				bytes: [0b0101_1110, 0x03],
 				continue_if_unsuccessful: true,
-				method: Some(CvMethod::Signature),
-				condition: Some(CvmCondition::TerminalSupported),
+				method: Some(CvMethod::Signature).into(),
+				condition: Some(CvmCondition::TerminalSupported).into(),
 			},
 			result: CvmResult::Successful,
 		});

@@ -63,7 +63,7 @@ impl TryFrom<&[u8]> for IssuerActionCodeDenial {
 
 #[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for IssuerActionCodeDenial {
-	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
+	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8, _: bool) {
 		let header_colour_spec = header_colour_spec();
 
 		print_indentation(indentation);
@@ -74,8 +74,7 @@ impl DisplayBreakdown for IssuerActionCodeDenial {
 		);
 		stdout.reset().ok();
 
-		self.tvr
-			.display_breakdown_component_value(stdout, indentation);
+		self.tvr.display_breakdown(stdout, indentation, false);
 	}
 }
 

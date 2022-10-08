@@ -47,7 +47,12 @@ impl Default for ProcessedEmvBlock {
 
 #[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for ProcessedEmvBlock {
-	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
+	fn display_breakdown(
+		&self,
+		stdout: &mut StandardStream,
+		indentation: u8,
+		show_severity_colours: bool,
+	) {
 		let mut first = true;
 		for node in &self.nodes {
 			if first {
@@ -55,7 +60,7 @@ impl DisplayBreakdown for ProcessedEmvBlock {
 			} else {
 				println!();
 			}
-			node.display_breakdown(stdout, indentation);
+			node.display_breakdown(stdout, indentation, show_severity_colours);
 		}
 	}
 }
@@ -80,9 +85,15 @@ pub struct ProcessedEmvNode {
 
 #[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for ProcessedEmvNode {
-	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
+	fn display_breakdown(
+		&self,
+		stdout: &mut StandardStream,
+		indentation: u8,
+		show_severity_colours: bool,
+	) {
 		// Display the tag
-		self.tag.display_breakdown(stdout, indentation);
+		self.tag
+			.display_breakdown(stdout, indentation, show_severity_colours);
 
 		// Display the child tags (if any)
 		if !self.child_block.nodes.is_empty() {
@@ -93,7 +104,8 @@ impl DisplayBreakdown for ProcessedEmvNode {
 			println!("Constructed Data Object's Child Tags:");
 			stdout.reset().ok();
 
-			self.child_block.display_breakdown(stdout, indentation + 1);
+			self.child_block
+				.display_breakdown(stdout, indentation + 1, show_severity_colours);
 		}
 	}
 }
@@ -196,7 +208,12 @@ impl ProcessedEmvTag {
 
 #[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for ProcessedEmvTag {
-	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
+	fn display_breakdown(
+		&self,
+		stdout: &mut StandardStream,
+		indentation: u8,
+		show_severity_colours: bool,
+	) {
 		fn print_tag_name(
 			stdout: &mut StandardStream,
 			indentation: u8,
@@ -244,7 +261,7 @@ impl DisplayBreakdown for ProcessedEmvTag {
 				);
 
 				// Display the raw value
-				raw_tag.display_breakdown(stdout, indentation);
+				raw_tag.display_breakdown(stdout, indentation, show_severity_colours);
 			}
 			ProcessedEmvTag::Annotated { name, raw_tag } => {
 				// Display the tag name
@@ -258,7 +275,7 @@ impl DisplayBreakdown for ProcessedEmvTag {
 				);
 
 				// Display the raw value
-				raw_tag.display_breakdown(stdout, indentation);
+				raw_tag.display_breakdown(stdout, indentation, show_severity_colours);
 			}
 			ProcessedEmvTag::Parsed {
 				name,
@@ -276,14 +293,14 @@ impl DisplayBreakdown for ProcessedEmvTag {
 				);
 
 				// Display the raw value
-				raw_tag.display_breakdown(stdout, indentation);
+				raw_tag.display_breakdown(stdout, indentation, show_severity_colours);
 
 				// Display the parsed value
 				print_indentation(indentation);
 				stdout.set_color(&header_colour_spec).ok();
 				println!("Parsed:");
 				stdout.reset().ok();
-				parsed.display_breakdown(stdout, indentation + 1);
+				parsed.display_breakdown(stdout, indentation + 1, show_severity_colours);
 			}
 		}
 	}
@@ -338,7 +355,7 @@ pub struct RawEmvTag {
 
 #[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for RawEmvTag {
-	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
+	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8, _: bool) {
 		let header_colour_spec = header_colour_spec();
 		match &self.data {
 			EmvData::Normal(data) => {

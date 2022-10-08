@@ -29,11 +29,6 @@ macro_rules! bitflag_unique_values {
 			// Get the empty result to compare against
 			let empty_result = <$typ>::try_from([0x00; $byte_count].as_slice())
 				.expect("error checking will be done separately");
-			assert_eq!(
-				empty_result.get_numeric_value(),
-				0,
-				"the numeric value for an empty bitflag set should be 0"
-			);
 
 			// Step through every bit and confirm that each one has a unique value
 			let mut results_hash_set = std::collections::HashSet::new();
@@ -52,7 +47,7 @@ macro_rules! bitflag_unique_values {
 
 					assert_eq!(
 						testing_vec.as_slice(),
-						result.get_binary_value(),
+						result.get_binary_representation(),
 						"the bytes retrieved later should match the input"
 					);
 

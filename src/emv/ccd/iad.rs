@@ -101,14 +101,20 @@ impl PartialEq<FormatSpecificData> for FormatCode {
 
 #[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for IssuerApplicationData {
-	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
+	fn display_breakdown(
+		&self,
+		stdout: &mut StandardStream,
+		indentation: u8,
+		show_severity_colours: bool,
+	) {
 		let header_colour_spec = header_colour_spec();
 
 		print_indentation(indentation);
 		stdout.set_color(&header_colour_spec).ok();
 		println!("Common Core Identifier:");
 		stdout.reset().ok();
-		self.cci.display_breakdown(stdout, indentation + 1);
+		self.cci
+			.display_breakdown(stdout, indentation + 1, show_severity_colours);
 
 		match &self.format_specific_data {
 			FormatSpecificData::A {
@@ -129,7 +135,7 @@ impl DisplayBreakdown for IssuerApplicationData {
 				stdout.set_color(&header_colour_spec).ok();
 				println!("Card Verification Results:");
 				stdout.reset().ok();
-				cvr.display_breakdown(stdout, indentation + 1);
+				cvr.display_breakdown(stdout, indentation + 1, show_severity_colours);
 
 				// Print the counter bytes
 				print_indentation(indentation);
@@ -172,20 +178,12 @@ mod tests {
 	fn ccd_compliant() {
 		let expected = Ok(IssuerApplicationData {
 			cci: CommonCoreIdentifier {
-				bytes: [0b1010_0101],
 				iad_format_code: FormatCode::A,
 				cryptogram_version: CryptogramVersion::TripleDes,
 			},
 			format_specific_data: FormatSpecificData::A {
 				dki: 1,
 				cvr: CardVerificationResults {
-					bytes: [
-						0b1010_0010,
-						0b0011_0000,
-						0b0011_0000,
-						0b0001_0000,
-						0b0000_0000,
-					],
 					gen_ac_2_application_cryptogram_type:
 						GenAc2ApplicationCryptogramType::SecondGenAcNotRequested,
 					gen_ac_1_application_cryptogram_type: GenAc1ApplicationCryptogramType::Arqc,
@@ -280,13 +278,6 @@ mod tests {
 		let format_specific_data = FormatSpecificData::A {
 			dki: 1,
 			cvr: CardVerificationResults {
-				bytes: [
-					0b1010_0010,
-					0b0011_0000,
-					0b0011_0000,
-					0b0001_0000,
-					0b0000_0000,
-				],
 				gen_ac_2_application_cryptogram_type:
 					GenAc2ApplicationCryptogramType::SecondGenAcNotRequested,
 				gen_ac_1_application_cryptogram_type: GenAc1ApplicationCryptogramType::Arqc,
