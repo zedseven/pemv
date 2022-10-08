@@ -242,7 +242,7 @@ impl DisplayBreakdown for ProcessedEmvTag {
 					name
 				);
 			} else {
-				println!(" - ?? bytes - {}", name);
+				println!(" - ?? bytes - {name}");
 			}
 		}
 

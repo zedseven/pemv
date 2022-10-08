@@ -50,7 +50,7 @@ impl TryFrom<&[u8]> for TransactionType {
 impl DisplayBreakdown for TransactionType {
 	fn display_breakdown(&self, _: &mut StandardStream, indentation: u8, _: bool) {
 		print_indentation(indentation);
-		println!("{}", self);
+		println!("{self}");
 	}
 }
 

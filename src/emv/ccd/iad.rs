@@ -128,7 +128,7 @@ impl DisplayBreakdown for IssuerApplicationData {
 				stdout.set_color(&header_colour_spec).ok();
 				print!("Derivation Key Index:");
 				stdout.reset().ok();
-				println!(" {:#04X}", dki);
+				println!(" {dki:#04X}");
 
 				// Print the CVR
 				print_indentation(indentation);

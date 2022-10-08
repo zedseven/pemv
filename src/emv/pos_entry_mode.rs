@@ -59,7 +59,7 @@ impl TryFrom<&[u8]> for PosEntryMode {
 impl DisplayBreakdown for PosEntryMode {
 	fn display_breakdown(&self, _: &mut StandardStream, indentation: u8, _: bool) {
 		print_indentation(indentation);
-		println!("{}", self);
+		println!("{self}");
 	}
 }
 

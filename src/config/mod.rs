@@ -68,7 +68,7 @@ impl Config {
 		Figment::from(Serialized::defaults(Config::default()))
 			.merge(
 				Toml::file(Env::var_or(
-					format!("{}{}", ENV_PREFIX, ENV_FILE_NAME_OVERRIDE).as_str(),
+					format!("{ENV_PREFIX}{ENV_FILE_NAME_OVERRIDE}").as_str(),
 					FILE_NAME,
 				))
 				.nested(),
@@ -79,7 +79,7 @@ impl Config {
 					.global(),
 			)
 			.select(Profile::from_env_or(
-				format!("{}{}", ENV_PREFIX, ENV_PROFILE).as_str(),
+				format!("{ENV_PREFIX}{ENV_PROFILE}").as_str(),
 				Self::DEFAULT_PROFILE,
 			))
 	}

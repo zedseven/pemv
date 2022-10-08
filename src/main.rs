@@ -149,7 +149,7 @@ fn main() {
 						stdout.set_color(&header_colour_spec()).ok();
 						print!("TLV Format: ");
 						stdout.reset().ok();
-						println!("{}", format);
+						println!("{format}");
 						println!();
 					}
 					result
@@ -185,7 +185,7 @@ fn main() {
 	};
 
 	if let Some(error) = parse_error {
-		eprintln!("{}", error);
+		eprintln!("{error}");
 	}
 }
 

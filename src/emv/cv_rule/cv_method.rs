@@ -72,7 +72,7 @@ impl Debug for OptionalCvMethod {
 impl Display for OptionalCvMethod {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		if let Some(method) = &self.internal {
-			write!(f, "{}", method)
+			write!(f, "{method}")
 		} else {
 			write!(f, "Unknown (likely issuer or payment system-specific)")
 		}

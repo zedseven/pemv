@@ -126,7 +126,7 @@ pub fn print_bytes(bytes: &[u8], bytes_per_line: usize, indentation: u8) {
 			} else {
 				print!(" ");
 			}
-			print!("{:0>2X}", byte);
+			print!("{byte:0>2X}");
 		}
 
 		// End the line
@@ -148,7 +148,7 @@ pub fn print_bytes_pretty(bytes: &[u8], bytes_per_line: usize, indentation: u8) 
 			} else {
 				print!(" ");
 			}
-			print!("{:0>2X}", byte);
+			print!("{byte:0>2X}");
 		}
 
 		// Add padding to the end if this is the last line
@@ -165,7 +165,7 @@ pub fn print_bytes_pretty(bytes: &[u8], bytes_per_line: usize, indentation: u8) 
 				0x20..=0x7E => byte as char,
 				_ => '.',
 			};
-			print!("{}", printable_char);
+			print!("{printable_char}");
 		}
 
 		// End the line
@@ -180,7 +180,7 @@ pub fn print_bytes_pretty(bytes: &[u8], bytes_per_line: usize, indentation: u8) 
 #[cfg(not(tarpaulin_include))]
 pub fn print_bytes_small(bytes: &[u8]) {
 	for byte in bytes {
-		print!("{:0>2X}", byte);
+		print!("{byte:0>2X}");
 	}
 }
 

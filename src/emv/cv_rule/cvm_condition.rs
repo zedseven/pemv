@@ -91,7 +91,7 @@ impl Debug for OptionalCvmCondition {
 impl Display for OptionalCvmCondition {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		if let Some(method) = &self.internal {
-			write!(f, "{}", method)
+			write!(f, "{method}")
 		} else {
 			write!(f, "Unknown (likely payment system-specific)")
 		}

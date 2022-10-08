@@ -72,7 +72,7 @@ impl TryFrom<&[u8]> for TerminalType {
 impl DisplayBreakdown for TerminalType {
 	fn display_breakdown(&self, _: &mut StandardStream, indentation: u8, _: bool) {
 		print_indentation(indentation);
-		println!("{}", self);
+		println!("{self}");
 	}
 }
 

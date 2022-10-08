@@ -108,7 +108,7 @@ impl TryFrom<&[u8]> for AuthorisationResponseCode {
 impl DisplayBreakdown for AuthorisationResponseCode {
 	fn display_breakdown(&self, _: &mut StandardStream, indentation: u8, _: bool) {
 		print_indentation(indentation);
-		println!("{}", self);
+		println!("{self}");
 	}
 }
 

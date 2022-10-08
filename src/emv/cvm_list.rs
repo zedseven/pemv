@@ -89,8 +89,8 @@ impl DisplayBreakdown for CardholderVerificationMethodList {
 			print!("X Value:");
 			stdout.reset().ok();
 			println!(
-				" {:0>1$} (implicit decimal point based on application currency)",
-				self.x_value, value_padding_length
+				" {:0>value_padding_length$} (implicit decimal point based on application currency)",
+				self.x_value
 			);
 
 			// Print the Y value
@@ -98,7 +98,7 @@ impl DisplayBreakdown for CardholderVerificationMethodList {
 			stdout.set_color(&header_colour_spec).ok();
 			print!("Y Value:");
 			stdout.reset().ok();
-			println!(" {:0>1$}", self.y_value, value_padding_length);
+			println!(" {:0>value_padding_length$}", self.y_value);
 		}
 
 		// Print the CV Rules
