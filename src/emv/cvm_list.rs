@@ -89,7 +89,8 @@ impl DisplayBreakdown for CardholderVerificationMethodList {
 			print!("X Value:");
 			stdout.reset().ok();
 			println!(
-				" {:0>value_padding_length$} (implicit decimal point based on application currency)",
+				" {:0>value_padding_length$} (implicit decimal point based on application \
+				 currency)",
 				self.x_value
 			);
 
