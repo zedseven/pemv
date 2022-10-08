@@ -36,9 +36,9 @@ impl TryFrom<&[u8]> for TransactionType {
 
 		if raw_bytes.len() != NUM_BYTES {
 			return Err(ParseError::ByteCountIncorrect {
-				r#type: Ordering::Equal,
+				r#type:   Ordering::Equal,
 				expected: NUM_BYTES,
-				found: raw_bytes.len(),
+				found:    raw_bytes.len(),
 			});
 		}
 

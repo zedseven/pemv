@@ -16,7 +16,7 @@ use crate::{
 // Struct Implementation
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct IssuerApplicationData {
-	pub cci: CommonCoreIdentifier,
+	pub cci:                  CommonCoreIdentifier,
 	pub format_specific_data: FormatSpecificData,
 }
 
@@ -177,8 +177,8 @@ mod tests {
 	#[test]
 	fn ccd_compliant() {
 		let expected = Ok(IssuerApplicationData {
-			cci: CommonCoreIdentifier {
-				iad_format_code: FormatCode::A,
+			cci:                  CommonCoreIdentifier {
+				iad_format_code:    FormatCode::A,
 				cryptogram_version: CryptogramVersion::TripleDes,
 			},
 			format_specific_data: FormatSpecificData::A {

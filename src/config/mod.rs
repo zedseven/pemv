@@ -29,28 +29,28 @@ const ENV_PROFILE: &str = "PROFILE";
 #[derive(Deserialize, Serialize)]
 pub struct Config {
 	#[serde(skip)]
-	pub profile: Profile,
-	pub cli_colour: ColourChoice,
+	pub profile:            Profile,
+	pub cli_colour:         ColourChoice,
 	pub masking_characters: Vec<char>,
 }
 
 impl Default for Config {
 	fn default() -> Config {
 		Config {
-			profile: Self::DEFAULT_PROFILE,
-			cli_colour: ColourChoice::default(),
+			profile:            Self::DEFAULT_PROFILE,
+			cli_colour:         ColourChoice::default(),
 			masking_characters: vec!['*'],
 		}
 	}
 }
 
 impl Config {
+	pub const CLI_COLOUR: &'static str = "cli_colour";
 	// Constants
 	pub const DEFAULT_PROFILE: Profile = Profile::const_new("default");
+	pub const MASKING_CHARACTERS: &'static str = "masking_characters";
 	// Key Names
 	pub const PROFILE: &'static str = "profile";
-	pub const CLI_COLOUR: &'static str = "cli_colour";
-	pub const MASKING_CHARACTERS: &'static str = "masking_characters";
 
 	/// Allows the configuration to be extracted from any [`Provider`].
 	///

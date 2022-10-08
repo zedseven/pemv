@@ -40,8 +40,8 @@ mod tests {
 	fn parse_from_bytes_valid() {
 		let expected = Ok(CardholderVerificationRule {
 			continue_if_unsuccessful: true,
-			method: Some(CvMethod::Signature).into(),
-			condition: Some(CvmCondition::TerminalSupported).into(),
+			method:                   Some(CvMethod::Signature).into(),
+			condition:                Some(CvmCondition::TerminalSupported).into(),
 		});
 		let result = CardholderVerificationRule::try_from([0b0101_1110, 0x03].as_slice());
 

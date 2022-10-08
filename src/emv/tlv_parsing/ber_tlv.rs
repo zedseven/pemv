@@ -69,7 +69,7 @@ pub fn parse(bytes: &[u8], masking_characters: &[char]) -> Result<RawEmvBlock, P
 		let tag_data = EmvData::from_u8_check_for_masked(data.to_vec(), masking_characters);
 		nodes.push(RawEmvNode {
 			child_block: get_child_block(data_object_type, &tag_data, masking_characters),
-			tag: RawEmvTag {
+			tag:         RawEmvTag {
 				tag: bytes[tag_start_index..=tag_end_index].to_vec(),
 				class,
 				data_object_type,
@@ -184,11 +184,13 @@ mod tests {
 			[0x5A, 0x08, 0x47, 0x61, 0x73, 0x00, 0x00, 0x00, 0x01, 0x19].as_slice(),
 			Ok(RawEmvBlock {
 				nodes: vec![RawEmvNode {
-					tag: RawEmvTag {
-						tag: vec![0x5A],
-						class: TagClass::Application,
+					tag:         RawEmvTag {
+						tag:              vec![0x5A],
+						class:            TagClass::Application,
 						data_object_type: DataObjectType::Primitive,
-						data: EmvData::Normal(vec![0x47, 0x61, 0x73, 0x00, 0x00, 0x00, 0x01, 0x19]),
+						data:             EmvData::Normal(vec![
+							0x47, 0x61, 0x73, 0x00, 0x00, 0x00, 0x01, 0x19,
+						]),
 					},
 					child_block: RawEmvBlock::default(),
 				}],
@@ -201,11 +203,11 @@ mod tests {
 			[0x5F, 0x34, 0x01, 0x01].as_slice(),
 			Ok(RawEmvBlock {
 				nodes: vec![RawEmvNode {
-					tag: RawEmvTag {
-						tag: vec![0x5F, 0x34],
-						class: TagClass::Application,
+					tag:         RawEmvTag {
+						tag:              vec![0x5F, 0x34],
+						class:            TagClass::Application,
 						data_object_type: DataObjectType::Primitive,
-						data: EmvData::Normal(vec![0x01]),
+						data:             EmvData::Normal(vec![0x01]),
 					},
 					child_block: RawEmvBlock::default(),
 				}],
@@ -218,11 +220,11 @@ mod tests {
 			[0x5A, 0x08, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A].as_slice(),
 			Ok(RawEmvBlock {
 				nodes: vec![RawEmvNode {
-					tag: RawEmvTag {
-						tag: vec![0x5A],
-						class: TagClass::Application,
+					tag:         RawEmvTag {
+						tag:              vec![0x5A],
+						class:            TagClass::Application,
 						data_object_type: DataObjectType::Primitive,
-						data: EmvData::Masked,
+						data:             EmvData::Masked,
 					},
 					child_block: RawEmvBlock::default(),
 				}],
@@ -235,11 +237,11 @@ mod tests {
 			[0x5F, 0x34, 0x02, 0x2A, 0x2A].as_slice(),
 			Ok(RawEmvBlock {
 				nodes: vec![RawEmvNode {
-					tag: RawEmvTag {
-						tag: vec![0x5F, 0x34],
-						class: TagClass::Application,
+					tag:         RawEmvTag {
+						tag:              vec![0x5F, 0x34],
+						class:            TagClass::Application,
 						data_object_type: DataObjectType::Primitive,
-						data: EmvData::Masked,
+						data:             EmvData::Masked,
 					},
 					child_block: RawEmvBlock::default(),
 				}],
@@ -255,21 +257,21 @@ mod tests {
 			.as_slice(),
 			Ok(RawEmvBlock {
 				nodes: vec![RawEmvNode {
-					tag: RawEmvTag {
-						tag: vec![0x6F],
-						class: TagClass::Application,
+					tag:         RawEmvTag {
+						tag:              vec![0x6F],
+						class:            TagClass::Application,
 						data_object_type: DataObjectType::Constructed,
-						data: EmvData::Normal(vec![
+						data:             EmvData::Normal(vec![
 							0x4F, 0x07, 0xA0, 0x00, 0x00, 0x00, 0x03, 0x10, 0x10,
 						]),
 					},
 					child_block: RawEmvBlock {
 						nodes: vec![RawEmvNode {
-							tag: RawEmvTag {
-								tag: vec![0x4F],
-								class: TagClass::Application,
+							tag:         RawEmvTag {
+								tag:              vec![0x4F],
+								class:            TagClass::Application,
 								data_object_type: DataObjectType::Primitive,
-								data: EmvData::Normal(vec![
+								data:             EmvData::Normal(vec![
 									0xA0, 0x00, 0x00, 0x00, 0x03, 0x10, 0x10,
 								]),
 							},
@@ -289,11 +291,11 @@ mod tests {
 			.as_slice(),
 			Ok(RawEmvBlock {
 				nodes: vec![RawEmvNode {
-					tag: RawEmvTag {
-						tag: vec![0x6F],
-						class: TagClass::Application,
+					tag:         RawEmvTag {
+						tag:              vec![0x6F],
+						class:            TagClass::Application,
 						data_object_type: DataObjectType::Constructed,
-						data: EmvData::Masked,
+						data:             EmvData::Masked,
 					},
 					child_block: RawEmvBlock::default(),
 				}],
@@ -309,21 +311,21 @@ mod tests {
 			.as_slice(),
 			Ok(RawEmvBlock {
 				nodes: vec![RawEmvNode {
-					tag: RawEmvTag {
-						tag: vec![0x6F],
-						class: TagClass::Application,
+					tag:         RawEmvTag {
+						tag:              vec![0x6F],
+						class:            TagClass::Application,
 						data_object_type: DataObjectType::Constructed,
-						data: EmvData::Normal(vec![
+						data:             EmvData::Normal(vec![
 							0x5F, 0x20, 0x08, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A, 0x2A,
 						]),
 					},
 					child_block: RawEmvBlock {
 						nodes: vec![RawEmvNode {
-							tag: RawEmvTag {
-								tag: vec![0x5F, 0x20],
-								class: TagClass::Application,
+							tag:         RawEmvTag {
+								tag:              vec![0x5F, 0x20],
+								class:            TagClass::Application,
 								data_object_type: DataObjectType::Primitive,
-								data: EmvData::Masked,
+								data:             EmvData::Masked,
 							},
 							child_block: RawEmvBlock::default(),
 						}],
@@ -344,46 +346,50 @@ mod tests {
 			Ok(RawEmvBlock {
 				nodes: vec![
 					RawEmvNode {
-						tag: RawEmvTag {
-							tag: vec![0x4F],
-							class: TagClass::Application,
+						tag:         RawEmvTag {
+							tag:              vec![0x4F],
+							class:            TagClass::Application,
 							data_object_type: DataObjectType::Primitive,
-							data: EmvData::Normal(vec![0xA0, 0x00, 0x00, 0x00, 0x04, 0x10, 0x10]),
+							data:             EmvData::Normal(vec![
+								0xA0, 0x00, 0x00, 0x00, 0x04, 0x10, 0x10,
+							]),
 						},
 						child_block: RawEmvBlock::default(),
 					},
 					RawEmvNode {
-						tag: RawEmvTag {
-							tag: vec![0x5F, 0x34],
-							class: TagClass::Application,
+						tag:         RawEmvTag {
+							tag:              vec![0x5F, 0x34],
+							class:            TagClass::Application,
 							data_object_type: DataObjectType::Primitive,
-							data: EmvData::Masked,
+							data:             EmvData::Masked,
 						},
 						child_block: RawEmvBlock::default(),
 					},
 					RawEmvNode {
-						tag: RawEmvTag {
-							tag: vec![0x5F, 0x24],
-							class: TagClass::Application,
+						tag:         RawEmvTag {
+							tag:              vec![0x5F, 0x24],
+							class:            TagClass::Application,
 							data_object_type: DataObjectType::Primitive,
-							data: EmvData::Normal(vec![0x25, 0x12, 0x31]),
+							data:             EmvData::Normal(vec![0x25, 0x12, 0x31]),
 						},
 						child_block: RawEmvBlock::default(),
 					},
 					RawEmvNode {
-						tag: RawEmvTag {
-							tag: vec![0x6F],
-							class: TagClass::Application,
+						tag:         RawEmvTag {
+							tag:              vec![0x6F],
+							class:            TagClass::Application,
 							data_object_type: DataObjectType::Constructed,
-							data: EmvData::Normal(vec![0x9F, 0x37, 0x04, 0x34, 0xE6, 0x2F, 0x92]),
+							data:             EmvData::Normal(vec![
+								0x9F, 0x37, 0x04, 0x34, 0xE6, 0x2F, 0x92,
+							]),
 						},
 						child_block: RawEmvBlock {
 							nodes: vec![RawEmvNode {
-								tag: RawEmvTag {
-									tag: vec![0x9F, 0x37],
-									class: TagClass::ContextSpecific,
+								tag:         RawEmvTag {
+									tag:              vec![0x9F, 0x37],
+									class:            TagClass::ContextSpecific,
 									data_object_type: DataObjectType::Primitive,
-									data: EmvData::Normal(vec![0x34, 0xE6, 0x2F, 0x92]),
+									data:             EmvData::Normal(vec![0x34, 0xE6, 0x2F, 0x92]),
 								},
 								child_block: RawEmvBlock::default(),
 							}],
@@ -399,11 +405,11 @@ mod tests {
 			[0x5F, 0x20, 0x00].as_slice(),
 			Ok(RawEmvBlock {
 				nodes: vec![RawEmvNode {
-					tag: RawEmvTag {
-						tag: vec![0x5F, 0x20],
-						class: TagClass::Application,
+					tag:         RawEmvTag {
+						tag:              vec![0x5F, 0x20],
+						class:            TagClass::Application,
 						data_object_type: DataObjectType::Primitive,
-						data: EmvData::Normal(vec![]),
+						data:             EmvData::Normal(vec![]),
 					},
 					child_block: RawEmvBlock::default(),
 				}],
@@ -416,11 +422,11 @@ mod tests {
 			[0x5F, 0x34, 0x01, 0x2A].as_slice(),
 			Ok(RawEmvBlock {
 				nodes: vec![RawEmvNode {
-					tag: RawEmvTag {
-						tag: vec![0x5F, 0x34],
-						class: TagClass::Application,
+					tag:         RawEmvTag {
+						tag:              vec![0x5F, 0x34],
+						class:            TagClass::Application,
 						data_object_type: DataObjectType::Primitive,
-						data: EmvData::Normal(vec![0x2A]),
+						data:             EmvData::Normal(vec![0x2A]),
 					},
 					child_block: RawEmvBlock::default(),
 				}],
@@ -433,11 +439,11 @@ mod tests {
 			[0x9F, 0xA0, 0x20, 0x03, 0x22, 0x12, 0x31].as_slice(),
 			Ok(RawEmvBlock {
 				nodes: vec![RawEmvNode {
-					tag: RawEmvTag {
-						tag: vec![0x9F, 0xA0, 0x20],
-						class: TagClass::ContextSpecific,
+					tag:         RawEmvTag {
+						tag:              vec![0x9F, 0xA0, 0x20],
+						class:            TagClass::ContextSpecific,
 						data_object_type: DataObjectType::Primitive,
-						data: EmvData::Normal(vec![0x22, 0x12, 0x31]),
+						data:             EmvData::Normal(vec![0x22, 0x12, 0x31]),
 					},
 					child_block: RawEmvBlock::default(),
 				}],
@@ -455,11 +461,11 @@ mod tests {
 			very_long_input_data.as_slice(),
 			Ok(RawEmvBlock {
 				nodes: vec![RawEmvNode {
-					tag: RawEmvTag {
-						tag: vec![0x91],
-						class: TagClass::ContextSpecific,
+					tag:         RawEmvTag {
+						tag:              vec![0x91],
+						class:            TagClass::ContextSpecific,
 						data_object_type: DataObjectType::Primitive,
-						data: EmvData::Masked,
+						data:             EmvData::Masked,
 					},
 					child_block: RawEmvBlock::default(),
 				}],
@@ -507,11 +513,11 @@ mod tests {
 			[0xE3, 0x03, 0x22, 0x12, 0x31].as_slice(),
 			Ok(RawEmvBlock {
 				nodes: vec![RawEmvNode {
-					tag: RawEmvTag {
-						tag: vec![0xE3],
-						class: TagClass::Private,
+					tag:         RawEmvTag {
+						tag:              vec![0xE3],
+						class:            TagClass::Private,
 						data_object_type: DataObjectType::Constructed,
-						data: EmvData::Normal(vec![0x22, 0x12, 0x31]),
+						data:             EmvData::Normal(vec![0x22, 0x12, 0x31]),
 					},
 					child_block: RawEmvBlock::default(),
 				}],

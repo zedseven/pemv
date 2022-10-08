@@ -19,12 +19,12 @@ use crate::{
 // Struct Implementation
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ServiceCode {
-	number: u16,
-	interchange: Interchange,
-	technology: Technology,
+	number:                   u16,
+	interchange:              Interchange,
+	technology:               Technology,
 	authorisation_processing: AuthorisationProcessing,
-	allowed_services: AllowedServices,
-	pin_requirements: PinRequirements,
+	allowed_services:         AllowedServices,
+	pin_requirements:         PinRequirements,
 }
 
 enum_no_repr_infallible! {
@@ -108,9 +108,9 @@ impl TryFrom<&[u8]> for ServiceCode {
 
 		if raw_bytes.len() != NUM_BYTES {
 			return Err(ParseError::ByteCountIncorrect {
-				r#type: Ordering::Equal,
+				r#type:   Ordering::Equal,
 				expected: NUM_BYTES,
-				found: raw_bytes.len(),
+				found:    raw_bytes.len(),
 			});
 		}
 
@@ -194,12 +194,12 @@ mod tests {
 	#[test]
 	fn parse_interac_debit() {
 		let expected = Ok(ServiceCode {
-			number: 220,
-			interchange: Interchange::International,
-			technology: Technology::IntegratedCircuitCard,
+			number:                   220,
+			interchange:              Interchange::International,
+			technology:               Technology::IntegratedCircuitCard,
 			authorisation_processing: AuthorisationProcessing::ByIssuer,
-			allowed_services: AllowedServices::NoRestrictions,
-			pin_requirements: PinRequirements::PinRequired,
+			allowed_services:         AllowedServices::NoRestrictions,
+			pin_requirements:         PinRequirements::PinRequired,
 		});
 		let result = ServiceCode::try_from(220);
 
@@ -210,12 +210,12 @@ mod tests {
 	#[test]
 	fn parse_visa_credit() {
 		let expected = Ok(ServiceCode {
-			number: 201,
-			interchange: Interchange::International,
-			technology: Technology::IntegratedCircuitCard,
+			number:                   201,
+			interchange:              Interchange::International,
+			technology:               Technology::IntegratedCircuitCard,
 			authorisation_processing: AuthorisationProcessing::Normal,
-			allowed_services: AllowedServices::NoRestrictions,
-			pin_requirements: PinRequirements::None,
+			allowed_services:         AllowedServices::NoRestrictions,
+			pin_requirements:         PinRequirements::None,
 		});
 		let result = ServiceCode::try_from(201);
 
@@ -226,12 +226,12 @@ mod tests {
 	#[test]
 	fn parse_prepaid() {
 		let expected = Ok(ServiceCode {
-			number: 121,
-			interchange: Interchange::International,
-			technology: Technology::MagneticStripeOnly,
+			number:                   121,
+			interchange:              Interchange::International,
+			technology:               Technology::MagneticStripeOnly,
 			authorisation_processing: AuthorisationProcessing::ByIssuer,
-			allowed_services: AllowedServices::NoRestrictions,
-			pin_requirements: PinRequirements::None,
+			allowed_services:         AllowedServices::NoRestrictions,
+			pin_requirements:         PinRequirements::None,
 		});
 		let result = ServiceCode::try_from(121);
 
@@ -270,9 +270,9 @@ mod tests {
 	#[test]
 	fn parse_from_bytes_invalid() {
 		let expected = Err(ParseError::ByteCountIncorrect {
-			r#type: Ordering::Equal,
+			r#type:   Ordering::Equal,
 			expected: 2,
-			found: 3,
+			found:    3,
 		});
 		let result = ServiceCode::try_from([0x02, 0x20, 0x00].as_slice());
 

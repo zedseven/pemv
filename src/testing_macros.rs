@@ -9,9 +9,9 @@ macro_rules! wrong_byte_count {
 		#[test]
 		fn wrong_byte_count() {
 			let expected = Err($crate::error::ParseError::ByteCountIncorrect {
-				r#type: std::cmp::Ordering::Equal,
+				r#type:   std::cmp::Ordering::Equal,
 				expected: $byte_count,
-				found: $byte_count + 1,
+				found:    $byte_count + 1,
 			});
 			let result = <$typ>::try_from([0x00; $byte_count + 1].as_slice());
 

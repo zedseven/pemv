@@ -79,7 +79,7 @@ impl TryFrom<RawEmvBlock> for ProcessedEmvBlock {
 }
 
 pub struct ProcessedEmvNode {
-	pub tag: ProcessedEmvTag,
+	pub tag:         ProcessedEmvTag,
 	pub child_block: ProcessedEmvBlock,
 }
 
@@ -115,7 +115,7 @@ impl TryFrom<RawEmvNode> for ProcessedEmvNode {
 
 	fn try_from(raw_node: RawEmvNode) -> Result<Self, Self::Error> {
 		Ok(Self {
-			tag: raw_node.tag.try_into()?,
+			tag:         raw_node.tag.try_into()?,
 			child_block: raw_node.child_block.try_into()?,
 		})
 	}
@@ -127,12 +127,12 @@ pub enum ProcessedEmvTag {
 		raw_tag: RawEmvTag,
 	},
 	Annotated {
-		name: &'static str,
+		name:    &'static str,
 		raw_tag: RawEmvTag,
 	},
 	Parsed {
-		name: &'static str,
-		parsed: Box<dyn DisplayBreakdown>,
+		name:    &'static str,
+		parsed:  Box<dyn DisplayBreakdown>,
 		raw_tag: RawEmvTag,
 	},
 }
@@ -338,7 +338,7 @@ impl Default for RawEmvBlock {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct RawEmvNode {
-	pub tag: RawEmvTag,
+	pub tag:         RawEmvTag,
 	pub child_block: RawEmvBlock,
 }
 
@@ -347,10 +347,10 @@ pub struct RawEmvNode {
 /// This can be further parsed based on the tag value.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct RawEmvTag {
-	pub tag: Vec<u8>,
-	pub class: TagClass,
+	pub tag:              Vec<u8>,
+	pub class:            TagClass,
 	pub data_object_type: DataObjectType,
-	pub data: EmvData,
+	pub data:             EmvData,
 }
 
 #[cfg(not(tarpaulin_include))]

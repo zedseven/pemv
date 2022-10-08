@@ -21,8 +21,8 @@ const MIN_BYTES: usize = 8;
 // Struct Implementation
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct CardholderVerificationMethodList {
-	pub x_value: u32,
-	pub y_value: u32,
+	pub x_value:  u32,
+	pub y_value:  u32,
 	pub cv_rules: Vec<CardholderVerificationRule>,
 }
 
@@ -32,9 +32,9 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodList {
 	fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
 		if bytes.len() < MIN_BYTES {
 			return Err(ParseError::ByteCountIncorrect {
-				r#type: Ordering::Greater,
+				r#type:   Ordering::Greater,
 				expected: MIN_BYTES,
-				found: bytes.len(),
+				found:    bytes.len(),
 			});
 		}
 		if (bytes.len() - MIN_BYTES) % CardholderVerificationRule::NUM_BYTES != 0 {
@@ -161,8 +161,8 @@ mod tests {
 	#[test]
 	fn parse_from_bytes_empty() {
 		let expected = Ok(CardholderVerificationMethodList {
-			x_value: 0,
-			y_value: 0,
+			x_value:  0,
+			y_value:  0,
 			cv_rules: vec![],
 		});
 		let result = CardholderVerificationMethodList::try_from([0x00; 8].as_slice());
@@ -173,23 +173,23 @@ mod tests {
 	#[test]
 	fn parse_from_bytes_valid() {
 		let expected = Ok(CardholderVerificationMethodList {
-			x_value: 0x2A,
-			y_value: 0x7B,
+			x_value:  0x2A,
+			y_value:  0x7B,
 			cv_rules: vec![
 				CardholderVerificationRule {
 					continue_if_unsuccessful: false,
-					method: Some(CvMethod::EncipheredPin).into(),
-					condition: Some(CvmCondition::TerminalSupported).into(),
+					method:                   Some(CvMethod::EncipheredPin).into(),
+					condition:                Some(CvmCondition::TerminalSupported).into(),
 				},
 				CardholderVerificationRule {
 					continue_if_unsuccessful: true,
-					method: Some(CvMethod::Signature).into(),
-					condition: Some(CvmCondition::TerminalSupported).into(),
+					method:                   Some(CvMethod::Signature).into(),
+					condition:                Some(CvmCondition::TerminalSupported).into(),
 				},
 				CardholderVerificationRule {
 					continue_if_unsuccessful: false,
-					method: Some(CvMethod::FailCvmProcessing).into(),
-					condition: Some(CvmCondition::Always).into(),
+					method:                   Some(CvMethod::FailCvmProcessing).into(),
+					condition:                Some(CvmCondition::Always).into(),
 				},
 			],
 		});
@@ -219,9 +219,9 @@ mod tests {
 	#[test]
 	fn parse_from_bytes_invalid_too_short() {
 		let expected = Err(ParseError::ByteCountIncorrect {
-			r#type: Ordering::Greater,
+			r#type:   Ordering::Greater,
 			expected: 8,
-			found: 3,
+			found:    3,
 		});
 		let result = CardholderVerificationMethodList::try_from([0x00; 3].as_slice());
 
@@ -239,12 +239,12 @@ mod tests {
 	#[test]
 	fn parse_from_bytes_unknown_cvm_condition() {
 		let expected = Ok(CardholderVerificationMethodList {
-			x_value: 0,
-			y_value: 0,
+			x_value:  0,
+			y_value:  0,
 			cv_rules: vec![CardholderVerificationRule {
 				continue_if_unsuccessful: false,
-				method: Some(CvMethod::EncipheredPinOnline).into(),
-				condition: None.into(),
+				method:                   Some(CvMethod::EncipheredPinOnline).into(),
+				condition:                None.into(),
 			}],
 		});
 		let result = CardholderVerificationMethodList::try_from(

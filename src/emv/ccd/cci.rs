@@ -46,7 +46,7 @@ mod tests {
 	#[test]
 	fn parse_from_bytes_valid() {
 		let expected = Ok(CommonCoreIdentifier {
-			iad_format_code: FormatCode::A,
+			iad_format_code:    FormatCode::A,
 			cryptogram_version: CryptogramVersion::Aes,
 		});
 		let result = CommonCoreIdentifier::try_from([0b1010_0110].as_slice());

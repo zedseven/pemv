@@ -67,11 +67,11 @@ mod tests {
 				TlvFormat::BerTlv,
 				RawEmvBlock {
 					nodes: vec![RawEmvNode {
-						tag: RawEmvTag {
-							tag: vec![0x5F, 0x24],
-							class: TagClass::Application,
+						tag:         RawEmvTag {
+							tag:              vec![0x5F, 0x24],
+							class:            TagClass::Application,
 							data_object_type: DataObjectType::Primitive,
-							data: EmvData::Normal(vec![0x25, 0x12, 0x31]),
+							data:             EmvData::Normal(vec![0x25, 0x12, 0x31]),
 						},
 						child_block: RawEmvBlock::default(),
 					}],
@@ -91,11 +91,11 @@ mod tests {
 				TlvFormat::Ingenico,
 				RawEmvBlock {
 					nodes: vec![RawEmvNode {
-						tag: RawEmvTag {
-							tag: vec![0x5F, 0x24],
-							class: TagClass::Application,
+						tag:         RawEmvTag {
+							tag:              vec![0x5F, 0x24],
+							class:            TagClass::Application,
 							data_object_type: DataObjectType::Primitive,
-							data: EmvData::Normal(vec![0x25, 0x12, 0x31]),
+							data:             EmvData::Normal(vec![0x25, 0x12, 0x31]),
 						},
 						child_block: RawEmvBlock::default(),
 					}],

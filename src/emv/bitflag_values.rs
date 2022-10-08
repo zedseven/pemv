@@ -19,12 +19,12 @@ use crate::{
 #[derive(Clone, Debug, Eq, Derivative)]
 #[derivative(PartialEq, Hash)]
 pub struct EnabledBitRange {
-	pub offset: u8,
-	pub len: u8,
+	pub offset:      u8,
+	pub len:         u8,
 	#[derivative(PartialEq = "ignore")]
 	#[derivative(Hash = "ignore")]
 	pub explanation: String,
-	pub severity: Severity,
+	pub severity:    Severity,
 }
 
 /// Represents the severity of a bit being enabled.

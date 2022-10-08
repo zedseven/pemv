@@ -280,9 +280,9 @@ macro_rules! bitflag_value {
 
 				if raw_bytes.len() != Self::NUM_BYTES {
 					return Err(ParseError::ByteCountIncorrect {
-						r#type: Ordering::Equal,
+						r#type:   Ordering::Equal,
 						expected: Self::NUM_BYTES,
-						found: raw_bytes.len(),
+						found:    raw_bytes.len(),
 					});
 				}
 				let mut bytes = [0u8; Self::NUM_BYTES];

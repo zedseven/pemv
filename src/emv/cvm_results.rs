@@ -14,7 +14,7 @@ pub struct CardholderVerificationMethodResults {
 	// CV Rule
 	pub cv_rule: CardholderVerificationRule,
 	// Byte 3 Values
-	pub result: CvmResult,
+	pub result:  CvmResult,
 }
 
 enum_repr_fallible! {
@@ -32,9 +32,9 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodResults {
 	fn try_from(raw_bytes: &[u8]) -> Result<Self, Self::Error> {
 		if raw_bytes.len() != Self::NUM_BYTES {
 			return Err(ParseError::ByteCountIncorrect {
-				r#type: Ordering::Equal,
+				r#type:   Ordering::Equal,
 				expected: Self::NUM_BYTES,
-				found: raw_bytes.len(),
+				found:    raw_bytes.len(),
 			});
 		}
 		let mut bytes = [0u8; Self::NUM_BYTES];
@@ -44,7 +44,7 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodResults {
 
 		Ok(Self {
 			cv_rule: CardholderVerificationRule::try_from(&bytes[0..2])?,
-			result: CvmResult::try_from(bytes[2])?,
+			result:  CvmResult::try_from(bytes[2])?,
 		})
 	}
 }
@@ -68,10 +68,10 @@ impl BitflagValue for CardholderVerificationMethodResults {
 		cv_rule_bits.iter_mut().for_each(|b| b.offset += 8);
 		enabled_bits.append(&mut cv_rule_bits);
 		enabled_bits.push(EnabledBitRange {
-			offset: 7,
-			len: 8,
+			offset:      7,
+			len:         8,
 			explanation: format!("Result: {}", self.result),
-			severity: match self.result {
+			severity:    match self.result {
 				CvmResult::Unknown | CvmResult::Successful => Severity::Normal,
 				CvmResult::Failed => Severity::Error,
 			},
@@ -100,10 +100,10 @@ mod tests {
 		let expected = Ok(CardholderVerificationMethodResults {
 			cv_rule: CardholderVerificationRule {
 				continue_if_unsuccessful: true,
-				method: Some(CvMethod::Signature).into(),
-				condition: Some(CvmCondition::TerminalSupported).into(),
+				method:                   Some(CvMethod::Signature).into(),
+				condition:                Some(CvmCondition::TerminalSupported).into(),
 			},
-			result: CvmResult::Successful,
+			result:  CvmResult::Successful,
 		});
 		let result =
 			CardholderVerificationMethodResults::try_from([0b0101_1110, 0x03, 0b10].as_slice());

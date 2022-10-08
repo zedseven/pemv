@@ -12,9 +12,9 @@ use std::{
 pub enum ParseError {
 	/// The wrong number of bytes were present.
 	ByteCountIncorrect {
-		r#type: Ordering,
+		r#type:   Ordering,
 		expected: usize,
-		found: usize,
+		found:    usize,
 	},
 	ByteCountNotDivisibleIntoComponents,
 	/// The bytes provided are not valid.
