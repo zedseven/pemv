@@ -68,11 +68,6 @@ impl DisplayBreakdown for CardholderVerificationMethodList {
 		let header_colour_spec = header_colour_spec();
 		let bold_colour_spec = bold_colour_spec();
 
-		// Calculate the 0-padding length for the integer values
-		let value_padding_length = num_dec_digits(self.x_value)
-			.max(num_dec_digits(self.y_value))
-			.max(MIN_VALUE_DIGITS);
-
 		// Only display the X and Y values if one of them is non-zero or one of the CVM
 		// conditions references them, since most of the time they go unused
 		if self.x_value != 0
@@ -83,6 +78,11 @@ impl DisplayBreakdown for CardholderVerificationMethodList {
 					.internal
 					.map_or(false, CvmCondition::references_x_or_y_value)
 			}) {
+			// Calculate the 0-padding length for the integer values
+			let value_padding_length = num_dec_digits(self.x_value)
+				.max(num_dec_digits(self.y_value))
+				.max(MIN_VALUE_DIGITS);
+
 			// Print the X value
 			print_indentation(indentation);
 			stdout.set_color(&header_colour_spec).ok();
