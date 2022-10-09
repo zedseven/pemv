@@ -1,6 +1,8 @@
 //! The module for the trait that defines the interface for bitflag values.
 
 // Uses
+use std::fmt::Debug;
+
 use derivative::Derivative;
 use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
 
@@ -65,7 +67,7 @@ where
 
 impl<V> DisplayBreakdown for V
 where
-	V: BitflagValue,
+	V: BitflagValue + Debug,
 {
 	#[cfg(not(tarpaulin_include))]
 	fn display_breakdown(
@@ -85,9 +87,11 @@ where
 		// Print the binary representation
 		print_indentation(indentation);
 		stdout.set_color(&bold_colour_spec).ok();
-		let mut first_byte = true;
+		let mut first = true;
 		for byte in binary_repr {
-			if !first_byte {
+			if first {
+				first = false;
+			} else {
 				print!(" ");
 			}
 			for offset in (0..BITS_PER_BYTE).rev() {
@@ -97,7 +101,6 @@ where
 					print!("0");
 				}
 			}
-			first_byte = false;
 		}
 		println!();
 		stdout.reset().ok();

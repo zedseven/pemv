@@ -26,6 +26,7 @@ use crate::{
 };
 
 // Struct Implementation
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct IssuerActionCodeDenial {
 	pub tvr: TerminalVerificationResults,
 }

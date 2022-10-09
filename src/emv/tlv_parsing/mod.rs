@@ -10,7 +10,10 @@ pub mod ingenico_tlv;
 mod process_emv_tag;
 
 // Uses
-use std::fmt::{Display, Formatter, Result as FormatResult};
+use std::{
+	cmp::Ordering,
+	fmt::{Display, Formatter, Result as FormatResult},
+};
 
 use termcolor::{ColorSpec, StandardStream, WriteColor};
 
@@ -24,23 +27,36 @@ use crate::{
 };
 
 /// A processed block of EMV data with annotations and parsing results.
+#[derive(Debug, Eq, PartialEq)]
 pub struct ProcessedEmvBlock {
 	pub nodes: Vec<ProcessedEmvNode>,
 }
+#[cfg(not(tarpaulin_include))]
 impl From<Vec<ProcessedEmvNode>> for ProcessedEmvBlock {
 	fn from(nodes: Vec<ProcessedEmvNode>) -> Self {
 		Self { nodes }
 	}
 }
+#[cfg(not(tarpaulin_include))]
 impl From<ProcessedEmvBlock> for Vec<ProcessedEmvNode> {
 	fn from(block: ProcessedEmvBlock) -> Self {
 		block.nodes
 	}
 }
+#[cfg(not(tarpaulin_include))]
 impl Default for ProcessedEmvBlock {
 	fn default() -> Self {
 		Self {
 			nodes: Vec::with_capacity(0),
+		}
+	}
+}
+
+impl ProcessedEmvBlock {
+	pub fn sort_nodes(&mut self) {
+		self.nodes.sort();
+		for node in &mut self.nodes {
+			node.child_block.sort_nodes();
 		}
 	}
 }
@@ -78,9 +94,24 @@ impl TryFrom<RawEmvBlock> for ProcessedEmvBlock {
 	}
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct ProcessedEmvNode {
 	pub tag:         ProcessedEmvTag,
 	pub child_block: ProcessedEmvBlock,
+}
+
+#[cfg(not(tarpaulin_include))]
+impl Ord for ProcessedEmvNode {
+	fn cmp(&self, other: &Self) -> Ordering {
+		self.tag.cmp(&other.tag)
+	}
+}
+
+#[cfg(not(tarpaulin_include))]
+impl PartialOrd for ProcessedEmvNode {
+	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+		Some(self.cmp(other))
+	}
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -122,6 +153,7 @@ impl TryFrom<RawEmvNode> for ProcessedEmvNode {
 }
 
 /// A processed EMV tag with as much information as possible about it.
+#[derive(Debug)]
 pub enum ProcessedEmvTag {
 	Raw {
 		raw_tag: RawEmvTag,
@@ -137,7 +169,39 @@ pub enum ProcessedEmvTag {
 	},
 }
 
+#[cfg(not(tarpaulin_include))]
+impl PartialEq for ProcessedEmvTag {
+	fn eq(&self, other: &Self) -> bool {
+		self.get_raw_tag().eq(other.get_raw_tag())
+	}
+}
+
+impl Eq for ProcessedEmvTag {}
+
+#[cfg(not(tarpaulin_include))]
+impl Ord for ProcessedEmvTag {
+	fn cmp(&self, other: &Self) -> Ordering {
+		self.get_raw_tag().cmp(other.get_raw_tag())
+	}
+}
+
+#[cfg(not(tarpaulin_include))]
+impl PartialOrd for ProcessedEmvTag {
+	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+		Some(self.cmp(other))
+	}
+}
+
 impl ProcessedEmvTag {
+	#[cfg(not(tarpaulin_include))]
+	pub fn get_raw_tag(&self) -> &RawEmvTag {
+		match self {
+			ProcessedEmvTag::Raw { raw_tag }
+			| ProcessedEmvTag::Annotated { raw_tag, .. }
+			| ProcessedEmvTag::Parsed { raw_tag, .. } => raw_tag,
+		}
+	}
+
 	pub fn parse_raw<P>(
 		name: &'static str,
 		raw_tag: RawEmvTag,
@@ -201,6 +265,7 @@ impl ProcessedEmvTag {
 		}
 	}
 
+	#[cfg(not(tarpaulin_include))]
 	pub fn annotate_raw(name: &'static str, raw_tag: RawEmvTag) -> Self {
 		Self::Annotated { name, raw_tag }
 	}
@@ -318,16 +383,19 @@ impl TryFrom<RawEmvTag> for ProcessedEmvTag {
 pub struct RawEmvBlock {
 	pub nodes: Vec<RawEmvNode>,
 }
+#[cfg(not(tarpaulin_include))]
 impl From<Vec<RawEmvNode>> for RawEmvBlock {
 	fn from(nodes: Vec<RawEmvNode>) -> Self {
 		Self { nodes }
 	}
 }
+#[cfg(not(tarpaulin_include))]
 impl From<RawEmvBlock> for Vec<RawEmvNode> {
 	fn from(block: RawEmvBlock) -> Self {
 		block.nodes
 	}
 }
+#[cfg(not(tarpaulin_include))]
 impl Default for RawEmvBlock {
 	fn default() -> Self {
 		Self {
@@ -351,6 +419,20 @@ pub struct RawEmvTag {
 	pub class:            TagClass,
 	pub data_object_type: DataObjectType,
 	pub data:             EmvData,
+}
+
+#[cfg(not(tarpaulin_include))]
+impl Ord for RawEmvTag {
+	fn cmp(&self, other: &Self) -> Ordering {
+		self.tag.cmp(&other.tag)
+	}
+}
+
+#[cfg(not(tarpaulin_include))]
+impl PartialOrd for RawEmvTag {
+	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+		Some(self.cmp(other))
+	}
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -406,6 +488,7 @@ pub enum EmvData {
 
 impl EmvData {
 	/// Returns the data length, or `None` if unknown.
+	#[cfg(not(tarpaulin_include))]
 	pub fn len(&self) -> Option<usize> {
 		match self {
 			EmvData::Normal(data) => Some(data.len()),
@@ -465,5 +548,224 @@ impl Display for TlvFormat {
 			TlvFormat::BerTlv => "BER-TLV",
 			TlvFormat::Ingenico => "Ingenico",
 		})
+	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use super::{
+		ber_tlv::parse as parse_ber_tlv,
+		is_masked_str,
+		is_masked_u8,
+		DataObjectType,
+		EmvData,
+		ProcessedEmvBlock,
+		ProcessedEmvTag,
+		RawEmvTag,
+		TagClass,
+	};
+	use crate::{
+		emv::{AuthorisationResponseCode, TransactionStatusInformation},
+		error::ParseError,
+		DisplayBreakdown,
+	};
+
+	// Tests
+	#[test]
+	fn sort_nodes() {
+		// This test just tests the sorting, so we don't care about manually defining
+		// all the different processed data structures
+		let expected = ProcessedEmvBlock::try_from(
+			parse_ber_tlv(
+				[
+					0x7E, 0x03, 0x2A, 0x2A, 0x2A, 0x95, 0x05, 0x00, 0x80, 0x00, 0x80, 0x00, 0x9F,
+					0x09, 0x02, 0x00, 0x8C,
+				]
+				.as_slice(),
+				['*'].as_slice(),
+			)
+			.expect("any errors should already be tested by the BER-TLV testing"),
+		)
+		.expect("the testing value should be able to be processed without error");
+		let mut result = ProcessedEmvBlock::try_from(
+			parse_ber_tlv(
+				[
+					0x95, 0x05, 0x00, 0x80, 0x00, 0x80, 0x00, 0x9F, 0x09, 0x02, 0x00, 0x8C, 0x7E,
+					0x03, 0x2A, 0x2A, 0x2A,
+				]
+				.as_slice(),
+				['*'].as_slice(),
+			)
+			.expect("any errors should already be tested by the BER-TLV testing"),
+		)
+		.expect("the testing value should be able to be processed without error");
+		result.sort_nodes();
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn processed_emv_tag_parse_raw_normal() {
+		let expected = &EmvData::Normal(vec![0xFC, 0x00]);
+		let intermediate_result = ProcessedEmvTag::parse_raw(
+			"Transaction Status Information (TSI)",
+			RawEmvTag {
+				tag:              vec![0x9B],
+				class:            TagClass::ContextSpecific,
+				data_object_type: DataObjectType::Primitive,
+				data:             EmvData::Normal(vec![0xFC, 0x00]),
+			},
+			|data| {
+				TransactionStatusInformation::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)
+		.expect("the testing value should be able to be processed without error");
+		let result = &intermediate_result.get_raw_tag().data;
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn processed_emv_tag_parse_raw_masked() {
+		let expected = &EmvData::Masked;
+		let intermediate_result = ProcessedEmvTag::parse_raw(
+			"Transaction Status Information (TSI)",
+			RawEmvTag {
+				tag:              vec![0x9B],
+				class:            TagClass::ContextSpecific,
+				data_object_type: DataObjectType::Primitive,
+				data:             EmvData::Masked,
+			},
+			|data| {
+				TransactionStatusInformation::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+		)
+		.expect("the testing value should be able to be processed without error");
+		let result = &intermediate_result.get_raw_tag().data;
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn processed_emv_tag_parse_raw_unrecognised_normal_recognised() {
+		let expected = "Authorisation Response Code";
+		let intermediate_result = ProcessedEmvTag::parse_raw_unrecognised(
+			"Authorisation Response Code",
+			"Authorisation Response Code (Unrecognised - likely payment system-specific)",
+			RawEmvTag {
+				tag:              vec![0x8A],
+				class:            TagClass::ContextSpecific,
+				data_object_type: DataObjectType::Primitive,
+				data:             EmvData::Normal(b"06".to_vec()),
+			},
+			|data| {
+				AuthorisationResponseCode::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+			|error| matches!(error, ParseError::Unrecognised),
+		)
+		.expect("the testing value should be able to be processed without error");
+		let result = match intermediate_result {
+			ProcessedEmvTag::Annotated { name, .. } | ProcessedEmvTag::Parsed { name, .. } => name,
+			ProcessedEmvTag::Raw { .. } => panic!("the testing value couldn't be parsed"),
+		};
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn processed_emv_tag_parse_raw_unrecognised_normal_unrecognised() {
+		let expected =
+			"Authorisation Response Code (Unrecognised - likely payment system-specific)";
+		let intermediate_result = ProcessedEmvTag::parse_raw_unrecognised(
+			"Authorisation Response Code",
+			"Authorisation Response Code (Unrecognised - likely payment system-specific)",
+			RawEmvTag {
+				tag:              vec![0x8A],
+				class:            TagClass::ContextSpecific,
+				data_object_type: DataObjectType::Primitive,
+				data:             EmvData::Normal(b"ZZ".to_vec()),
+			},
+			|data| {
+				AuthorisationResponseCode::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+			|error| matches!(error, ParseError::Unrecognised),
+		)
+		.expect("the testing value should be able to be processed without error");
+		let result = match intermediate_result {
+			ProcessedEmvTag::Annotated { name, .. } | ProcessedEmvTag::Parsed { name, .. } => name,
+			ProcessedEmvTag::Raw { .. } => panic!("the testing value couldn't be parsed"),
+		};
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn processed_emv_tag_parse_raw_unrecognised_masked() {
+		let expected = "Authorisation Response Code";
+		let intermediate_result = ProcessedEmvTag::parse_raw_unrecognised(
+			"Authorisation Response Code",
+			"Authorisation Response Code (Unrecognised - likely payment system-specific)",
+			RawEmvTag {
+				tag:              vec![0x8A],
+				class:            TagClass::ContextSpecific,
+				data_object_type: DataObjectType::Primitive,
+				data:             EmvData::Masked,
+			},
+			|data| {
+				AuthorisationResponseCode::try_from(data)
+					.map(|parsed| Box::new(parsed) as Box<dyn DisplayBreakdown>)
+			},
+			|error| matches!(error, ParseError::Unrecognised),
+		)
+		.expect("the testing value should be able to be processed without error");
+		let result = match intermediate_result {
+			ProcessedEmvTag::Annotated { name, .. } | ProcessedEmvTag::Parsed { name, .. } => name,
+			ProcessedEmvTag::Raw { .. } => panic!("the testing value couldn't be parsed"),
+		};
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn is_masked_u8_masked() {
+		let expected = true;
+		let result = is_masked_u8([0x2A, 0x2A, 0x2A].as_slice(), ['*'].as_slice());
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn is_masked_u8_unmasked() {
+		let expected = false;
+		let result = is_masked_u8([0x23, 0x12, 0x31].as_slice(), ['*'].as_slice());
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn is_masked_u8_too_short_to_be_sure() {
+		let expected = false;
+		let result = is_masked_u8([0x2A].as_slice(), ['*'].as_slice());
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn is_masked_str_masked() {
+		let expected = true;
+		let result = is_masked_str("******", ['*'].as_slice());
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn is_masked_str_unmasked() {
+		let expected = false;
+		let result = is_masked_str("231231", ['*'].as_slice());
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn is_masked_str_too_short_to_be_sure() {
+		let expected = false;
+		let result = is_masked_str("*", ['*'].as_slice());
+
+		assert_eq!(expected, result);
 	}
 }

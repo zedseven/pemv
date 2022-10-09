@@ -32,6 +32,7 @@ pub struct Config {
 	pub profile:            Profile,
 	pub cli_colour:         ColourChoice,
 	pub masking_characters: Vec<char>,
+	pub sort_parsed_tags:   bool,
 }
 
 impl Default for Config {
@@ -40,17 +41,18 @@ impl Default for Config {
 			profile:            Self::DEFAULT_PROFILE,
 			cli_colour:         ColourChoice::default(),
 			masking_characters: vec!['*'],
+			sort_parsed_tags:   true,
 		}
 	}
 }
 
 impl Config {
-	pub const CLI_COLOUR: &'static str = "cli_colour";
 	// Constants
+	pub const CLI_COLOUR: &'static str = "cli_colour";
 	pub const DEFAULT_PROFILE: Profile = Profile::const_new("default");
 	pub const MASKING_CHARACTERS: &'static str = "masking_characters";
-	// Key Names
 	pub const PROFILE: &'static str = "profile";
+	pub const SORT_PARSED_TAGS: &'static str = "sort_parsed_tags";
 
 	/// Allows the configuration to be extracted from any [`Provider`].
 	///
@@ -124,6 +126,22 @@ pub fn apply_cli_arguments(mut figment: Figment, matches: &ArgMatches) -> Figmen
 				masking_characters.copied().collect::<Vec<char>>(),
 			));
 		}
+	}
+
+	// Sorting
+	let mut cli_provided_sort_preference = None;
+	if let Some(&sort_parsed_tags) = matches.get_one::<bool>("sort-parsed-tags") {
+		if matches.value_source("sort-parsed-tags").unwrap() != ValueSource::DefaultValue {
+			cli_provided_sort_preference = Some(sort_parsed_tags);
+		}
+	}
+	if let Some(&no_sort_parsed_tags) = matches.get_one::<bool>("no-sort-parsed-tags") {
+		if matches.value_source("no-sort-parsed-tags").unwrap() != ValueSource::DefaultValue {
+			cli_provided_sort_preference = Some(!no_sort_parsed_tags);
+		}
+	}
+	if let Some(sort_parsed_tags) = cli_provided_sort_preference {
+		figment = figment.merge((Config::SORT_PARSED_TAGS, sort_parsed_tags));
 	}
 
 	figment

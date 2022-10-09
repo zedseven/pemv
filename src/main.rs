@@ -49,6 +49,8 @@ mod testing_macros;
 mod util;
 
 // Uses
+use std::fmt::Debug;
+
 use termcolor::{StandardStream, WriteColor};
 
 use crate::{
@@ -82,7 +84,7 @@ pub const BITS_PER_BYTE: u8 = 8;
 ///
 /// [`Display`]: core::fmt::Display
 #[cfg(not(tarpaulin_include))]
-pub trait DisplayBreakdown {
+pub trait DisplayBreakdown: Debug {
 	/// Displays a pretty breakdown of the value and every part's meaning.
 	///
 	/// The indentation should be applied to every line. It's used to allow the
@@ -111,6 +113,10 @@ fn main() {
 	let masking_characters = config_figment
 		.extract_inner::<Vec<char>>(Config::MASKING_CHARACTERS)
 		.unwrap();
+	let sort_parsed_tags = config_figment
+		.extract_inner::<bool>(Config::SORT_PARSED_TAGS)
+		.unwrap();
+
 	let mut stdout = StandardStream::stdout(colour_choice);
 
 	let parse_error = {
@@ -154,6 +160,12 @@ fn main() {
 					}
 					result
 				})
+				.map(|mut v| {
+					if sort_parsed_tags {
+						v.sort_nodes();
+					}
+					v
+				})
 				.map(|v| v.display_breakdown(&mut stdout, 0, true))
 				.err()
 		} else if let Some(ber_tlv_str) = matches.get_one::<String>("ber-tlv") {
@@ -162,11 +174,23 @@ fn main() {
 				masking_characters.as_slice(),
 			)
 			.and_then(ProcessedEmvBlock::try_from)
+			.map(|mut v| {
+				if sort_parsed_tags {
+					v.sort_nodes();
+				}
+				v
+			})
 			.map(|v| v.display_breakdown(&mut stdout, 0, true))
 			.err()
 		} else if let Some(ingenico_tlv_str) = matches.value_of("ingenico-tlv") {
 			parse_ingenico_tlv(ingenico_tlv_str, masking_characters.as_slice())
 				.and_then(ProcessedEmvBlock::try_from)
+				.map(|mut v| {
+					if sort_parsed_tags {
+						v.sort_nodes();
+					}
+					v
+				})
 				.map(|v| v.display_breakdown(&mut stdout, 0, true))
 				.err()
 		}

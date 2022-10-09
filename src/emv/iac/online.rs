@@ -30,6 +30,7 @@ use crate::{
 };
 
 // Struct Implementation
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct IssuerActionCodeOnline {
 	pub tvr: TerminalVerificationResults,
 }

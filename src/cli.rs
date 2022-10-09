@@ -48,6 +48,7 @@ pub fn build_cli() -> Command<'static> {
 				.multiple_values(true)
 				.value_name("CHARACTER")
 				.value_parser(value_parser!(char))
+				.requires("tlv-parsers")
 				.help(
 					"The character that will be treated as masked data when parsing. This \
 					 argument can be provided multiple times to specify multiple masking \
@@ -60,9 +61,41 @@ pub fn build_cli() -> Command<'static> {
 					 the masking character.",
 				),
 		)
+		.arg(
+			Arg::new("sort-parsed-tags")
+				.long("sort-parsed-tags")
+				.visible_alias("sort")
+				.takes_value(true)
+				.default_value("true")
+				.default_missing_value("true")
+				.action(ArgAction::Set)
+				.value_name("TRUE/FALSE")
+				.value_parser(value_parser!(bool))
+				.conflicts_with("no-sort-parsed-tags")
+				.requires("tlv-parsers")
+				.help("Whether to sort parsed tags from TLV parsers like `--ber-tlv`."),
+		)
+		.arg(
+			Arg::new("no-sort-parsed-tags")
+				.long("no-sort-parsed-tags")
+				.visible_alias("no-sort")
+				.takes_value(true)
+				.default_value("false")
+				.default_missing_value("true")
+				.action(ArgAction::Set)
+				.value_name("TRUE/FALSE")
+				.value_parser(value_parser!(bool))
+				.requires("tlv-parsers")
+				.help(
+					"Whether not to sort parsed tags from TLV parsers like `--ber-tlv`. This is \
+					 the inverse to `--sort-parsed-tags`.",
+				),
+		)
 		.next_help_heading("EMV UTILITIES")
 		.arg(
 			Arg::new("auto-tlv")
+				.group("operations")
+				.group("tlv-parsers")
 				.short('a')
 				.long("auto-tlv")
 				.visible_alias("auto")
@@ -75,6 +108,8 @@ pub fn build_cli() -> Command<'static> {
 		)
 		.arg(
 			Arg::new("ber-tlv")
+				.group("operations")
+				.group("tlv-parsers")
 				.short('b')
 				.long("ber-tlv")
 				.alias("ber")
@@ -91,6 +126,8 @@ pub fn build_cli() -> Command<'static> {
 		)
 		.arg(
 			Arg::new("ingenico-tlv")
+				.group("operations")
+				.group("tlv-parsers")
 				.short('i')
 				.long("ingenico-tlv")
 				.alias("ingenico")
@@ -106,6 +143,7 @@ pub fn build_cli() -> Command<'static> {
 		.next_help_heading("INDIVIDUAL EMV TAGS")
 		.arg(
 			Arg::new("tvr")
+				.group("operations")
 				.short('t')
 				.long("tvr")
 				.visible_alias("iac")
@@ -124,6 +162,7 @@ pub fn build_cli() -> Command<'static> {
 		)
 		.arg(
 			Arg::new("ccd-iad")
+				.group("operations")
 				.long("ccd-iad")
 				.visible_alias("iad")
 				.takes_value(true)
@@ -140,6 +179,7 @@ pub fn build_cli() -> Command<'static> {
 		)
 		.arg(
 			Arg::new("ccd-cvr")
+				.group("operations")
 				.long("ccd-cvr")
 				.visible_alias("cvr")
 				.takes_value(true)
@@ -155,6 +195,7 @@ pub fn build_cli() -> Command<'static> {
 		)
 		.arg(
 			Arg::new("tsi")
+				.group("operations")
 				.long("tsi")
 				.takes_value(true)
 				.value_name("TSI")
@@ -168,6 +209,7 @@ pub fn build_cli() -> Command<'static> {
 		)
 		.arg(
 			Arg::new("cvm-results")
+				.group("operations")
 				.short('r')
 				.long("cvm-results")
 				.alias("cvm-result")
@@ -182,6 +224,7 @@ pub fn build_cli() -> Command<'static> {
 		)
 		.arg(
 			Arg::new("cvm-list")
+				.group("operations")
 				.long("cvm-list")
 				.takes_value(true)
 				.value_name("CVM LIST")
@@ -198,6 +241,7 @@ pub fn build_cli() -> Command<'static> {
 		.next_help_heading("NON-EMV")
 		.arg(
 			Arg::new("service-code")
+				.group("operations")
 				.long("service-code")
 				.takes_value(true)
 				.value_name("SERVICE CODE")
