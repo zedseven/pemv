@@ -165,6 +165,7 @@ pub fn build_cli() -> Command<'static> {
 				.group("operations")
 				.short('t')
 				.long("tvr")
+				.visible_alias("95")
 				.visible_alias("iac")
 				.visible_alias("tac")
 				.takes_value(true)
@@ -183,6 +184,8 @@ pub fn build_cli() -> Command<'static> {
 			Arg::new("ccd-iad")
 				.group("operations")
 				.long("ccd-iad")
+				.visible_alias("9F10")
+				.alias("9f10")
 				.visible_alias("iad")
 				.takes_value(true)
 				.value_name("IAD")
@@ -207,7 +210,7 @@ pub fn build_cli() -> Command<'static> {
 				.help("Parse CCD-compliant Card Verification Results (part of tag 0x9F10).")
 				.long_help(
 					"Parse CCD-compliant Card Verification Results (part of tag 0x9F10).\nSee the \
-					 description for `--ccd-iad` for more information about CCD compliance.\nThis \
+					 description of `--ccd-iad` for more information about CCD compliance.\nThis \
 					 value is a part of the issuer application data, and includes information \
 					 from the card application intended for the card issuer.",
 				),
@@ -216,6 +219,8 @@ pub fn build_cli() -> Command<'static> {
 			Arg::new("tsi")
 				.group("operations")
 				.long("tsi")
+				.visible_alias("9B")
+				.alias("9b")
 				.takes_value(true)
 				.value_name("TSI")
 				.value_parser(NonEmptyStringValueParser::new())
@@ -231,6 +236,8 @@ pub fn build_cli() -> Command<'static> {
 				.group("operations")
 				.short('r')
 				.long("cvm-results")
+				.visible_alias("9F34")
+				.alias("9f34")
 				.alias("cvm-result")
 				.takes_value(true)
 				.value_name("CVM RESULTS")
@@ -245,6 +252,8 @@ pub fn build_cli() -> Command<'static> {
 			Arg::new("cvm-list")
 				.group("operations")
 				.long("cvm-list")
+				.visible_alias("8E")
+				.alias("8e")
 				.takes_value(true)
 				.value_name("CVM LIST")
 				.value_parser(NonEmptyStringValueParser::new())
@@ -262,6 +271,8 @@ pub fn build_cli() -> Command<'static> {
 			Arg::new("service-code")
 				.group("operations")
 				.long("service-code")
+				.visible_alias("5F30")
+				.alias("5f30")
 				.takes_value(true)
 				.value_name("SERVICE CODE")
 				.value_parser(NonEmptyStringValueParser::new())
