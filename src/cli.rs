@@ -17,6 +17,7 @@ pub fn build_cli() -> Command<'static> {
 		.help_expected(true)
 		.mut_arg("help", |arg| {
 			arg.help("Print help information. Use `--help` for more detailed descriptions.")
+				.short_alias('?')
 		})
 		.mut_arg("version", |arg| arg.help("Print version information."))
 		.arg(
