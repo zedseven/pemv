@@ -64,6 +64,7 @@ use crate::{
 		CardholderVerificationMethodList,
 		CardholderVerificationMethodResults,
 		ProcessedEmvBlock,
+		TagBasicInfo,
 		TerminalVerificationResults,
 		TransactionStatusInformation,
 	},
@@ -147,7 +148,11 @@ fn main() {
 				.err()
 		}
 		// EMV Utilities
-		else if let Some(tlv_str) = matches.get_one::<String>("auto-tlv") {
+		else if let Some(tag_str) = matches.get_one::<String>("identify-tag") {
+			TagBasicInfo::try_from(parse_hex_str(tag_str).as_slice())
+				.map(|v| v.display_breakdown(&mut stdout, 0, true))
+				.err()
+		} else if let Some(tlv_str) = matches.get_one::<String>("auto-tlv") {
 			parse_auto_tlv(tlv_str, masking_characters.as_slice())
 				.and_then(|(format, v)| {
 					let result = ProcessedEmvBlock::try_from(v);

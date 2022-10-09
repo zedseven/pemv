@@ -93,6 +93,24 @@ pub fn build_cli() -> Command<'static> {
 		)
 		.next_help_heading("EMV UTILITIES")
 		.arg(
+			Arg::new("identify-tag")
+				.group("operations")
+				.long("identify-tag")
+				.visible_alias("identify")
+				.alias("ident")
+				.alias("id")
+				.takes_value(true)
+				.value_name("TAG")
+				.value_parser(NonEmptyStringValueParser::new())
+				.help("Attempt to identify an EMV tag by name.")
+				.long_help(
+					"Attempt to identify an EMV tag by name.\nThe class and data object type are \
+					 properties of tags that indicate what context they're designed to be used \
+					 in, and what kind of data they store. Constructed data objects contain \
+					 nested EMV TLV data.",
+				),
+		)
+		.arg(
 			Arg::new("auto-tlv")
 				.group("operations")
 				.group("tlv-parsers")

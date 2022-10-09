@@ -10,6 +10,7 @@ mod cvm_list;
 mod cvm_results;
 mod iac;
 mod pos_entry_mode;
+mod tag_basic_info;
 mod terminal_capabilities;
 mod terminal_type;
 mod tlv_parsing;
@@ -27,6 +28,7 @@ pub use self::{
 	cvm_results::*,
 	iac::*,
 	pos_entry_mode::*,
+	tag_basic_info::*,
 	terminal_capabilities::*,
 	terminal_type::*,
 	tlv_parsing::*,

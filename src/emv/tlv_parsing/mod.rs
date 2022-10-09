@@ -17,6 +17,7 @@ use std::{
 
 use termcolor::{ColorSpec, StandardStream, WriteColor};
 
+pub use self::process_emv_tag::identify_tag;
 use self::process_emv_tag::process_emv_tag;
 use crate::{
 	enum_repr_fallible,
@@ -289,7 +290,7 @@ impl DisplayBreakdown for ProcessedEmvTag {
 		) {
 			let bold_colour_spec = bold_colour_spec();
 
-			let name = name_option.unwrap_or("Unknown");
+			let name = name_option.unwrap_or("<Unknown>");
 
 			print_indentation(indentation);
 			stdout.set_color(header_colour_spec).ok();
@@ -476,6 +477,15 @@ pub enum TagClass: u8, ParseError, { |_| ParseError::NonCompliant } {
 pub enum DataObjectType {
 	Primitive,
 	Constructed,
+}
+
+impl Display for DataObjectType {
+	fn fmt(&self, f: &mut Formatter<'_>) -> FormatResult {
+		f.write_str(match self {
+			Self::Primitive => "Primitive",
+			Self::Constructed => "Constructed",
+		})
+	}
 }
 
 /// EMV data, encoding the ability for data to be masked and therefore
