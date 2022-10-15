@@ -148,7 +148,7 @@ fn main() {
 				.err()
 		}
 		// EMV Utilities
-		else if let Some(tag_str) = matches.get_one::<String>("identify-tag") {
+		else if let Some(tag_str) = matches.get_one::<String>("identify") {
 			TagBasicInfo::try_from(parse_hex_str(tag_str).as_slice())
 				.map(|v| v.display_breakdown(&mut stdout, 0, true))
 				.err()
@@ -187,7 +187,7 @@ fn main() {
 			})
 			.map(|v| v.display_breakdown(&mut stdout, 0, true))
 			.err()
-		} else if let Some(ingenico_tlv_str) = matches.value_of("ingenico-tlv") {
+		} else if let Some(ingenico_tlv_str) = matches.get_one::<String>("ingenico-tlv") {
 			parse_ingenico_tlv(ingenico_tlv_str, masking_characters.as_slice())
 				.and_then(ProcessedEmvBlock::try_from)
 				.map(|mut v| {

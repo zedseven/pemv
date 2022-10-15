@@ -6,29 +6,52 @@ use clap::{builder::NonEmptyStringValueParser, value_parser, Arg, ArgAction, Com
 // Constants
 pub const APPLICATION_PROPER_NAME: &str = "ParseEMV";
 pub const APPLICATION_BIN_NAME: &str = env!("CARGO_PKG_NAME");
+const HELP_TEMPLATE: &str = "\
+{before-help}{name} {version}
+{author-with-newline}{about-with-newline}
+{usage-heading} {usage}
+
+{all-args}{after-help}
+";
 
 /// Builds the command-line interface.
-pub fn build_cli() -> Command<'static> {
+pub fn build_cli() -> Command {
 	Command::new(APPLICATION_PROPER_NAME)
 		.version(env!("CARGO_PKG_VERSION"))
 		.author(env!("CARGO_PKG_AUTHORS"))
 		.about(env!("CARGO_PKG_DESCRIPTION"))
+		.help_template(HELP_TEMPLATE)
 		.arg_required_else_help(true)
 		.help_expected(true)
-		.mut_arg("help", |arg| {
-			arg.help("Print help information. Use `--help` for more detailed descriptions.")
+		.disable_help_flag(true)
+		.disable_version_flag(true)
+		.arg(
+			Arg::new("help")
+				.short('h')
+				.long("help")
 				.short_alias('?')
-		})
-		.mut_arg("version", |arg| arg.help("Print version information."))
+				.global(true)
+				.action(ArgAction::Help)
+				.help("Print help information. Use `--help` for more detailed descriptions."),
+		)
+		.arg(
+			Arg::new("version")
+				.short('V')
+				.long("version")
+				.global(true)
+				.action(ArgAction::Version)
+				.help("Print version information."),
+		)
 		.arg(
 			Arg::new("colour")
 				.long("colour")
 				.alias("color")
-				.takes_value(true)
-				.possible_values(["auto", "always", "ansi", "never"])
+				.num_args(1)
 				.default_value("auto")
 				.default_missing_value("always")
+				.action(ArgAction::Set)
 				.value_name("WHEN")
+				.value_parser(["auto", "always", "ansi", "never"])
 				.help("When to use colour in console output.")
 				.long_help(
 					"When to use colour in console output.\nThe `ansi` value is the same as \
@@ -43,10 +66,9 @@ pub fn build_cli() -> Command<'static> {
 				.long("masking-character")
 				.alias("masking-char")
 				.visible_alias("masking")
-				.takes_value(true)
-				.default_values(&["*"])
+				.num_args(1..)
+				.default_values(["*"])
 				.action(ArgAction::Append)
-				.multiple_values(true)
 				.value_name("CHARACTER")
 				.value_parser(value_parser!(char))
 				.requires("tlv-parsers")
@@ -66,7 +88,7 @@ pub fn build_cli() -> Command<'static> {
 			Arg::new("sort-parsed-tags")
 				.long("sort-parsed-tags")
 				.visible_alias("sort")
-				.takes_value(true)
+				.num_args(0..=1)
 				.default_value("true")
 				.default_missing_value("true")
 				.action(ArgAction::Set)
@@ -80,7 +102,7 @@ pub fn build_cli() -> Command<'static> {
 			Arg::new("no-sort-parsed-tags")
 				.long("no-sort-parsed-tags")
 				.visible_alias("no-sort")
-				.takes_value(true)
+				.num_args(0..=1)
 				.default_value("false")
 				.default_missing_value("true")
 				.action(ArgAction::Set)
@@ -92,15 +114,14 @@ pub fn build_cli() -> Command<'static> {
 					 the inverse to `--sort-parsed-tags`.",
 				),
 		)
-		.next_help_heading("EMV UTILITIES")
+		.next_help_heading("EMV Utilities")
 		.arg(
-			Arg::new("identify-tag")
+			Arg::new("identify")
 				.group("operations")
-				.long("identify-tag")
-				.visible_alias("identify")
-				.alias("ident")
+				.long("identify")
 				.alias("id")
-				.takes_value(true)
+				.num_args(1)
+				.action(ArgAction::Set)
 				.value_name("TAG")
 				.value_parser(NonEmptyStringValueParser::new())
 				.help("Attempt to identify an EMV tag by name.")
@@ -120,7 +141,8 @@ pub fn build_cli() -> Command<'static> {
 				.visible_alias("auto")
 				.visible_alias("parse-tlv")
 				.visible_alias("parse")
-				.takes_value(true)
+				.num_args(1)
+				.action(ArgAction::Set)
 				.value_name("EMV DATA BLOCK")
 				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse a block of TLV data, attempting to find the format automatically."),
@@ -132,7 +154,8 @@ pub fn build_cli() -> Command<'static> {
 				.short('b')
 				.long("ber-tlv")
 				.alias("ber")
-				.takes_value(true)
+				.num_args(1)
+				.action(ArgAction::Set)
 				.value_name("EMV DATA BLOCK")
 				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse a block of BER-TLV encoded data.")
@@ -150,7 +173,8 @@ pub fn build_cli() -> Command<'static> {
 				.short('i')
 				.long("ingenico-tlv")
 				.alias("ingenico")
-				.takes_value(true)
+				.num_args(1)
+				.action(ArgAction::Set)
 				.value_name("EMV DATA BLOCK")
 				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse a block of TLV data encoded in the proprietary Ingenico format.")
@@ -159,7 +183,7 @@ pub fn build_cli() -> Command<'static> {
 					 that this tool ignores non-EMV tags in the input data.",
 				),
 		)
-		.next_help_heading("INDIVIDUAL EMV TAGS")
+		.next_help_heading("Individual EMV Tags")
 		.arg(
 			Arg::new("tvr")
 				.group("operations")
@@ -168,7 +192,8 @@ pub fn build_cli() -> Command<'static> {
 				.visible_alias("95")
 				.visible_alias("iac")
 				.visible_alias("tac")
-				.takes_value(true)
+				.num_args(1)
+				.action(ArgAction::Set)
 				.value_name("TVR")
 				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse Terminal Verification Results (tag 0x95).")
@@ -187,7 +212,8 @@ pub fn build_cli() -> Command<'static> {
 				.visible_alias("9F10")
 				.alias("9f10")
 				.visible_alias("iad")
-				.takes_value(true)
+				.num_args(1)
+				.action(ArgAction::Set)
 				.value_name("IAD")
 				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse CCD-compliant Issuer Application Data (tag 0x9F10).")
@@ -204,7 +230,8 @@ pub fn build_cli() -> Command<'static> {
 				.group("operations")
 				.long("ccd-cvr")
 				.visible_alias("cvr")
-				.takes_value(true)
+				.num_args(1)
+				.action(ArgAction::Set)
 				.value_name("CVR")
 				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse CCD-compliant Card Verification Results (part of tag 0x9F10).")
@@ -221,7 +248,8 @@ pub fn build_cli() -> Command<'static> {
 				.long("tsi")
 				.visible_alias("9B")
 				.alias("9b")
-				.takes_value(true)
+				.num_args(1)
+				.action(ArgAction::Set)
 				.value_name("TSI")
 				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse Transaction Status Information (tag 0x9B).")
@@ -239,7 +267,8 @@ pub fn build_cli() -> Command<'static> {
 				.visible_alias("9F34")
 				.alias("9f34")
 				.alias("cvm-result")
-				.takes_value(true)
+				.num_args(1)
+				.action(ArgAction::Set)
 				.value_name("CVM RESULTS")
 				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse Cardholder Verification Method (CVM) Results (tag 0x9F34).")
@@ -254,7 +283,8 @@ pub fn build_cli() -> Command<'static> {
 				.long("cvm-list")
 				.visible_alias("8E")
 				.alias("8e")
-				.takes_value(true)
+				.num_args(1)
+				.action(ArgAction::Set)
 				.value_name("CVM LIST")
 				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse a Cardholder Verification Method (CVM) List (tag 0x8E).")
@@ -266,14 +296,15 @@ pub fn build_cli() -> Command<'static> {
 					 they're unsuccessful.",
 				),
 		)
-		.next_help_heading("NON-EMV")
+		.next_help_heading("Non-EMV")
 		.arg(
 			Arg::new("service-code")
 				.group("operations")
 				.long("service-code")
 				.visible_alias("5F30")
 				.alias("5f30")
-				.takes_value(true)
+				.num_args(1)
+				.action(ArgAction::Set)
 				.value_name("SERVICE CODE")
 				.value_parser(NonEmptyStringValueParser::new())
 				.help("Parse a card Service Code (MSR, or EMV tag 0x5F30).")
@@ -292,10 +323,8 @@ mod tests {
 	use super::build_cli;
 
 	// Tests
-	/// If there's anything wrong with the CLI setup, Clap will panic. This test
-	/// just ensures that no panic occurs.
 	#[test]
-	fn build_cli_is_successful() {
-		build_cli();
+	fn cli_debug_assertions() {
+		build_cli().debug_assert();
 	}
 }

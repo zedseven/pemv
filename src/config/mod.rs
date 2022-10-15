@@ -2,7 +2,7 @@
 pub mod colour_choice;
 
 // Uses
-use clap::{ArgMatches, ValueSource};
+use clap::{parser::ValueSource, ArgMatches};
 use figment::{
 	providers::{Env, Format, Serialized, Toml},
 	value::{Dict, Map},
