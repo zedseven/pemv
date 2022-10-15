@@ -14,6 +14,10 @@
 # Auto-generated bindings files that're re-made on every build
 **/*bindings.rs
 
+# Tarpaulin-generated files
+tarpaulin-report.html
+**/*.profraw
+
 # Environment variable files (for development, often containing private information)
 **/.env
 
