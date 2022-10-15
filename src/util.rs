@@ -97,6 +97,18 @@ pub fn bytes_to_str(bytes: &[u8]) -> String {
 	result
 }
 
+/// Trims the leading `0x00` bytes, never removing the last byte. (even if it's
+/// also `0x00`)
+pub fn trim_leading_0_bytes(bytes: &mut Vec<u8>) {
+	while bytes.len() > 1 {
+		if bytes[0] == 0x00 {
+			bytes.remove(0);
+		} else {
+			break;
+		}
+	}
+}
+
 /// Sourced from <https://stackoverflow.com/a/69302957>.
 ///
 /// Once the `int_log` feature becomes stable, this can be replaced with
@@ -196,6 +208,7 @@ mod tests {
 		parse_hex_str,
 		parse_hex_str_strict,
 		parse_str_to_u16,
+		trim_leading_0_bytes,
 	};
 	use crate::error::ParseError;
 
@@ -367,6 +380,31 @@ mod tests {
 	fn bytes_to_str_multi_byte_all_nibbles() {
 		let expected = "0123456789ABCDEF";
 		let result = bytes_to_str([0x01u8, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF].as_slice());
+
+		assert_eq!(expected, result);
+	}
+
+	#[test]
+	fn trim_leading_0_bytes_normal_case() {
+		let expected = [0x8A].to_vec();
+		let mut result = [0x00, 0x8A].to_vec();
+		trim_leading_0_bytes(&mut result);
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn trim_leading_0_bytes_no_0_bytes() {
+		let expected = [0x9F, 0x1D].to_vec();
+		let mut result = [0x9F, 0x1D].to_vec();
+		trim_leading_0_bytes(&mut result);
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn trim_leading_0_bytes_all_0_bytes() {
+		let expected = [0x00].to_vec();
+		let mut result = [0x00, 0x00, 0x00].to_vec();
+		trim_leading_0_bytes(&mut result);
 
 		assert_eq!(expected, result);
 	}

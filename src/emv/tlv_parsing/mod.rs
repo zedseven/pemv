@@ -479,6 +479,7 @@ pub enum DataObjectType {
 	Constructed,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Display for DataObjectType {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FormatResult {
 		f.write_str(match self {
@@ -707,6 +708,24 @@ mod tests {
 			ProcessedEmvTag::Annotated { name, .. } | ProcessedEmvTag::Parsed { name, .. } => name,
 			ProcessedEmvTag::Raw { .. } => panic!("the testing value couldn't be parsed"),
 		};
+
+		assert_eq!(expected, result);
+	}
+	#[test]
+	fn processed_emv_tag_parse_raw_unrecognised_error() {
+		let expected = Err(ParseError::NonCompliant);
+		let result = ProcessedEmvTag::parse_raw_unrecognised(
+			"",
+			"",
+			RawEmvTag {
+				tag:              vec![0x8A],
+				class:            TagClass::ContextSpecific,
+				data_object_type: DataObjectType::Primitive,
+				data:             EmvData::Normal(b"05".to_vec()),
+			},
+			|_| Err(ParseError::NonCompliant),
+			|error| matches!(error, ParseError::Unrecognised),
+		);
 
 		assert_eq!(expected, result);
 	}

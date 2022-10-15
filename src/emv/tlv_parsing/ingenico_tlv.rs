@@ -11,7 +11,7 @@ use super::{
 };
 use crate::{
 	error::ParseError,
-	util::{byte_slice_to_u32, parse_hex_str_strict, BYTES_PER_32_BITS},
+	util::{byte_slice_to_u32, parse_hex_str_strict, trim_leading_0_bytes, BYTES_PER_32_BITS},
 };
 
 // Constants
@@ -49,8 +49,9 @@ pub fn parse(data: &str, masking_characters: &[char]) -> Result<RawEmvBlock, Par
 			None => return Err(ParseError::NonCompliant),
 		};
 		let tag_id_str = &data[index..colon_index];
-		let tag_id_bytes =
+		let mut tag_id_bytes =
 			parse_hex_str_strict(tag_id_str).map_err(|_| ParseError::NonCompliant)?;
+		trim_leading_0_bytes(&mut tag_id_bytes);
 		index = colon_index + 1;
 		if index >= data_len || tag_id_bytes.is_empty() {
 			return Err(ParseError::NonCompliant);
@@ -449,6 +450,23 @@ mod tests {
 						class:            TagClass::ContextSpecific,
 						data_object_type: DataObjectType::Primitive,
 						data:             EmvData::Normal(vec![0x22, 0x12, 0x31]),
+					},
+					child_block: RawEmvBlock::default(),
+				}],
+			}),
+		);
+	}
+	#[test]
+	fn parse_leading_0_byte_tag_name() {
+		test_parse(
+			"T008A:0002:h3030",
+			Ok(RawEmvBlock {
+				nodes: vec![RawEmvNode {
+					tag:         RawEmvTag {
+						tag:              vec![0x8A],
+						class:            TagClass::ContextSpecific,
+						data_object_type: DataObjectType::Primitive,
+						data:             EmvData::Normal(vec![0x30, 0x30]),
 					},
 					child_block: RawEmvBlock::default(),
 				}],
