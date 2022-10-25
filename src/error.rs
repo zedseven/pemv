@@ -19,6 +19,9 @@ pub enum ParseError {
 	InvalidNumber,
 	/// The value provided isn't compliant with the EMV specifications in some
 	/// way.
+	NonCompliant,
+	/// The value provided isn't compliant with the EMV CCD specifications in
+	/// some way. Not necessarily a problem.
 	NonCcdCompliant,
 }
 
@@ -44,6 +47,12 @@ impl Display for ParseError {
 			Self::InvalidNumber => write!(
 				f,
 				"The value provided is not a valid number, or is too large."
+			),
+			Self::NonCompliant => write!(
+				f,
+				"The value provided isn't compliant with the EMV specifications in some way, or \
+				 this tool is out of date. If you have reason to believe it's the latter, please \
+				 make sure you're using the latest version then open an issue on GitHub."
 			),
 			Self::NonCcdCompliant => write!(
 				f,

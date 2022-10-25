@@ -43,38 +43,8 @@ impl TryFrom<&[u8]> for CardholderVerificationRule {
 		Ok(Self {
 			bytes,
 			continue_if_unsuccessful: 0b0100_0000 & bytes[0] > 0,
-			method: {
-				match 0b0011_1111 & bytes[0] {
-					0b00_0000 => Some(CvMethod::FailCvmProcessing),
-					0b00_0001 => Some(CvMethod::PlaintextPin),
-					0b00_0010 => Some(CvMethod::EncipheredPinOnline),
-					0b00_0011 => Some(CvMethod::PlaintextPinWithSignature),
-					0b00_0100 => Some(CvMethod::EncipheredPin),
-					0b00_0101 => Some(CvMethod::EncipheredPinWithSignature),
-					0b01_1110 => Some(CvMethod::Signature),
-					0b01_1111 => Some(CvMethod::NoCvmRequired),
-					// This value isn't explicitly marked - on page 162 of EMV Book 3 it's simply
-					// labelled as `This value is not available for use`
-					// On page 121 of EMV Book 4, it mentions `'3F' if no CVM is performed`
-					0b11_1111 => Some(CvMethod::NoCvmPerformed),
-					_ => None,
-				}
-			},
-			condition: {
-				match bytes[1] {
-					0x00 => Some(CvmCondition::Always),
-					0x01 => Some(CvmCondition::UnattendedCash),
-					0x02 => Some(CvmCondition::NotUnattendedNotManualNotCashback),
-					0x03 => Some(CvmCondition::TerminalSupported),
-					0x04 => Some(CvmCondition::Manual),
-					0x05 => Some(CvmCondition::Cashback),
-					0x06 => Some(CvmCondition::InApplicationCurrencyUnderX),
-					0x07 => Some(CvmCondition::InApplicationCurrencyOverX),
-					0x08 => Some(CvmCondition::InApplicationCurrencyUnderY),
-					0x09 => Some(CvmCondition::InApplicationCurrencyOverY),
-					_ => None,
-				}
-			},
+			method: CvMethod::try_from(0b0011_1111 & bytes[0]).ok(),
+			condition: CvmCondition::try_from(bytes[1]).ok(),
 		})
 	}
 }

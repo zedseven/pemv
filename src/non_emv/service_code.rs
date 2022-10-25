@@ -33,6 +33,17 @@ pub enum Interchange {
 	Test,
 	Rfu,
 }
+impl From<u8> for Interchange {
+	fn from(value: u8) -> Self {
+		match value {
+			1 | 2 => Self::International,
+			5 | 6 => Self::National,
+			7 => Self::Private,
+			9 => Self::Test,
+			_ => Self::Rfu,
+		}
+	}
+}
 impl Display for Interchange {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		f.write_str(match self {
@@ -50,6 +61,14 @@ pub enum Technology {
 	MagneticStripeOnly,
 	IntegratedCircuitCard,
 }
+impl From<u8> for Technology {
+	fn from(value: u8) -> Self {
+		match value {
+			2 | 6 => Self::IntegratedCircuitCard,
+			_ => Self::MagneticStripeOnly,
+		}
+	}
+}
 impl Display for Technology {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		f.write_str(match self {
@@ -65,6 +84,16 @@ pub enum AuthorisationProcessing {
 	ByIssuer,
 	ByIssuerUnlessExplicitAgreement,
 	Rfu,
+}
+impl From<u8> for AuthorisationProcessing {
+	fn from(value: u8) -> Self {
+		match value {
+			0 => Self::Normal,
+			2 => Self::ByIssuer,
+			4 => Self::ByIssuerUnlessExplicitAgreement,
+			_ => Self::Rfu,
+		}
+	}
 }
 impl Display for AuthorisationProcessing {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
@@ -88,6 +117,17 @@ pub enum AllowedServices {
 	CashOnly,
 	Rfu,
 }
+impl From<u8> for AllowedServices {
+	fn from(value: u8) -> Self {
+		match value {
+			0 | 1 | 6 => Self::NoRestrictions,
+			2 | 5 | 7 => Self::GoodsAndServicesOnly,
+			3 => Self::AtmOnly,
+			4 => Self::CashOnly,
+			_ => Self::Rfu,
+		}
+	}
+}
 impl Display for AllowedServices {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		f.write_str(match self {
@@ -105,6 +145,15 @@ pub enum PinRequirements {
 	None,
 	PinRequired,
 	PromptIfPinpadPresent,
+}
+impl From<u8> for PinRequirements {
+	fn from(value: u8) -> Self {
+		match value {
+			0 | 3 | 5 => Self::PinRequired,
+			6 | 7 => Self::PromptIfPinpadPresent,
+			_ => Self::None,
+		}
+	}
 }
 impl Display for PinRequirements {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
@@ -130,35 +179,11 @@ impl TryFrom<u16> for ServiceCode {
 
 		Ok(Self {
 			number,
-			interchange: match position_1 {
-				1 | 2 => Interchange::International,
-				5 | 6 => Interchange::National,
-				7 => Interchange::Private,
-				9 => Interchange::Test,
-				_ => Interchange::Rfu,
-			},
-			technology: match position_1 {
-				2 | 6 => Technology::IntegratedCircuitCard,
-				_ => Technology::MagneticStripeOnly,
-			},
-			authorisation_processing: match position_2 {
-				0 => AuthorisationProcessing::Normal,
-				2 => AuthorisationProcessing::ByIssuer,
-				4 => AuthorisationProcessing::ByIssuerUnlessExplicitAgreement,
-				_ => AuthorisationProcessing::Rfu,
-			},
-			allowed_services: match position_3 {
-				0 | 1 | 6 => AllowedServices::NoRestrictions,
-				2 | 5 | 7 => AllowedServices::GoodsAndServicesOnly,
-				3 => AllowedServices::AtmOnly,
-				4 => AllowedServices::CashOnly,
-				_ => AllowedServices::Rfu,
-			},
-			pin_requirements: match position_3 {
-				0 | 3 | 5 => PinRequirements::PinRequired,
-				6 | 7 => PinRequirements::PromptIfPinpadPresent,
-				_ => PinRequirements::None,
-			},
+			interchange: Interchange::from(position_1 as u8),
+			technology: Technology::from(position_1 as u8),
+			authorisation_processing: AuthorisationProcessing::from(position_2 as u8),
+			allowed_services: AllowedServices::from(position_3 as u8),
+			pin_requirements: PinRequirements::from(position_3 as u8),
 		})
 	}
 }

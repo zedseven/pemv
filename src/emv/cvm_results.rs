@@ -21,13 +21,25 @@ pub struct CardholderVerificationMethodResults {
 	pub result: CvmResult,
 }
 
+#[repr(u8)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum CvmResult {
-	Unknown,
-	Failed,
-	Successful,
+	Unknown = 0b00,
+	Failed = 0b01,
+	Successful = 0b10,
 }
+impl TryFrom<u8> for CvmResult {
+	type Error = ParseError;
 
+	fn try_from(value: u8) -> Result<Self, Self::Error> {
+		match value {
+			0b00 => Ok(Self::Unknown),
+			0b01 => Ok(Self::Failed),
+			0b10 => Ok(Self::Successful),
+			_ => Err(ParseError::NonCompliant),
+		}
+	}
+}
 impl Display for CvmResult {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		f.write_str(match self {
@@ -57,15 +69,7 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodResults {
 		Ok(Self {
 			bytes,
 			cv_rule: CardholderVerificationRule::try_from(&bytes[0..2])?,
-			result: {
-				#[allow(clippy::match_same_arms)]
-				match bytes[2] {
-					0b00 => CvmResult::Unknown,
-					0b01 => CvmResult::Failed,
-					0b10 => CvmResult::Successful,
-					_ => CvmResult::Unknown,
-				}
-			},
+			result: CvmResult::try_from(bytes[2])?,
 		})
 	}
 }

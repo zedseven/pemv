@@ -5,19 +5,42 @@
 // Uses
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 
+use crate::error::ParseError;
+
 /// A Cardholder Verification Method Condition.
+#[repr(u8)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum CvmCondition {
-	Always,
-	UnattendedCash,
-	NotUnattendedNotManualNotCashback,
-	TerminalSupported,
-	Manual,
-	Cashback,
-	InApplicationCurrencyUnderX,
-	InApplicationCurrencyOverX,
-	InApplicationCurrencyUnderY,
-	InApplicationCurrencyOverY,
+	Always = 0x00,
+	UnattendedCash = 0x01,
+	NotUnattendedNotManualNotCashback = 0x02,
+	TerminalSupported = 0x03,
+	Manual = 0x04,
+	Cashback = 0x05,
+	InApplicationCurrencyUnderX = 0x06,
+	InApplicationCurrencyOverX = 0x07,
+	InApplicationCurrencyUnderY = 0x08,
+	InApplicationCurrencyOverY = 0x09,
+}
+
+impl TryFrom<u8> for CvmCondition {
+	type Error = ParseError;
+
+	fn try_from(value: u8) -> Result<Self, Self::Error> {
+		match value {
+			0x00 => Ok(Self::Always),
+			0x01 => Ok(Self::UnattendedCash),
+			0x02 => Ok(Self::NotUnattendedNotManualNotCashback),
+			0x03 => Ok(Self::TerminalSupported),
+			0x04 => Ok(Self::Manual),
+			0x05 => Ok(Self::Cashback),
+			0x06 => Ok(Self::InApplicationCurrencyUnderX),
+			0x07 => Ok(Self::InApplicationCurrencyOverX),
+			0x08 => Ok(Self::InApplicationCurrencyUnderY),
+			0x09 => Ok(Self::InApplicationCurrencyOverY),
+			_ => Err(ParseError::NonCompliant),
+		}
+	}
 }
 
 impl Display for CvmCondition {
