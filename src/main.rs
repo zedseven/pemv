@@ -63,18 +63,6 @@ use crate::{
 pub const BITS_PER_BYTE: u8 = 8;
 
 // Traits
-pub trait ParseFromBytes
-where
-	Self: Sized,
-{
-	/// Parses raw bytes into the value.
-	///
-	/// # Errors
-	/// [`ParseError::WrongByteCount`] when the byte slice is the incorrect
-	/// size.
-	fn parse_bytes(bytes: &[u8]) -> Result<Self, ParseError>;
-}
-
 pub trait DisplayBreakdown {
 	/// Displays a pretty breakdown of the value and every part's meaning.
 	fn display_breakdown(&self, stdout: &mut StandardStream);
@@ -100,20 +88,20 @@ fn main() {
 	};
 	let mut stdout = StandardStream::stdout(choice);
 
-	let parse_error = if let Some(tvr_value) = matches.value_of("tvr") {
-		TerminalVerificationResults::parse_bytes(&parse_hex_str(tvr_value))
+	let parse_error = if let Some(tvr_str) = matches.value_of("tvr") {
+		TerminalVerificationResults::try_from(parse_hex_str(tvr_str).as_slice())
 			.map(|v| v.display_breakdown(&mut stdout))
 			.err()
-	} else if let Some(cvr_value) = matches.value_of("cvr") {
-		CardVerificationResults::parse_bytes(&parse_hex_str(cvr_value))
+	} else if let Some(cvr_str) = matches.value_of("cvr") {
+		CardVerificationResults::try_from(parse_hex_str(cvr_str).as_slice())
 			.map(|v| v.display_breakdown(&mut stdout))
 			.err()
-	} else if let Some(tsi_value) = matches.value_of("tsi") {
-		TransactionStatusInformation::parse_bytes(&parse_hex_str(tsi_value))
+	} else if let Some(tsi_str) = matches.value_of("tsi") {
+		TransactionStatusInformation::try_from(parse_hex_str(tsi_str).as_slice())
 			.map(|v| v.display_breakdown(&mut stdout))
 			.err()
-	} else if let Some(cvm_value) = matches.value_of("cvm") {
-		CardholderVerificationMethodResults::parse_bytes(&parse_hex_str(cvm_value))
+	} else if let Some(cvm_str) = matches.value_of("cvm") {
+		CardholderVerificationMethodResults::try_from(parse_hex_str(cvm_str).as_slice())
 			.map(|v| v.display_breakdown(&mut stdout))
 			.err()
 	} else {
@@ -127,6 +115,9 @@ fn main() {
 				 wrong value? Expected: {}, Found: {}",
 				expected, found
 			),
+			ParseError::InvalidNumber => {
+				eprintln!("The value provided is not a valid number, or is too large.");
+			}
 		}
 	}
 }

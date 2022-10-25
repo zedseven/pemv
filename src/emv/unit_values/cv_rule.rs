@@ -2,9 +2,10 @@
 
 // Uses
 use super::{EnabledBitRange, Severity, UnitValue};
-use crate::{error::ParseError, util::byte_slice_to_u64, ParseFromBytes};
+use crate::{error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
+#[derive(Debug)]
 pub struct CardholderVerificationRule {
 	bytes: <Self as UnitValue>::Bytes,
 	// Byte 1 Values
@@ -14,6 +15,7 @@ pub struct CardholderVerificationRule {
 	pub condition: Option<CvmCondition>,
 }
 
+#[derive(Debug)]
 pub enum CvMethod {
 	FailCvmProcessing,
 	PlaintextPin,
@@ -25,7 +27,7 @@ pub enum CvMethod {
 	NoCvmRequired,
 	NoCvmPerformed,
 }
-
+#[derive(Debug)]
 pub enum CvmCondition {
 	Always,
 	UnattendedCash,
@@ -39,8 +41,10 @@ pub enum CvmCondition {
 	InApplicationCurrencyOverY,
 }
 
-impl ParseFromBytes for CardholderVerificationRule {
-	fn parse_bytes(raw_bytes: &[u8]) -> Result<Self, ParseError> {
+impl TryFrom<&[u8]> for CardholderVerificationRule {
+	type Error = ParseError;
+
+	fn try_from(raw_bytes: &[u8]) -> Result<Self, Self::Error> {
 		if raw_bytes.len() != Self::NUM_BYTES {
 			return Err(ParseError::WrongByteCount {
 				expected: Self::NUM_BYTES,

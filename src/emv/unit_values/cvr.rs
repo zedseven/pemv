@@ -2,9 +2,10 @@
 
 // Uses
 use super::{EnabledBitRange, Severity, UnitValue};
-use crate::{error::ParseError, util::byte_slice_to_u64, ParseFromBytes};
+use crate::{error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
+#[derive(Debug)]
 pub struct CardVerificationResults {
 	bytes: <Self as UnitValue>::Bytes,
 	// Byte 1 Values
@@ -37,12 +38,14 @@ pub struct CardVerificationResults {
 	pub unable_to_go_online: bool,
 }
 
+#[derive(Debug)]
 pub enum GenAc1ApplicationCryptogramType {
 	Aac,
 	Tc,
 	Arqc,
 	Rfu,
 }
+#[derive(Debug)]
 pub enum GenAc2ApplicationCryptogramType {
 	Aac,
 	Tc,
@@ -50,9 +53,11 @@ pub enum GenAc2ApplicationCryptogramType {
 	Rfu,
 }
 
-impl ParseFromBytes for CardVerificationResults {
+impl TryFrom<&[u8]> for CardVerificationResults {
+	type Error = ParseError;
+
 	#[rustfmt::skip]
-	fn parse_bytes(raw_bytes: &[u8]) -> Result<Self, ParseError> {
+	fn try_from(raw_bytes: &[u8]) -> Result<Self, Self::Error> {
 		if raw_bytes.len() != Self::NUM_BYTES {
 			return Err(ParseError::WrongByteCount {
 				expected: Self::NUM_BYTES,

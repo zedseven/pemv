@@ -1,5 +1,13 @@
 //! Utility functions for internal use by other components of the crate.
 
+// Uses
+use crate::error::ParseError;
+
+/// Parses a string into a [`u16`].
+pub fn parse_str_to_u16(s: &str) -> Result<u16, ParseError> {
+	s.trim().parse().map_err(|_| ParseError::InvalidNumber)
+}
+
 /// Parses a hex string into a vector of bytes.
 ///
 /// Original function written by Jake Goulding.

@@ -2,9 +2,10 @@
 
 // Uses
 use super::{cv_rule::CardholderVerificationRule, EnabledBitRange, Severity, UnitValue};
-use crate::{error::ParseError, util::byte_slice_to_u64, ParseFromBytes};
+use crate::{error::ParseError, util::byte_slice_to_u64};
 
 // Struct Implementation
+#[derive(Debug)]
 pub struct CardholderVerificationMethodResults {
 	bytes: <Self as UnitValue>::Bytes,
 	// CV Rule
@@ -13,14 +14,17 @@ pub struct CardholderVerificationMethodResults {
 	pub result: CvmResult,
 }
 
+#[derive(Debug)]
 pub enum CvmResult {
 	Unknown,
 	Failed,
 	Successful,
 }
 
-impl ParseFromBytes for CardholderVerificationMethodResults {
-	fn parse_bytes(raw_bytes: &[u8]) -> Result<Self, ParseError> {
+impl TryFrom<&[u8]> for CardholderVerificationMethodResults {
+	type Error = ParseError;
+
+	fn try_from(raw_bytes: &[u8]) -> Result<Self, Self::Error> {
 		if raw_bytes.len() != Self::NUM_BYTES {
 			return Err(ParseError::WrongByteCount {
 				expected: Self::NUM_BYTES,
@@ -34,7 +38,7 @@ impl ParseFromBytes for CardholderVerificationMethodResults {
 
 		Ok(Self {
 			bytes,
-			cv_rule: CardholderVerificationRule::parse_bytes(&bytes[0..=1])?,
+			cv_rule: CardholderVerificationRule::try_from(&bytes[0..=1])?,
 			result: {
 				#[allow(clippy::match_same_arms)]
 				match 0b1111_1111 & bytes[2] {
