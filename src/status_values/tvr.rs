@@ -215,9 +215,10 @@ impl StatusValue<u64> for TerminalVerificationResults {
 			enabled_bits.push(EnabledBitRange {
 				offset: 3 + 2 * 8,
 				len: 1,
-				explanation: "PIN entry required, PIN pad present, but PIN was not entered"
+				explanation: "PIN entry required, PIN pad present, but PIN was not entered (PIN \
+				              bypass)"
 					.to_owned(),
-				severity: Severity::Error,
+				severity: Severity::Warning,
 			});
 		}
 		if self.online_pin_entered {
