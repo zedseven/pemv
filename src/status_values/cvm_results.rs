@@ -38,7 +38,7 @@ impl StatusValue<u32> for CardholderVerificationMethodResults {
 			),
 			result: {
 				#[allow(clippy::match_same_arms)]
-				match (0b1111_1111 & bits) >> 8 {
+				match 0b1111_1111 & bits {
 					0b00 => CvmResult::Unknown,
 					0b01 => CvmResult::Failed,
 					0b10 => CvmResult::Successful,
