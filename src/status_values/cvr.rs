@@ -1,39 +1,39 @@
 //! Everything for handling Card Verification Results (CVR) values.
 
 // Uses
-use super::{display_breakdown, EnabledBitRange, StatusValue};
+use super::{EnabledBitRange, StatusValue};
 
 // Struct Implementation
 pub struct CardVerificationResults {
 	bits: u64,
 	// Byte 1 Values
-	gen_ac_2_application_cryptogram_type: GenAc2ApplicationCryptogramType,
-	gen_ac_1_application_cryptogram_type: GenAc1ApplicationCryptogramType,
-	cda_performed: bool,
-	offline_dda_performed: bool,
-	issuer_authentication_not_performed: bool,
-	issuer_authentication_failed: bool,
+	pub gen_ac_2_application_cryptogram_type: GenAc2ApplicationCryptogramType,
+	pub gen_ac_1_application_cryptogram_type: GenAc1ApplicationCryptogramType,
+	pub cda_performed: bool,
+	pub offline_dda_performed: bool,
+	pub issuer_authentication_not_performed: bool,
+	pub issuer_authentication_failed: bool,
 	// Byte 2 Values
-	pin_try_count: u8,
-	offline_pin_verification_performed: bool,
-	offline_pin_verification_failed: bool,
-	pin_try_limit_exceeded: bool,
-	last_online_transaction_not_completed: bool,
+	pub pin_try_count: u8,
+	pub offline_pin_verification_performed: bool,
+	pub offline_pin_verification_failed: bool,
+	pub pin_try_limit_exceeded: bool,
+	pub last_online_transaction_not_completed: bool,
 	// Byte 3 Values
-	offline_transaction_count_limit_lower_exceeded: bool,
-	offline_transaction_count_limit_upper_exceeded: bool,
-	offline_cumulative_amount_limit_lower_exceeded: bool,
-	offline_cumulative_amount_limit_upper_exceeded: bool,
-	issuer_discretionary_bit_1: bool,
-	issuer_discretionary_bit_2: bool,
-	issuer_discretionary_bit_3: bool,
-	issuer_discretionary_bit_4: bool,
+	pub offline_transaction_count_limit_lower_exceeded: bool,
+	pub offline_transaction_count_limit_upper_exceeded: bool,
+	pub offline_cumulative_amount_limit_lower_exceeded: bool,
+	pub offline_cumulative_amount_limit_upper_exceeded: bool,
+	pub issuer_discretionary_bit_1: bool,
+	pub issuer_discretionary_bit_2: bool,
+	pub issuer_discretionary_bit_3: bool,
+	pub issuer_discretionary_bit_4: bool,
 	// Byte 4 Values
-	successful_issuer_script_commands_with_secure_messaging: u8,
-	issuer_script_processing_failed: bool,
-	offline_data_authentication_failed_on_previous_transaction: bool,
-	go_online_on_next_transaction: bool,
-	unable_to_go_online: bool,
+	pub successful_issuer_script_commands_with_secure_messaging: u8,
+	pub issuer_script_processing_failed: bool,
+	pub offline_data_authentication_failed_on_previous_transaction: bool,
+	pub go_online_on_next_transaction: bool,
+	pub unable_to_go_online: bool,
 }
 
 pub enum GenAc1ApplicationCryptogramType {
@@ -47,6 +47,12 @@ pub enum GenAc2ApplicationCryptogramType {
 	Tc,
 	SecondGenAcNotRequested,
 	Rfu,
+}
+
+impl CardVerificationResults {
+	pub fn new<B: Into<u64>>(bits: B) -> Self {
+		Self::parse_bits(bits)
+	}
 }
 
 impl StatusValue<u64> for CardVerificationResults {
@@ -100,10 +106,13 @@ impl StatusValue<u64> for CardVerificationResults {
 		}
 	}
 
-	fn display_breakdown(&self) {
-		// This is an ugly mess, but these values are display-only and it doesn't make
-		// sense to store them anywhere else. :/
+	fn get_bits(&self) -> u64 {
+		self.bits
+	}
+
+	fn get_display_information(&self) -> Vec<EnabledBitRange> {
 		let mut enabled_bits = Vec::with_capacity(4);
+
 		enabled_bits.push(EnabledBitRange {
 			offset: 7 + 4 * 8,
 			len: 2,
@@ -287,8 +296,7 @@ impl StatusValue<u64> for CardVerificationResults {
 				explanation: "Unable to go online".to_owned(),
 			});
 		}
-		enabled_bits.reverse();
 
-		display_breakdown(self.bits, Self::NUM_BITS, &enabled_bits[..]);
+		enabled_bits
 	}
 }

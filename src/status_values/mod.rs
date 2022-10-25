@@ -6,35 +6,45 @@ mod cvr;
 mod tsi;
 mod tvr;
 
-// Uses
-use std::fmt::Display;
-
 // Public Exports
-pub use {cvr::*, tsi::*, tvr::*};
+pub use cvr::*;
+pub use tsi::*;
+pub use tvr::*;
 
 /// An EMV status value.
-pub trait StatusValue<I> {
+pub trait StatusValue<I: Into<u64>> {
 	const NUM_BITS: u8;
 	const USED_BITS_MASK: I;
 
 	/// Parses a raw integer into the status value.
 	fn parse_bits<B: Into<I>>(bits: B) -> Self;
 
-	/// Prints a breakdown of all enabled flags to stdout.
-	fn display_breakdown(&self);
+	/// Fetches the raw bits of the value.
+	fn get_bits(&self) -> I;
+
+	/// Fetches the requisite information for display of this value.
+	///
+	/// The returned set is expected to be provided in left-to-right order.
+	fn get_display_information(&self) -> Vec<EnabledBitRange>;
 }
 
 // Utility functions for child implementations
-struct EnabledBitRange<S: Display> {
+#[derive(Debug)]
+pub struct EnabledBitRange {
 	pub offset: u8,
 	pub len: u8,
-	pub explanation: S,
+	pub explanation: String,
 }
 
 /// Displays a pretty breakdown of the bits and their meaning.
-///
-/// `enabled_bits` is expected to be provided in right-to-left order.
-fn display_breakdown<S: Display>(bits: u64, num_bits: u8, enabled_bits: &[EnabledBitRange<S>]) {
+pub fn display_breakdown<V: StatusValue<I>, I: Into<u64>>(value: &V) {
+	// Fetch the required data
+	let bits = value.get_bits().into();
+	let num_bits = V::NUM_BITS;
+	let enabled_bits = &value.get_display_information();
+
+	//dbg!(enabled_bits);
+
 	// Print the hex representation
 	println!("Hex: {:#01$X}", bits, usize::from((num_bits / 8) * 2 + 2));
 
@@ -55,7 +65,7 @@ fn display_breakdown<S: Display>(bits: u64, num_bits: u8, enabled_bits: &[Enable
 	// Print the breakdown
 	let mut arm_bits = 0u64;
 	let mut multi_bit_value = false;
-	for enabled_bit in enabled_bits {
+	for enabled_bit in enabled_bits.iter().rev() {
 		arm_bits |= 1 << enabled_bit.offset;
 		if enabled_bit.len > 1 {
 			multi_bit_value = true;
@@ -65,7 +75,7 @@ fn display_breakdown<S: Display>(bits: u64, num_bits: u8, enabled_bits: &[Enable
 	// denoting each one's width
 	if multi_bit_value {
 		let mut current_offset = num_bits - 1;
-		for enabled_bit in enabled_bits.iter().rev() {
+		for enabled_bit in enabled_bits {
 			for i in enabled_bit.offset..=current_offset {
 				if (i + 1) % 8 == 0 && i + 1 < num_bits {
 					print!(" ");
@@ -83,11 +93,17 @@ fn display_breakdown<S: Display>(bits: u64, num_bits: u8, enabled_bits: &[Enable
 			} else {
 				print!("\u{2502}");
 			}
-			current_offset = enabled_bit.offset - enabled_bit.len;
+			// This somewhat bizarre condition is to handle the case of, for example:
+			// offset = 7, len = 8 (1 byte, and the final segment)
+			if enabled_bit.offset > enabled_bit.len {
+				current_offset = enabled_bit.offset - enabled_bit.len;
+			} else {
+				current_offset = 0;
+			}
 		}
 		println!();
 	}
-	for enabled_bit in enabled_bits {
+	for enabled_bit in enabled_bits.iter().rev() {
 		// Print leading space
 		for i in 1..(num_bits - enabled_bit.offset) {
 			if arm_bits & (1 << (num_bits - i)) > 0 {

@@ -1,42 +1,48 @@
 //! Everything for handling Terminal Verification Results (TVR) values.
 
 // Uses
-use super::{display_breakdown, EnabledBitRange, StatusValue};
+use super::{EnabledBitRange, StatusValue};
 
 // Struct Implementation
 pub struct TerminalVerificationResults {
 	bits: u64,
 	// Byte 1 Values
-	offline_data_authentication_not_performed: bool,
-	sda_failed: bool,
-	icc_data_missing: bool,
-	terminal_card_exception: bool,
-	dda_failed: bool,
-	cda_failed: bool,
+	pub offline_data_authentication_not_performed: bool,
+	pub sda_failed: bool,
+	pub icc_data_missing: bool,
+	pub terminal_card_exception: bool,
+	pub dda_failed: bool,
+	pub cda_failed: bool,
 	// Byte 2 Values
-	icc_terminal_version_mismatch: bool,
-	expired_application: bool,
-	application_not_yet_effective: bool,
-	requested_service_not_allowed: bool,
-	new_card: bool,
+	pub icc_terminal_version_mismatch: bool,
+	pub expired_application: bool,
+	pub application_not_yet_effective: bool,
+	pub requested_service_not_allowed: bool,
+	pub new_card: bool,
 	// Byte 3 Values
-	cardholder_verification_unsuccessful: bool,
-	unrecognized_cvm: bool,
-	pin_try_limit_exceeded: bool,
-	pin_entry_required_but_no_pinpad: bool,
-	pin_entry_required_but_no_entry: bool,
-	online_pin_entered: bool,
+	pub cardholder_verification_unsuccessful: bool,
+	pub unrecognized_cvm: bool,
+	pub pin_try_limit_exceeded: bool,
+	pub pin_entry_required_but_no_pinpad: bool,
+	pub pin_entry_required_but_no_entry: bool,
+	pub online_pin_entered: bool,
 	// Byte 4 Values
-	transaction_exceeds_floor_limit: bool,
-	consecutive_offline_limit_lower_exceeded: bool,
-	consecutive_offline_limit_upper_exceeded: bool,
-	transaction_selected_for_online_processing: bool,
-	merchant_forced_transaction_online: bool,
+	pub transaction_exceeds_floor_limit: bool,
+	pub consecutive_offline_limit_lower_exceeded: bool,
+	pub consecutive_offline_limit_upper_exceeded: bool,
+	pub transaction_selected_for_online_processing: bool,
+	pub merchant_forced_transaction_online: bool,
 	// Byte 5 Values
-	default_tdol_used: bool,
-	issuer_authentication_failed: bool,
-	script_processing_failed_before_final_gen_ac: bool,
-	script_processing_failed_after_final_gen_ac: bool,
+	pub default_tdol_used: bool,
+	pub issuer_authentication_failed: bool,
+	pub script_processing_failed_before_final_gen_ac: bool,
+	pub script_processing_failed_after_final_gen_ac: bool,
+}
+
+impl TerminalVerificationResults {
+	pub fn new<B: Into<u64>>(bits: B) -> Self {
+		Self::parse_bits(bits)
+	}
 }
 
 impl StatusValue<u64> for TerminalVerificationResults {
@@ -77,194 +83,197 @@ impl StatusValue<u64> for TerminalVerificationResults {
 		}
 	}
 
-	fn display_breakdown(&self) {
-		// This is an ugly mess, but these values are display-only and it doesn't make
-		// sense to store them anywhere else. :/
+	fn get_bits(&self) -> u64 {
+		self.bits
+	}
+
+	fn get_display_information(&self) -> Vec<EnabledBitRange> {
 		let mut enabled_bits = Vec::with_capacity(4);
+
 		if self.offline_data_authentication_not_performed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 7 + 4 * 8,
 				len: 1,
-				explanation: "Offline data authentication was not performed",
+				explanation: "Offline data authentication was not performed".to_owned(),
 			});
 		}
 		if self.sda_failed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 6 + 4 * 8,
 				len: 1,
-				explanation: "SDA failed",
+				explanation: "SDA failed".to_owned(),
 			});
 		}
 		if self.icc_data_missing {
 			enabled_bits.push(EnabledBitRange {
 				offset: 5 + 4 * 8,
 				len: 1,
-				explanation: "ICC data missing",
+				explanation: "ICC data missing".to_owned(),
 			});
 		}
 		if self.terminal_card_exception {
 			enabled_bits.push(EnabledBitRange {
 				offset: 4 + 4 * 8,
 				len: 1,
-				explanation: "Card appears on terminal exception file",
+				explanation: "Card appears on terminal exception file".to_owned(),
 			});
 		}
 		if self.dda_failed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 3 + 4 * 8,
 				len: 1,
-				explanation: "DDA failed",
+				explanation: "DDA failed".to_owned(),
 			});
 		}
 		if self.cda_failed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 2 + 4 * 8,
 				len: 1,
-				explanation: "CDA failed",
+				explanation: "CDA failed".to_owned(),
 			});
 		}
 		if self.icc_terminal_version_mismatch {
 			enabled_bits.push(EnabledBitRange {
 				offset: 7 + 3 * 8,
 				len: 1,
-				explanation: "ICC and terminal have different application versions",
+				explanation: "ICC and terminal have different application versions".to_owned(),
 			});
 		}
 		if self.expired_application {
 			enabled_bits.push(EnabledBitRange {
 				offset: 6 + 3 * 8,
 				len: 1,
-				explanation: "Expired application",
+				explanation: "Expired application".to_owned(),
 			});
 		}
 		if self.application_not_yet_effective {
 			enabled_bits.push(EnabledBitRange {
 				offset: 5 + 3 * 8,
 				len: 1,
-				explanation: "Application not yet effective",
+				explanation: "Application not yet effective".to_owned(),
 			});
 		}
 		if self.requested_service_not_allowed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 4 + 3 * 8,
 				len: 1,
-				explanation: "Requested service not allowed for card product",
+				explanation: "Requested service not allowed for card product".to_owned(),
 			});
 		}
 		if self.new_card {
 			enabled_bits.push(EnabledBitRange {
 				offset: 3 + 3 * 8,
 				len: 1,
-				explanation: "New card",
+				explanation: "New card".to_owned(),
 			});
 		}
 		if self.cardholder_verification_unsuccessful {
 			enabled_bits.push(EnabledBitRange {
 				offset: 7 + 2 * 8,
 				len: 1,
-				explanation: "Cardholder verification was not successful",
+				explanation: "Cardholder verification was not successful".to_owned(),
 			});
 		}
 		if self.unrecognized_cvm {
 			enabled_bits.push(EnabledBitRange {
 				offset: 6 + 2 * 8,
 				len: 1,
-				explanation: "Unrecognised CVM",
+				explanation: "Unrecognised CVM".to_owned(),
 			});
 		}
 		if self.pin_try_limit_exceeded {
 			enabled_bits.push(EnabledBitRange {
 				offset: 5 + 2 * 8,
 				len: 1,
-				explanation: "PIN try limit exceeded",
+				explanation: "PIN try limit exceeded".to_owned(),
 			});
 		}
 		if self.pin_entry_required_but_no_pinpad {
 			enabled_bits.push(EnabledBitRange {
 				offset: 4 + 2 * 8,
 				len: 1,
-				explanation: "PIN entry required and PIN pad not present or not working",
+				explanation: "PIN entry required and PIN pad not present or not working".to_owned(),
 			});
 		}
 		if self.pin_entry_required_but_no_entry {
 			enabled_bits.push(EnabledBitRange {
 				offset: 3 + 2 * 8,
 				len: 1,
-				explanation: "PIN entry required, PIN pad present, but PIN was not entered",
+				explanation: "PIN entry required, PIN pad present, but PIN was not entered"
+					.to_owned(),
 			});
 		}
 		if self.online_pin_entered {
 			enabled_bits.push(EnabledBitRange {
 				offset: 2 + 2 * 8,
 				len: 1,
-				explanation: "Online PIN entered",
+				explanation: "Online PIN entered".to_owned(),
 			});
 		}
 		if self.transaction_exceeds_floor_limit {
 			enabled_bits.push(EnabledBitRange {
 				offset: 7 + 8,
 				len: 1,
-				explanation: "Transaction exceeds floor limit",
+				explanation: "Transaction exceeds floor limit".to_owned(),
 			});
 		}
 		if self.consecutive_offline_limit_lower_exceeded {
 			enabled_bits.push(EnabledBitRange {
 				offset: 6 + 8,
 				len: 1,
-				explanation: "Lower consecutive offline limit exceeded",
+				explanation: "Lower consecutive offline limit exceeded".to_owned(),
 			});
 		}
 		if self.consecutive_offline_limit_upper_exceeded {
 			enabled_bits.push(EnabledBitRange {
 				offset: 5 + 8,
 				len: 1,
-				explanation: "Upper consecutive offline limit exceeded",
+				explanation: "Upper consecutive offline limit exceeded".to_owned(),
 			});
 		}
 		if self.transaction_selected_for_online_processing {
 			enabled_bits.push(EnabledBitRange {
 				offset: 4 + 8,
 				len: 1,
-				explanation: "Transaction selected randomly for online processing",
+				explanation: "Transaction selected randomly for online processing".to_owned(),
 			});
 		}
 		if self.merchant_forced_transaction_online {
 			enabled_bits.push(EnabledBitRange {
 				offset: 3 + 8,
 				len: 1,
-				explanation: "Merchant forced transaction online",
+				explanation: "Merchant forced transaction online".to_owned(),
 			});
 		}
 		if self.default_tdol_used {
 			enabled_bits.push(EnabledBitRange {
 				offset: 7,
 				len: 1,
-				explanation: "Default TDOL used",
+				explanation: "Default TDOL used".to_owned(),
 			});
 		}
 		if self.issuer_authentication_failed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 6,
 				len: 1,
-				explanation: "Issuer authentication failed",
+				explanation: "Issuer authentication failed".to_owned(),
 			});
 		}
 		if self.script_processing_failed_before_final_gen_ac {
 			enabled_bits.push(EnabledBitRange {
 				offset: 5,
 				len: 1,
-				explanation: "Script processing failed before final GENERATE AC",
+				explanation: "Script processing failed before final GENERATE AC".to_owned(),
 			});
 		}
 		if self.script_processing_failed_after_final_gen_ac {
 			enabled_bits.push(EnabledBitRange {
 				offset: 4,
 				len: 1,
-				explanation: "Script processing failed after final GENERATE AC",
+				explanation: "Script processing failed after final GENERATE AC".to_owned(),
 			});
 		}
-		enabled_bits.reverse();
 
-		display_breakdown(self.bits, Self::NUM_BITS, &enabled_bits[..]);
+		enabled_bits
 	}
 }

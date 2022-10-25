@@ -1,16 +1,16 @@
 //! Everything for handling Cardholder Verification (CV) Rule values.
 
 // Uses
-use super::{display_breakdown, EnabledBitRange, StatusValue};
+use super::{EnabledBitRange, StatusValue};
 
 // Struct Implementation
 pub struct CardholderVerificationRule {
 	bits: u16,
 	// Byte 1 Values
-	continue_if_unsuccessful: bool,
-	method: Option<CvMethod>,
+	pub continue_if_unsuccessful: bool,
+	pub method: Option<CvMethod>,
 	// Byte 2 Values
-	condition: Option<CvmCondition>,
+	pub condition: Option<CvmCondition>,
 }
 
 pub enum CvMethod {
@@ -35,6 +35,12 @@ pub enum CvmCondition {
 	InApplicationCurrencyOverX,
 	InApplicationCurrencyUnderY,
 	InApplicationCurrencyOverY,
+}
+
+impl CardholderVerificationRule {
+	pub fn new<B: Into<u16>>(bits: B) -> Self {
+		Self::parse_bits(bits)
+	}
 }
 
 impl StatusValue<u16> for CardholderVerificationRule {
@@ -78,10 +84,13 @@ impl StatusValue<u16> for CardholderVerificationRule {
 		}
 	}
 
-	fn display_breakdown(&self) {
-		// This is an ugly mess, but these values are display-only and it doesn't make
-		// sense to store them anywhere else. :/
+	fn get_bits(&self) -> u16 {
+		self.bits
+	}
+
+	fn get_display_information(&self) -> Vec<EnabledBitRange> {
 		let mut enabled_bits = Vec::with_capacity(4);
+
 		if self.continue_if_unsuccessful {
 			enabled_bits.push(EnabledBitRange {
 				offset: 6 + 8,
@@ -94,7 +103,7 @@ impl StatusValue<u16> for CardholderVerificationRule {
 			len: 6,
 			explanation: format!(
 				"Method: {}",
-				if let Some(method) = self.method {
+				if let Some(method) = &self.method {
 					match method {
 						CvMethod::FailCvmProcessing => "Fail CVM processing",
 						CvMethod::PlaintextPin => "Plaintext PIN verification performed by ICC",
@@ -119,7 +128,7 @@ impl StatusValue<u16> for CardholderVerificationRule {
 			len: 8,
 			explanation: format!(
 				"Condition: {}",
-				if let Some(condition) = self.condition {
+				if let Some(condition) = &self.condition {
 					match condition {
 						CvmCondition::Always => "Always",
 						CvmCondition::UnattendedCash => "If unattended cash",
@@ -148,8 +157,7 @@ impl StatusValue<u16> for CardholderVerificationRule {
 				}
 			),
 		});
-		enabled_bits.reverse();
 
-		display_breakdown(self.bits as u64, Self::NUM_BITS, &enabled_bits[..]);
+		enabled_bits
 	}
 }

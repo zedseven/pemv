@@ -1,18 +1,24 @@
 //! Everything for handling Transaction Status Information (TSI) values.
 
 // Uses
-use super::{display_breakdown, EnabledBitRange, StatusValue};
+use super::{EnabledBitRange, StatusValue};
 
 // Struct Implementation
 pub struct TransactionStatusInformation {
 	bits: u16,
 	// Byte 1 Values
-	offline_data_authentication_performed: bool,
-	cardholder_verification_performed: bool,
-	card_risk_management_performed: bool,
-	issuer_authentication_performed: bool,
-	terminal_risk_management_performed: bool,
-	script_processing_performed: bool,
+	pub offline_data_authentication_performed: bool,
+	pub cardholder_verification_performed: bool,
+	pub card_risk_management_performed: bool,
+	pub issuer_authentication_performed: bool,
+	pub terminal_risk_management_performed: bool,
+	pub script_processing_performed: bool,
+}
+
+impl TransactionStatusInformation {
+	pub fn new<B: Into<u16>>(bits: B) -> Self {
+		Self::parse_bits(bits)
+	}
 }
 
 impl StatusValue<u16> for TransactionStatusInformation {
@@ -33,54 +39,56 @@ impl StatusValue<u16> for TransactionStatusInformation {
 		}
 	}
 
-	fn display_breakdown(&self) {
-		// This is an ugly mess, but these values are display-only and it doesn't make
-		// sense to store them anywhere else. :/
+	fn get_bits(&self) -> u16 {
+		self.bits
+	}
+
+	fn get_display_information(&self) -> Vec<EnabledBitRange> {
 		let mut enabled_bits = Vec::with_capacity(4);
+
 		if self.offline_data_authentication_performed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 7 + 8,
 				len: 1,
-				explanation: "Offline data authentication was performed",
+				explanation: "Offline data authentication was performed".to_owned(),
 			});
 		}
 		if self.cardholder_verification_performed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 6 + 8,
 				len: 1,
-				explanation: "Cardholder verification was performed",
+				explanation: "Cardholder verification was performed".to_owned(),
 			});
 		}
 		if self.card_risk_management_performed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 5 + 8,
 				len: 1,
-				explanation: "Card risk management was performed",
+				explanation: "Card risk management was performed".to_owned(),
 			});
 		}
 		if self.issuer_authentication_performed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 4 + 8,
 				len: 1,
-				explanation: "Issuer authentication was performed",
+				explanation: "Issuer authentication was performed".to_owned(),
 			});
 		}
 		if self.terminal_risk_management_performed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 3 + 8,
 				len: 1,
-				explanation: "Terminal risk management was performed",
+				explanation: "Terminal risk management was performed".to_owned(),
 			});
 		}
 		if self.script_processing_performed {
 			enabled_bits.push(EnabledBitRange {
 				offset: 2 + 8,
 				len: 1,
-				explanation: "Script processing was performed",
+				explanation: "Script processing was performed".to_owned(),
 			});
 		}
-		enabled_bits.reverse();
 
-		display_breakdown(u64::from(self.bits), Self::NUM_BITS, &enabled_bits[..]);
+		enabled_bits
 	}
 }
