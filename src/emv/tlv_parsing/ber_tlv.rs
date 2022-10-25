@@ -48,6 +48,9 @@ pub fn parse(bytes: &[u8], masking_characters: &[char]) -> Result<RawEmvBlock, P
 			}
 			let start_index = index;
 			index += 1 + subsequent_length_byte_count;
+			if index >= bytes_len {
+				return Err(ParseError::NonCompliant);
+			}
 			byte_slice_to_u32(
 				&bytes[(start_index + 1)..=(start_index + subsequent_length_byte_count)],
 			) as usize
