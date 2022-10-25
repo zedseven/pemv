@@ -3,13 +3,10 @@
 //! Information for this can be found in EMV Book 3, under section `C7.3`.
 
 // Uses
-use std::{
-	cmp::Ordering,
-	fmt::{Debug, Display, Formatter, Result as FmtResult},
-};
+use std::{cmp::Ordering, fmt::Debug};
 
 use super::super::{BitflagValue, EnabledBitRange, Severity};
-use crate::{error::ParseError, util::byte_slice_to_u64};
+use crate::{error::ParseError, non_composite_value_repr_fallible, util::byte_slice_to_u64};
 
 // Struct Implementation
 #[derive(Debug)]
@@ -45,68 +42,24 @@ pub struct CardVerificationResults {
 	pub unable_to_go_online: bool,
 }
 
-#[repr(u8)]
+non_composite_value_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum GenAc1ApplicationCryptogramType {
-	Aac = 0b00,
-	Tc = 0b01,
-	Arqc = 0b10,
-	Rfu = 0b11,
+pub enum GenAc1ApplicationCryptogramType: u8, ParseError::NonCcdCompliant {
+	Aac  = 0b00 => "AAC (Application Authentication Cryptogram)",
+	Tc   = 0b01 => "TC (Transaction Certificate)",
+	Arqc = 0b10 => "ARQC (Authorization Request Cryptogram)",
+	Rfu  = 0b11 => "RFU (Reserved For Use)",
 }
-impl TryFrom<u8> for GenAc1ApplicationCryptogramType {
-	type Error = ParseError;
-
-	fn try_from(value: u8) -> Result<Self, Self::Error> {
-		match value {
-			0b00 => Ok(Self::Aac),
-			0b01 => Ok(Self::Tc),
-			0b10 => Ok(Self::Arqc),
-			0b11 => Ok(Self::Rfu),
-			_ => Err(ParseError::NonCcdCompliant),
-		}
-	}
-}
-impl Display for GenAc1ApplicationCryptogramType {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::Aac => "AAC",
-			Self::Tc => "TC",
-			Self::Arqc => "ARQC",
-			Self::Rfu => "RFU",
-		})
-	}
 }
 
-#[repr(u8)]
+non_composite_value_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum GenAc2ApplicationCryptogramType {
-	Aac = 0b00,
-	Tc = 0b01,
-	SecondGenAcNotRequested = 0b10,
-	Rfu = 0b11,
+pub enum GenAc2ApplicationCryptogramType: u8, ParseError::NonCcdCompliant {
+	Aac                     = 0b00 => "AAC (Application Authentication Cryptogram)",
+	Tc                      = 0b01 => "TC (Transaction Certificate)",
+	SecondGenAcNotRequested = 0b10 => "Second GENERATE AC not requested",
+	Rfu                     = 0b11 => "RFU (Reserved For Use)",
 }
-impl TryFrom<u8> for GenAc2ApplicationCryptogramType {
-	type Error = ParseError;
-
-	fn try_from(value: u8) -> Result<Self, Self::Error> {
-		match value {
-			0b00 => Ok(Self::Aac),
-			0b01 => Ok(Self::Tc),
-			0b10 => Ok(Self::SecondGenAcNotRequested),
-			0b11 => Ok(Self::Rfu),
-			_ => Err(ParseError::NonCcdCompliant),
-		}
-	}
-}
-impl Display for GenAc2ApplicationCryptogramType {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::Aac => "AAC",
-			Self::Tc => "TC",
-			Self::SecondGenAcNotRequested => "Second GENERATE AC not requested",
-			Self::Rfu => "RFU",
-		})
-	}
 }
 
 impl TryFrom<&[u8]> for CardVerificationResults {

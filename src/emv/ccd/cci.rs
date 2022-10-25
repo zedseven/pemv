@@ -3,13 +3,10 @@
 //! Information for this can be found in EMV Book 3, under section `C7.1`.
 
 // Uses
-use std::{
-	cmp::Ordering,
-	fmt::{Display, Formatter, Result as FmtResult},
-};
+use std::cmp::Ordering;
 
 use super::super::{BitflagValue, EnabledBitRange, Severity};
-use crate::{error::ParseError, util::byte_slice_to_u64};
+use crate::{error::ParseError, non_composite_value_repr_fallible, util::byte_slice_to_u64};
 
 // Struct Implementation
 #[derive(Debug)]
@@ -20,53 +17,19 @@ pub struct CommonCoreIdentifier {
 	pub cryptogram_version: CryptogramVersion,
 }
 
-#[repr(u8)]
+non_composite_value_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum FormatCode {
-	A = 0b1010,
+pub enum FormatCode: u8, ParseError::NonCcdCompliant {
+	A = 0b1010 => "Format A",
 }
-impl TryFrom<u8> for FormatCode {
-	type Error = ParseError;
-
-	fn try_from(value: u8) -> Result<Self, Self::Error> {
-		match value {
-			0b1010 => Ok(Self::A),
-			_ => Err(ParseError::NonCcdCompliant),
-		}
-	}
-}
-impl Display for FormatCode {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::A => "Format A",
-		})
-	}
 }
 
-#[repr(u8)]
+non_composite_value_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum CryptogramVersion {
-	TripleDes = 0b0101,
-	Aes = 0b0110,
+pub enum CryptogramVersion: u8, ParseError::NonCcdCompliant {
+	TripleDes = 0b0101 => "Triple DES (3DES)",
+	Aes       = 0b0110 => "AES",
 }
-impl TryFrom<u8> for CryptogramVersion {
-	type Error = ParseError;
-
-	fn try_from(value: u8) -> Result<Self, Self::Error> {
-		match value {
-			0b0101 => Ok(Self::TripleDes),
-			0b0110 => Ok(Self::Aes),
-			_ => Err(ParseError::NonCcdCompliant),
-		}
-	}
-}
-impl Display for CryptogramVersion {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::TripleDes => "Triple DES (3DES)",
-			Self::Aes => "AES",
-		})
-	}
 }
 
 impl TryFrom<&[u8]> for CommonCoreIdentifier {

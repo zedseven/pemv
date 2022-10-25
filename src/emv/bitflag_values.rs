@@ -1,4 +1,4 @@
-//! The module for all status value definitions.
+//! The module for the trait that defines the interface for bitflag values.
 
 // Uses
 use termcolor::{Color, ColorSpec, StandardStream, WriteColor};

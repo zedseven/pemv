@@ -8,13 +8,12 @@ pub mod ber_tlv;
 mod process_emv_tag;
 
 // Uses
-use std::fmt::{Display, Formatter, Result as FmtResult};
-
 use termcolor::{ColorSpec, StandardStream, WriteColor};
 
 use self::process_emv_tag::process_emv_tag;
 use crate::{
 	error::ParseError,
+	non_composite_value_repr_fallible,
 	output_colours::{bold_colour_spec, header_colour_spec},
 	util::{print_bytes_pretty, print_bytes_small, print_indentation},
 	DisplayBreakdown,
@@ -109,11 +108,11 @@ impl<'a> TryFrom<RawEmvNode<'a>> for ProcessedEmvNode<'a> {
 /// The [`RawEmvTag`] is preserved in all cases because it can carry sub-tags.
 pub enum ProcessedEmvTag<'a> {
 	Raw {
-		value: RawEmvTag<'a>,
+		raw_tag: RawEmvTag<'a>,
 	},
 	Annotated {
 		name: &'static str,
-		value: RawEmvTag<'a>,
+		raw_tag: RawEmvTag<'a>,
 	},
 	Parsed {
 		name: &'static str,
@@ -155,51 +154,51 @@ impl<'a> DisplayBreakdown for ProcessedEmvTag<'a> {
 		let header_colour_spec = header_colour_spec();
 
 		match self {
-			ProcessedEmvTag::Raw { value } => {
+			ProcessedEmvTag::Raw { raw_tag } => {
 				// Display the tag name
 				print_tag_name(
 					stdout,
 					indentation,
 					&header_colour_spec,
-					value.tag,
-					value.data.len(),
+					raw_tag.tag,
+					raw_tag.data.len(),
 					None,
 				);
 
 				// Display the raw value
-				value.display_breakdown(stdout, indentation);
+				raw_tag.display_breakdown(stdout, indentation);
 			}
-			ProcessedEmvTag::Annotated { name, value } => {
+			ProcessedEmvTag::Annotated { name, raw_tag } => {
 				// Display the tag name
 				print_tag_name(
 					stdout,
 					indentation,
 					&header_colour_spec,
-					value.tag,
-					value.data.len(),
+					raw_tag.tag,
+					raw_tag.data.len(),
 					Some(name),
 				);
 
 				// Display the raw value
-				value.display_breakdown(stdout, indentation);
+				raw_tag.display_breakdown(stdout, indentation);
 			}
 			ProcessedEmvTag::Parsed {
 				name,
 				parsed,
-				raw_tag: value,
+				raw_tag,
 			} => {
 				// Display the tag name
 				print_tag_name(
 					stdout,
 					indentation,
 					&header_colour_spec,
-					value.tag,
-					value.data.len(),
+					raw_tag.tag,
+					raw_tag.data.len(),
 					Some(name),
 				);
 
 				// Display the raw value
-				value.display_breakdown(stdout, indentation);
+				raw_tag.display_breakdown(stdout, indentation);
 
 				// Display the parsed value
 				print_indentation(indentation);
@@ -276,36 +275,14 @@ impl<'a> DisplayBreakdown for RawEmvTag<'a> {
 	}
 }
 
-#[repr(u8)]
+non_composite_value_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum TagClass {
-	Universal = 0b00,
-	Application = 0b01,
-	ContextSpecific = 0b10,
-	Private = 0b11,
+pub enum TagClass: u8, ParseError::NonCompliant {
+	Universal       = 0b00 => "Universal",
+	Application     = 0b01 => "Application",
+	ContextSpecific = 0b10 => "Context-Specific",
+	Private         = 0b11 => "Private",
 }
-impl TryFrom<u8> for TagClass {
-	type Error = ParseError;
-
-	fn try_from(value: u8) -> Result<Self, Self::Error> {
-		match value {
-			0b00 => Ok(Self::Universal),
-			0b01 => Ok(Self::Application),
-			0b10 => Ok(Self::ContextSpecific),
-			0b11 => Ok(Self::Private),
-			_ => Err(ParseError::NonCompliant),
-		}
-	}
-}
-impl Display for TagClass {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::Universal => "Universal",
-			Self::Application => "Application",
-			Self::ContextSpecific => "Context-Specific",
-			Self::Private => "Private",
-		})
-	}
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

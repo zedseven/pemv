@@ -39,6 +39,7 @@
 mod cli;
 mod emv;
 mod error;
+mod macros;
 mod non_emv;
 mod output_colours;
 mod util;

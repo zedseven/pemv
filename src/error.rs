@@ -15,6 +15,8 @@ pub enum ParseError {
 		expected: usize,
 		found: usize,
 	},
+	/// The bytes provided are not valid.
+	InvalidBytes,
 	/// The string provided couldn't be parsed as a number.
 	InvalidNumber,
 	/// The value provided isn't compliant with the EMV specifications in some
@@ -25,6 +27,9 @@ pub enum ParseError {
 	NonCcdCompliant,
 	/// Something is unsupported and cannot be processed.
 	Unsupported,
+	/// Something is unrecognised and cannot be processed. Not necessarily a
+	/// problem.
+	Unrecognised,
 }
 
 impl Display for ParseError {
@@ -46,6 +51,7 @@ impl Display for ParseError {
 				expected,
 				found
 			),
+			Self::InvalidBytes => write!(f, "The bytes provided are not valid."),
 			Self::InvalidNumber => write!(
 				f,
 				"The value provided is not a valid number, or is too large."
@@ -66,6 +72,11 @@ impl Display for ParseError {
 				f,
 				"The value provided is in some way unsupported. If you have genuine need for the \
 				 unsupported feature, please open an issue on GitHub."
+			),
+			Self::Unrecognised => write!(
+				f,
+				"The value provided is in some way unrecognised. This isn't a problem \
+				 necessarily, but it does mean that the value can't be parsed."
 			),
 		}
 	}

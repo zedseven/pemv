@@ -5,69 +5,28 @@
 // Uses
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 
-use crate::error::ParseError;
+use crate::{error::ParseError, non_composite_value_repr_fallible};
 
+non_composite_value_repr_fallible! {
 /// A Cardholder Verification Method Condition.
-#[repr(u8)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum CvmCondition {
-	Always = 0x00,
-	UnattendedCash = 0x01,
-	NotUnattendedNotManualNotCashback = 0x02,
-	TerminalSupported = 0x03,
-	Manual = 0x04,
-	Cashback = 0x05,
-	InApplicationCurrencyUnderX = 0x06,
-	InApplicationCurrencyOverX = 0x07,
-	InApplicationCurrencyUnderY = 0x08,
-	InApplicationCurrencyOverY = 0x09,
+pub enum CvmCondition: u8, ParseError::NonCompliant {
+	Always                            = 0x00 => "Always",
+	UnattendedCash                    = 0x01 => "If unattended cash",
+	NotUnattendedNotManualNotCashback = 0x02 => "If not unattended cash and not manual cash and \
+												 not purchase with cashback",
+	TerminalSupported                 = 0x03 => "If terminal supports the CVM",
+	Manual                            = 0x04 => "If manual cash",
+	Cashback                          = 0x05 => "If purchase with cashback",
+	InApplicationCurrencyUnderX       = 0x06 => "If transaction is in the application currency and \
+												 is under X value",
+	InApplicationCurrencyOverX        = 0x07 => "If transaction is in the application currency and \
+												 is over X value",
+	InApplicationCurrencyUnderY       = 0x08 => "If transaction is in the application currency and \
+												 is under Y value",
+	InApplicationCurrencyOverY        = 0x09 => "If transaction is in the application currency and \
+												 is over Y value",
 }
-
-impl TryFrom<u8> for CvmCondition {
-	type Error = ParseError;
-
-	fn try_from(value: u8) -> Result<Self, Self::Error> {
-		match value {
-			0x00 => Ok(Self::Always),
-			0x01 => Ok(Self::UnattendedCash),
-			0x02 => Ok(Self::NotUnattendedNotManualNotCashback),
-			0x03 => Ok(Self::TerminalSupported),
-			0x04 => Ok(Self::Manual),
-			0x05 => Ok(Self::Cashback),
-			0x06 => Ok(Self::InApplicationCurrencyUnderX),
-			0x07 => Ok(Self::InApplicationCurrencyOverX),
-			0x08 => Ok(Self::InApplicationCurrencyUnderY),
-			0x09 => Ok(Self::InApplicationCurrencyOverY),
-			_ => Err(ParseError::NonCompliant),
-		}
-	}
-}
-
-impl Display for CvmCondition {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::Always => "Always",
-			Self::UnattendedCash => "If unattended cash",
-			Self::NotUnattendedNotManualNotCashback => {
-				"If not unattended cash and not manual cash and not purchase with cashback"
-			}
-			Self::TerminalSupported => "If terminal supports the CVM",
-			Self::Manual => "If manual cash",
-			Self::Cashback => "If purchase with cashback",
-			Self::InApplicationCurrencyUnderX => {
-				"If transaction is in the application currency and is under X value"
-			}
-			Self::InApplicationCurrencyOverX => {
-				"If transaction is in the application currency and is over X value"
-			}
-			Self::InApplicationCurrencyUnderY => {
-				"If transaction is in the application currency and is under Y value"
-			}
-			Self::InApplicationCurrencyOverY => {
-				"If transaction is in the application currency and is over Y value"
-			}
-		})
-	}
 }
 
 /// A somewhat dumb workaround to have a [`Display`] impl on

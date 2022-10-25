@@ -3,13 +3,10 @@
 //! Information for this can be found in EMV Book 4, under section `A4`.
 
 // Uses
-use std::{
-	cmp::Ordering,
-	fmt::{Debug, Display, Formatter, Result as FmtResult},
-};
+use std::{cmp::Ordering, fmt::Debug};
 
 use super::{cv_rule::CardholderVerificationRule, BitflagValue, EnabledBitRange, Severity};
-use crate::{error::ParseError, util::byte_slice_to_u64};
+use crate::{error::ParseError, non_composite_value_repr_fallible, util::byte_slice_to_u64};
 
 // Struct Implementation
 #[derive(Debug)]
@@ -21,33 +18,13 @@ pub struct CardholderVerificationMethodResults {
 	pub result: CvmResult,
 }
 
-#[repr(u8)]
+non_composite_value_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum CvmResult {
-	Unknown = 0b00,
-	Failed = 0b01,
-	Successful = 0b10,
+pub enum CvmResult: u8, ParseError::NonCompliant {
+	Unknown    = 0b00 => "Unknown",
+	Failed     = 0b01 => "Failed",
+	Successful = 0b10 => "Successful",
 }
-impl TryFrom<u8> for CvmResult {
-	type Error = ParseError;
-
-	fn try_from(value: u8) -> Result<Self, Self::Error> {
-		match value {
-			0b00 => Ok(Self::Unknown),
-			0b01 => Ok(Self::Failed),
-			0b10 => Ok(Self::Successful),
-			_ => Err(ParseError::NonCompliant),
-		}
-	}
-}
-impl Display for CvmResult {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::Unknown => "Unknown",
-			Self::Failed => "Failed",
-			Self::Successful => "Successful",
-		})
-	}
 }
 
 impl TryFrom<&[u8]> for CardholderVerificationMethodResults {

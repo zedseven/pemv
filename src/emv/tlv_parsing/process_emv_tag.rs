@@ -44,11 +44,18 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 			parsed: Box::new(TransactionStatusInformation::try_from(raw_tag.data)?),
 			raw_tag,
 		}),
-		[0x9C] => Some(ProcessedEmvTag::Parsed {
-			name: "Transaction Type",
-			parsed: Box::new(TransactionType::try_from(raw_tag.data)?),
-			raw_tag,
-		}),
+		[0x9C] => match TransactionType::try_from(raw_tag.data) {
+			Ok(recognised_transaction_type) => Some(ProcessedEmvTag::Parsed {
+				name: "Transaction Type",
+				parsed: Box::new(recognised_transaction_type),
+				raw_tag,
+			}),
+			Err(ParseError::Unrecognised) => Some(ProcessedEmvTag::Annotated {
+				name: "Transaction Type (Unrecognised - likely payment system-specific)",
+				raw_tag,
+			}),
+			Err(error) => return Err(error),
+		},
 		[0x9F, 0x0D] => Some(ProcessedEmvTag::Parsed {
 			name: "Issuer Action Code - Default",
 			parsed: Box::new(IssuerActionCodeDefault::try_from(raw_tag.data)?),
@@ -72,7 +79,7 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 			}),
 			Err(ParseError::NonCcdCompliant) => Some(ProcessedEmvTag::Annotated {
 				name: "Issuer Application Data (Not CCD-Compliant)",
-				value: raw_tag,
+				raw_tag,
 			}),
 			Err(error) => return Err(error),
 		},
@@ -201,11 +208,8 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 		}
 		.map_or_else(
 			// Unrecognisable tags
-			|| ProcessedEmvTag::Raw { value: raw_tag },
-			|name| ProcessedEmvTag::Annotated {
-				name,
-				value: raw_tag,
-			},
+			|| ProcessedEmvTag::Raw { raw_tag },
+			|name| ProcessedEmvTag::Annotated { name, raw_tag },
 		)
 	}))
 }

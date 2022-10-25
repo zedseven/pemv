@@ -7,58 +7,30 @@
 //! online.
 
 // Uses
-use std::{
-	cmp::Ordering,
-	fmt::{Display, Formatter, Result as FmtResult},
-};
+use std::cmp::Ordering;
 
 use termcolor::StandardStream;
 
-use crate::{error::ParseError, util::print_indentation, DisplayBreakdown};
+use crate::{
+	error::ParseError,
+	non_composite_value_repr_fallible,
+	util::print_indentation,
+	DisplayBreakdown,
+};
 
 // Enum Implementation
-#[repr(u8)]
+non_composite_value_repr_fallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum TransactionType {
-	Purchase = 0x00,
-	CashAdvance = 0x01,
-	Void = 0x02,
-	CashbackPurchase = 0x09,
-	Refund = 0x20,
-	BalanceInquiry = 0x31,
-	MiniStatement = 0x38,
-	FundTransfer = 0x40,
+pub enum TransactionType: u8, ParseError::Unrecognised {
+	Purchase         = 0x00 => "Purchase",
+	CashAdvance      = 0x01 => "Cash Advance",
+	Void             = 0x02 => "Void",
+	CashbackPurchase = 0x09 => "Purchase With Cashback",
+	Refund           = 0x20 => "Refund",
+	BalanceInquiry   = 0x31 => "Balance Inquiry",
+	MiniStatement    = 0x38 => "Mini Statement",
+	FundTransfer     = 0x40 => "Fund Transfer",
 }
-impl TryFrom<u8> for TransactionType {
-	type Error = ParseError;
-
-	fn try_from(value: u8) -> Result<Self, Self::Error> {
-		match value {
-			0x00 => Ok(Self::Purchase),
-			0x01 => Ok(Self::CashAdvance),
-			0x02 => Ok(Self::Void),
-			0x09 => Ok(Self::CashbackPurchase),
-			0x20 => Ok(Self::Refund),
-			0x31 => Ok(Self::BalanceInquiry),
-			0x38 => Ok(Self::MiniStatement),
-			0x40 => Ok(Self::FundTransfer),
-			_ => Err(ParseError::Unsupported),
-		}
-	}
-}
-impl Display for TransactionType {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::Purchase => "Purchase",
-			Self::CashAdvance => "Cash Advance",
-			Self::Void => "Void",
-			Self::CashbackPurchase => "Purchase With Cashback",
-			Self::Refund => "Refund",
-			Self::BalanceInquiry => "Balance Inquiry",
-			Self::MiniStatement => "Mini Statement",
-			Self::FundTransfer => "Fund Transfer",
-		})
-	}
 }
 
 impl TryFrom<&[u8]> for TransactionType {

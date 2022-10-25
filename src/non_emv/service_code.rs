@@ -3,15 +3,13 @@
 //! Information for this can be found in [ISO/IEC 7813](https://www.iso.org/standard/43317.html).
 
 // Uses
-use std::{
-	cmp::Ordering,
-	fmt::{Display, Formatter, Result as FmtResult},
-};
+use std::cmp::Ordering;
 
 use termcolor::{StandardStream, WriteColor};
 
 use crate::{
 	error::ParseError,
+	non_composite_value_no_repr_infallible,
 	output_colours::bold_colour_spec,
 	parse_str_to_u16,
 	util::{bytes_to_str, print_indentation},
@@ -29,165 +27,75 @@ pub struct ServiceCode {
 	pin_requirements: PinRequirements,
 }
 
+non_composite_value_no_repr_infallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum Interchange {
-	International,
-	National,
-	Private,
-	Test,
-	Rfu,
+pub enum Interchange: u8 {
+	International = 1 | 2 => "International",
+	National      = 5 | 6 => "National",
+	Private       = 7     => "Private",
+	Test          = 9     => "Test",
+	Rfu           = _     => "RFU",
 }
-impl From<u8> for Interchange {
-	fn from(value: u8) -> Self {
-		match value {
-			1 | 2 => Self::International,
-			5 | 6 => Self::National,
-			7 => Self::Private,
-			9 => Self::Test,
-			_ => Self::Rfu,
-		}
-	}
-}
-impl Display for Interchange {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::International => "International",
-			Self::National => "National",
-			Self::Private => "Private",
-			Self::Test => "Test",
-			Self::Rfu => "RFU",
-		})
-	}
 }
 
+non_composite_value_no_repr_infallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum Technology {
-	MagneticStripeOnly,
-	IntegratedCircuitCard,
+pub enum Technology: u8 {
+	IntegratedCircuitCard = 2 | 6 => "Integrated circuit card (ICC)",
+	MagneticStripeOnly    = _     => "Magnetic stripe only (MSR)",
 }
-impl From<u8> for Technology {
-	fn from(value: u8) -> Self {
-		match value {
-			2 | 6 => Self::IntegratedCircuitCard,
-			_ => Self::MagneticStripeOnly,
-		}
-	}
-}
-impl Display for Technology {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::MagneticStripeOnly => "Magnetic stripe only (MSR)",
-			Self::IntegratedCircuitCard => "Integrated circuit card (ICC)",
-		})
-	}
 }
 
+non_composite_value_no_repr_infallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum AuthorisationProcessing {
-	Normal,
-	ByIssuer,
-	ByIssuerUnlessExplicitAgreement,
-	Rfu,
+pub enum AuthorisationProcessing: u8 {
+	Normal                          = 0 => "Normal",
+	ByIssuer                        = 2 => "By issuer only (no offline authorisation)",
+	ByIssuerUnlessExplicitAgreement = 4 => "By issuer only unless an explicit bilateral agreement \
+											applies (no offline authorisation)",
+	Rfu                             = _ => "RFU",
 }
-impl From<u8> for AuthorisationProcessing {
-	fn from(value: u8) -> Self {
-		match value {
-			0 => Self::Normal,
-			2 => Self::ByIssuer,
-			4 => Self::ByIssuerUnlessExplicitAgreement,
-			_ => Self::Rfu,
-		}
-	}
-}
-impl Display for AuthorisationProcessing {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::Normal => "Normal",
-			Self::ByIssuer => "By issuer only (no offline authorisation)",
-			Self::ByIssuerUnlessExplicitAgreement => {
-				"By issuer only unless an explicit bilateral agreement applies (no offline \
-				 authorisation)"
-			}
-			Self::Rfu => "RFU",
-		})
-	}
 }
 
+non_composite_value_no_repr_infallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum AllowedServices {
-	NoRestrictions,
-	GoodsAndServicesOnly,
-	AtmOnly,
-	CashOnly,
-	Rfu,
+pub enum AllowedServices: u8 {
+	NoRestrictions       = 0 | 1 | 6 => "No restrictions",
+	GoodsAndServicesOnly = 2 | 5 | 7 => "Goods and services only",
+	AtmOnly              = 3         => "ATM only",
+	CashOnly             = 4         => "Cash only",
+	Rfu                  = _         => "RFU",
 }
-impl From<u8> for AllowedServices {
-	fn from(value: u8) -> Self {
-		match value {
-			0 | 1 | 6 => Self::NoRestrictions,
-			2 | 5 | 7 => Self::GoodsAndServicesOnly,
-			3 => Self::AtmOnly,
-			4 => Self::CashOnly,
-			_ => Self::Rfu,
-		}
-	}
-}
-impl Display for AllowedServices {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::NoRestrictions => "No restrictions",
-			Self::GoodsAndServicesOnly => "Goods and services only",
-			Self::AtmOnly => "ATM only",
-			Self::CashOnly => "Cash only",
-			Self::Rfu => "RFU",
-		})
-	}
 }
 
+non_composite_value_no_repr_infallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum PinRequirements {
-	None,
-	PinRequired,
-	PromptIfPinpadPresent,
+pub enum PinRequirements: u8 {
+	None                  = 0 | 3 | 5 => "None",
+	PinRequired           = 6 | 7     => "PIN required",
+	PromptIfPinpadPresent = _         => "Prompt for PIN if PIN pad is present",
 }
-impl From<u8> for PinRequirements {
-	fn from(value: u8) -> Self {
-		match value {
-			0 | 3 | 5 => Self::PinRequired,
-			6 | 7 => Self::PromptIfPinpadPresent,
-			_ => Self::None,
-		}
-	}
-}
-impl Display for PinRequirements {
-	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		f.write_str(match self {
-			Self::None => "None",
-			Self::PinRequired => "PIN required",
-			Self::PromptIfPinpadPresent => "Prompt for PIN if PIN pad is present",
-		})
-	}
 }
 
 impl TryFrom<u16> for ServiceCode {
 	type Error = ParseError;
 
 	fn try_from(number: u16) -> Result<Self, Self::Error> {
-		if number >= 1000 {
+		if number > 999 {
 			return Err(ParseError::InvalidNumber);
 		}
 
-		let position_1 = (number % 1000) / 100;
-		let position_2 = (number % 100) / 10;
-		let position_3 = number % 10;
+		let position_1 = ((number % 1000) / 100) as u8;
+		let position_2 = ((number % 100) / 10) as u8;
+		let position_3 = (number % 10) as u8;
 
 		Ok(Self {
 			number,
-			interchange: Interchange::from(position_1 as u8),
-			technology: Technology::from(position_1 as u8),
-			authorisation_processing: AuthorisationProcessing::from(position_2 as u8),
-			allowed_services: AllowedServices::from(position_3 as u8),
-			pin_requirements: PinRequirements::from(position_3 as u8),
+			interchange: Interchange::from(position_1),
+			technology: Technology::from(position_1),
+			authorisation_processing: AuthorisationProcessing::from(position_2),
+			allowed_services: AllowedServices::from(position_3),
+			pin_requirements: PinRequirements::from(position_3),
 		})
 	}
 }
