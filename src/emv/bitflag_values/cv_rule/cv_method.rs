@@ -22,19 +22,19 @@ pub enum CvMethod {
 impl Display for CvMethod {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		f.write_str(match self {
-			CvMethod::FailCvmProcessing => "Fail CVM processing",
-			CvMethod::PlaintextPin => "Plaintext PIN verification performed by ICC",
-			CvMethod::EncipheredPinOnline => "Enciphered PIN verified online",
-			CvMethod::PlaintextPinWithSignature => {
+			Self::FailCvmProcessing => "Fail CVM processing",
+			Self::PlaintextPin => "Plaintext PIN verification performed by ICC",
+			Self::EncipheredPinOnline => "Enciphered PIN verified online",
+			Self::PlaintextPinWithSignature => {
 				"Plaintext PIN verification performed by ICC and signature (paper)"
 			}
-			CvMethod::EncipheredPin => "Enciphered PIN verification performed by ICC",
-			CvMethod::EncipheredPinWithSignature => {
+			Self::EncipheredPin => "Enciphered PIN verification performed by ICC",
+			Self::EncipheredPinWithSignature => {
 				"Enciphered PIN verification performed by ICC and signature (paper)"
 			}
-			CvMethod::Signature => "Signature (paper)",
-			CvMethod::NoCvmRequired => "No CVM required",
-			CvMethod::NoCvmPerformed => "No CVM performed",
+			Self::Signature => "Signature (paper)",
+			Self::NoCvmRequired => "No CVM required",
+			Self::NoCvmPerformed => "No CVM performed",
 		})
 	}
 }

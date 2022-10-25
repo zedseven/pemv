@@ -1,8 +1,8 @@
 //! Utility functions for internal use by other components of the crate.
 
+// Uses
 use std::iter::successors;
 
-// Uses
 use crate::error::ParseError;
 
 /// Parses a string into a [`u16`].
@@ -74,4 +74,28 @@ pub fn byte_slice_to_u64(bytes: &[u8]) -> u64 {
 /// [`u32::log10`].
 pub fn num_dec_digits(value: u32) -> usize {
 	successors(Some(value), |&n| (n >= 10).then_some(n / 10)).count()
+}
+
+/// Prints the specified amount of indentation on the current line.
+pub fn print_indentation(indentation: u8) {
+	for _ in 0..indentation {
+		print!("\t");
+	}
+}
+
+/// Pretty-prints bytes as hex.
+pub fn print_bytes(bytes: &[u8], bytes_per_line: usize, indentation: u8) {
+	for line in bytes.chunks(bytes_per_line) {
+		print_indentation(indentation);
+		let mut first = true;
+		for byte in line {
+			if first {
+				first = false;
+			} else {
+				print!(" ");
+			}
+			print!("{:0>2X}", byte);
+		}
+		println!();
+	}
 }

@@ -14,6 +14,7 @@ use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
 pub use self::{cv_rule::*, cvm_results::*, cvr::*, tsi::*, tvr::*};
 use crate::{
 	output_colours::{bold_colour_spec, header_colour_spec},
+	util::print_indentation,
 	DisplayBreakdown,
 	BITS_PER_BYTE,
 };
@@ -69,7 +70,7 @@ impl<V> DisplayBreakdown for V
 where
 	V: BitflagValue,
 {
-	fn display_breakdown(&self, stdout: &mut StandardStream) {
+	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		let header_colour_spec = header_colour_spec();
 		let bold_colour_spec = bold_colour_spec();
 
@@ -82,15 +83,18 @@ where
 		//dbg!(enabled_bits);
 
 		// Print the hex representation
+		print_indentation(indentation);
 		stdout.set_color(&header_colour_spec).ok();
 		print!("Hex:");
 		stdout.reset().ok();
 		println!(" {:#01$X}", bits, usize::from(num_bytes * 2 + 2));
 
 		// Print the binary representation
+		print_indentation(indentation);
 		stdout.set_color(&header_colour_spec).ok();
 		println!("Breakdown:");
 		stdout.reset().ok();
+		print_indentation(indentation);
 		stdout.set_color(&bold_colour_spec).ok();
 		for offset in (0..num_bits).rev() {
 			if bits & (1 << offset) > 0 {
@@ -118,6 +122,7 @@ where
 		// denoting each one's width
 		if multi_bit_value {
 			let mut current_offset = num_bits - 1;
+			print_indentation(indentation);
 			for enabled_bit_range in &enabled_bit_ranges {
 				for i in enabled_bit_range.offset..=current_offset {
 					if (i + 1) % 8 == 0 && i + 1 < num_bits {
@@ -147,6 +152,7 @@ where
 			println!();
 		}
 		for enabled_bit in enabled_bit_ranges.iter().rev() {
+			print_indentation(indentation);
 			// Print leading space
 			for i in 1..(num_bits - enabled_bit.offset) {
 				if arm_bits & (1 << (num_bits - i)) > 0 {

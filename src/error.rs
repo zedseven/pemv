@@ -7,7 +7,7 @@ use std::{
 };
 
 /// An error that occurred during parsing.
-#[derive(Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ParseError {
 	/// The wrong number of bytes were present.
 	ByteCountIncorrect {
@@ -22,7 +22,7 @@ pub enum ParseError {
 impl Display for ParseError {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		match self {
-			ParseError::ByteCountIncorrect {
+			Self::ByteCountIncorrect {
 				r#type,
 				expected,
 				found,
@@ -38,7 +38,7 @@ impl Display for ParseError {
 				expected,
 				found
 			),
-			ParseError::InvalidNumber => write!(
+			Self::InvalidNumber => write!(
 				f,
 				"The value provided is not a valid number, or is too large."
 			),

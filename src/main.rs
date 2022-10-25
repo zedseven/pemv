@@ -75,7 +75,10 @@ pub const BITS_PER_BYTE: u8 = 8;
 /// [`Display`]: core::fmt::Display
 pub trait DisplayBreakdown {
 	/// Displays a pretty breakdown of the value and every part's meaning.
-	fn display_breakdown(&self, stdout: &mut StandardStream);
+	///
+	/// The indentation should be applied to every line. It's used to allow the
+	/// display of nested values.
+	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8);
 }
 
 // Entry Point
@@ -101,29 +104,29 @@ fn main() {
 
 	let parse_error = if let Some(tvr_str) = matches.value_of("tvr") {
 		TerminalVerificationResults::try_from(parse_hex_str(tvr_str).as_slice())
-			.map(|v| v.display_breakdown(&mut stdout))
+			.map(|v| v.display_breakdown(&mut stdout, 0))
 			.err()
 	} else if let Some(cvr_str) = matches.value_of("cvr") {
 		CardVerificationResults::try_from(parse_hex_str(cvr_str).as_slice())
-			.map(|v| v.display_breakdown(&mut stdout))
+			.map(|v| v.display_breakdown(&mut stdout, 0))
 			.err()
 	} else if let Some(tsi_str) = matches.value_of("tsi") {
 		TransactionStatusInformation::try_from(parse_hex_str(tsi_str).as_slice())
-			.map(|v| v.display_breakdown(&mut stdout))
+			.map(|v| v.display_breakdown(&mut stdout, 0))
 			.err()
 	} else if let Some(cvm_results_str) = matches.value_of("cvm-results") {
 		CardholderVerificationMethodResults::try_from(parse_hex_str(cvm_results_str).as_slice())
-			.map(|v| v.display_breakdown(&mut stdout))
+			.map(|v| v.display_breakdown(&mut stdout, 0))
 			.err()
 	} else if let Some(cvm_list_str) = matches.value_of("cvm-list") {
 		CardholderVerificationMethodList::try_from(parse_hex_str(cvm_list_str).as_slice())
-			.map(|v| v.display_breakdown(&mut stdout))
+			.map(|v| v.display_breakdown(&mut stdout, 0))
 			.err()
 	} else if let Some(service_code_str) = matches.value_of("service-code") {
 		parse_str_to_u16(service_code_str)
 			.map(ServiceCode::try_from)
 			.and_then(|v| v)
-			.map(|v| v.display_breakdown(&mut stdout))
+			.map(|v| v.display_breakdown(&mut stdout, 0))
 			.err()
 	} else {
 		cli_definition.print_help().expect("unable to print help");

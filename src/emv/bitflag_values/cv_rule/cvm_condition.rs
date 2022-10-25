@@ -23,24 +23,24 @@ pub enum CvmCondition {
 impl Display for CvmCondition {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		f.write_str(match self {
-			CvmCondition::Always => "Always",
-			CvmCondition::UnattendedCash => "If unattended cash",
-			CvmCondition::NotUnattendedNotManualNotCashback => {
+			Self::Always => "Always",
+			Self::UnattendedCash => "If unattended cash",
+			Self::NotUnattendedNotManualNotCashback => {
 				"If not unattended cash and not manual cash and not purchase with cashback"
 			}
-			CvmCondition::TerminalSupported => "If terminal supports the CVM",
-			CvmCondition::Manual => "If manual cash",
-			CvmCondition::Cashback => "If purchase with cashback",
-			CvmCondition::InApplicationCurrencyUnderX => {
+			Self::TerminalSupported => "If terminal supports the CVM",
+			Self::Manual => "If manual cash",
+			Self::Cashback => "If purchase with cashback",
+			Self::InApplicationCurrencyUnderX => {
 				"If transaction is in the application currency and is under X value"
 			}
-			CvmCondition::InApplicationCurrencyOverX => {
+			Self::InApplicationCurrencyOverX => {
 				"If transaction is in the application currency and is over X value"
 			}
-			CvmCondition::InApplicationCurrencyUnderY => {
+			Self::InApplicationCurrencyUnderY => {
 				"If transaction is in the application currency and is under Y value"
 			}
-			CvmCondition::InApplicationCurrencyOverY => {
+			Self::InApplicationCurrencyOverY => {
 				"If transaction is in the application currency and is over Y value"
 			}
 		})

@@ -31,9 +31,9 @@ pub enum CvmResult {
 impl Display for CvmResult {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		f.write_str(match self {
-			CvmResult::Unknown => "Unknown",
-			CvmResult::Failed => "Failed",
-			CvmResult::Successful => "Successful",
+			Self::Unknown => "Unknown",
+			Self::Failed => "Failed",
+			Self::Successful => "Successful",
 		})
 	}
 }

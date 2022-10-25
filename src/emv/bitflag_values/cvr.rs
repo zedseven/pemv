@@ -45,40 +45,66 @@ pub struct CardVerificationResults {
 	pub unable_to_go_online: bool,
 }
 
+#[repr(u8)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum GenAc1ApplicationCryptogramType {
-	Aac,
-	Tc,
-	Arqc,
-	Rfu,
+	Aac = 0b00,
+	Tc = 0b01,
+	Arqc = 0b10,
+	Rfu = 0b11,
+}
+impl TryFrom<u8> for GenAc1ApplicationCryptogramType {
+	type Error = ParseError;
+
+	fn try_from(value: u8) -> Result<Self, Self::Error> {
+		match value {
+			0b00 => Ok(Self::Aac),
+			0b01 => Ok(Self::Tc),
+			0b10 => Ok(Self::Arqc),
+			0b11 => Ok(Self::Rfu),
+			_ => Err(ParseError::NonCcdCompliant),
+		}
+	}
 }
 impl Display for GenAc1ApplicationCryptogramType {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		f.write_str(match self {
-			GenAc1ApplicationCryptogramType::Aac => "AAC",
-			GenAc1ApplicationCryptogramType::Tc => "TC",
-			GenAc1ApplicationCryptogramType::Arqc => "ARQC",
-			GenAc1ApplicationCryptogramType::Rfu => "RFU",
+			Self::Aac => "AAC",
+			Self::Tc => "TC",
+			Self::Arqc => "ARQC",
+			Self::Rfu => "RFU",
 		})
 	}
 }
 
+#[repr(u8)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum GenAc2ApplicationCryptogramType {
-	Aac,
-	Tc,
-	SecondGenAcNotRequested,
-	Rfu,
+	Aac = 0b00,
+	Tc = 0b01,
+	SecondGenAcNotRequested = 0b10,
+	Rfu = 0b11,
+}
+impl TryFrom<u8> for GenAc2ApplicationCryptogramType {
+	type Error = ParseError;
+
+	fn try_from(value: u8) -> Result<Self, Self::Error> {
+		match value {
+			0b00 => Ok(Self::Aac),
+			0b01 => Ok(Self::Tc),
+			0b10 => Ok(Self::SecondGenAcNotRequested),
+			0b11 => Ok(Self::Rfu),
+			_ => Err(ParseError::NonCcdCompliant),
+		}
+	}
 }
 impl Display for GenAc2ApplicationCryptogramType {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		f.write_str(match self {
-			GenAc2ApplicationCryptogramType::Aac => "AAC",
-			GenAc2ApplicationCryptogramType::Tc => "TC",
-			GenAc2ApplicationCryptogramType::SecondGenAcNotRequested => {
-				"Second GENERATE AC not requested"
-			}
-			GenAc2ApplicationCryptogramType::Rfu => "RFU",
+			Self::Aac => "AAC",
+			Self::Tc => "TC",
+			Self::SecondGenAcNotRequested => "Second GENERATE AC not requested",
+			Self::Rfu => "RFU",
 		})
 	}
 }
@@ -103,20 +129,10 @@ impl TryFrom<&[u8]> for CardVerificationResults {
 		Ok(Self {
 			bytes,
 			gen_ac_2_application_cryptogram_type: {
-				match (0b1100_0000 & bytes[0]) >> 6 {
-					0b00 => GenAc2ApplicationCryptogramType::Aac,
-					0b01 => GenAc2ApplicationCryptogramType::Tc,
-					0b10 => GenAc2ApplicationCryptogramType::SecondGenAcNotRequested,
-					_ => GenAc2ApplicationCryptogramType::Rfu,
-				}
+				GenAc2ApplicationCryptogramType::try_from((0b1100_0000 & bytes[0]) >> 6)?
 			},
 			gen_ac_1_application_cryptogram_type: {
-				match (0b0011_0000 & bytes[0]) >> 4 {
-					0b00 => GenAc1ApplicationCryptogramType::Aac,
-					0b01 => GenAc1ApplicationCryptogramType::Tc,
-					0b10 => GenAc1ApplicationCryptogramType::Arqc,
-					_ => GenAc1ApplicationCryptogramType::Rfu,
-				}
+				GenAc1ApplicationCryptogramType::try_from((0b0011_0000 & bytes[0]) >> 4)?
 			},
 			cda_performed:                                              0b0000_1000 & bytes[0] > 0,
 			offline_dda_performed:                                      0b0000_0100 & bytes[0] > 0,

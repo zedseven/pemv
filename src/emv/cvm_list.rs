@@ -16,7 +16,7 @@ use super::bitflag_values::{
 use crate::{
 	error::ParseError,
 	output_colours::{bold_colour_spec, header_colour_spec},
-	util::{byte_slice_to_u32, num_dec_digits},
+	util::{byte_slice_to_u32, num_dec_digits, print_indentation},
 	DisplayBreakdown,
 };
 
@@ -60,7 +60,7 @@ impl TryFrom<&[u8]> for CardholderVerificationMethodList {
 }
 
 impl DisplayBreakdown for CardholderVerificationMethodList {
-	fn display_breakdown(&self, stdout: &mut StandardStream) {
+	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		/// This value is chosen as 3 because common currency denominations have
 		/// 2 digits for the cents (or equivalent) and this allows 1 additional
 		/// digit to represent the whole amount. For example, `$0.00`.
@@ -75,6 +75,7 @@ impl DisplayBreakdown for CardholderVerificationMethodList {
 			.max(MIN_VALUE_DIGITS);
 
 		// Print the X value
+		print_indentation(indentation);
 		stdout.set_color(&header_colour_spec).ok();
 		print!("X Value:");
 		stdout.reset().ok();
@@ -84,36 +85,42 @@ impl DisplayBreakdown for CardholderVerificationMethodList {
 		);
 
 		// Print the Y value
+		print_indentation(indentation);
 		stdout.set_color(&header_colour_spec).ok();
 		print!("Y Value:");
 		stdout.reset().ok();
 		println!(" {:0>1$}", self.y_value, value_padding_length);
 
 		// Print the CV Rules
+		print_indentation(indentation);
 		stdout.set_color(&header_colour_spec).ok();
 		println!("Cardholder Verification Rules:");
 		stdout.reset().ok();
 		for (i, cv_rule) in self.cv_rules.iter().enumerate() {
 			// Print the CVM index
+			print_indentation(indentation);
 			stdout.set_color(&bold_colour_spec).ok();
 			println!("CVM {}:", i + 1);
 			stdout.reset().ok();
 
 			// Print the method
+			print_indentation(indentation + 1);
 			stdout.set_color(&bold_colour_spec).ok();
-			print!("\tMethod:         ");
+			print!("Method:         ");
 			stdout.reset().ok();
 			println!(" {}", OptionalCvMethod::from(cv_rule.method));
 
 			// Print the condition
+			print_indentation(indentation + 1);
 			stdout.set_color(&bold_colour_spec).ok();
-			print!("\tCondition:      ");
+			print!("Condition:      ");
 			stdout.reset().ok();
 			println!(" {}", OptionalCvmCondition::from(cv_rule.condition));
 
 			// Print whether to continue if unsuccessful
+			print_indentation(indentation + 1);
 			stdout.set_color(&bold_colour_spec).ok();
-			print!("\tIf Unsuccessful:");
+			print!("If Unsuccessful:");
 			stdout.reset().ok();
 			println!(
 				" {}",
