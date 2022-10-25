@@ -34,7 +34,11 @@ struct EnabledBitRange<S: Display> {
 ///
 /// `enabled_bits` is expected to be provided in right-to-left order.
 fn display_breakdown<S: Display>(bits: u64, num_bits: u8, enabled_bits: &[EnabledBitRange<S>]) {
+	// Print the hex representation
+	println!("Hex: {:#01$X}", bits, usize::from((num_bits / 8) * 2 + 2));
+
 	// Print the binary representation
+	println!("Breakdown:");
 	for offset in (0..num_bits).rev() {
 		if bits & (1 << offset) > 0 {
 			print!("1");
