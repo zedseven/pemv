@@ -1,6 +1,7 @@
 //! All EMV-related parsers.
 
 // Modules
+mod authorisation_response_code;
 mod bitflag_values;
 pub mod ccd;
 mod cv_rule;
@@ -14,6 +15,7 @@ mod tvr;
 
 // Public Exports
 pub use self::{
+	authorisation_response_code::*,
 	bitflag_values::*,
 	cv_rule::*,
 	cvm_list::*,

@@ -5,6 +5,7 @@
 use crate::{
 	emv::{
 		ccd::IssuerApplicationData,
+		AuthorisationResponseCode,
 		CardholderVerificationMethodList,
 		CardholderVerificationMethodResults,
 		IssuerActionCodeDefault,
@@ -29,6 +30,18 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 			parsed: Box::new(ServiceCode::try_from(raw_tag.data)?),
 			raw_tag,
 		}),
+		[0x8A] => match AuthorisationResponseCode::try_from(raw_tag.data) {
+			Ok(recognised_response_code) => Some(ProcessedEmvTag::Parsed {
+				name: "Authorisation Response Code",
+				parsed: Box::new(recognised_response_code),
+				raw_tag,
+			}),
+			Err(ParseError::Unrecognised) => Some(ProcessedEmvTag::Annotated {
+				name: "Authorisation Response Code (Unrecognised - likely payment system-specific)",
+				raw_tag,
+			}),
+			Err(error) => return Err(error),
+		},
 		[0x8E] => Some(ProcessedEmvTag::Parsed {
 			name: "CVM List",
 			parsed: Box::new(CardholderVerificationMethodList::try_from(raw_tag.data)?),
@@ -124,7 +137,6 @@ pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError
 			[0x9F, 0x08] => Some("Application Version Number (ICC)"),
 			[0x9F, 0x09] => Some("Application Version Number (Terminal)"),
 			[0x89] => Some("Authorisation Code"),
-			[0x8A] => Some("Authorisation Response Code"),
 			[0x5F, 0x54] => Some("Bank Identifier Code (BIC)"),
 			[0x8C] => Some("Card Risk Management Data Object List 1 (CDOL1)"),
 			[0x8D] => Some("Card Risk Management Data Object List 2 (CDOL2)"),
