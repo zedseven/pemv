@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2022-10-25
+
+### Refactor
+
+- Apply Clippy suggestions. ([18f8496](https://github.com/zedseven/pemv/commit/18f8496))
+
 ## [0.4.0] - 2022-10-25
 
 ### Bug Fixes
