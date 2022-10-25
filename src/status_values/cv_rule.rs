@@ -21,7 +21,8 @@ pub enum CvMethod {
 	EncipheredPin,
 	EncipheredPinWithSignature,
 	Signature,
-	NoCvm,
+	NoCvmRequired,
+	NoCvmPerformed,
 }
 
 pub enum CvmCondition {
@@ -47,7 +48,6 @@ impl StatusValue<u16> for CardholderVerificationRule {
 	const NUM_BITS: u8 = 16;
 	const USED_BITS_MASK: u16 = 0b0111_1111_1111_1111;
 
-	#[rustfmt::skip]
 	fn parse_bits<B: Into<u16>>(bits: B) -> Self {
 		let bits = bits.into() & Self::USED_BITS_MASK;
 		Self {
@@ -62,7 +62,11 @@ impl StatusValue<u16> for CardholderVerificationRule {
 					0b00_0100 => Some(CvMethod::EncipheredPin),
 					0b00_0101 => Some(CvMethod::EncipheredPinWithSignature),
 					0b01_1110 => Some(CvMethod::Signature),
-					0b01_1111 => Some(CvMethod::NoCvm),
+					0b01_1111 => Some(CvMethod::NoCvmRequired),
+					// This value isn't explicitly marked - on page 162 of EMV Book 3 it's simply
+					// labelled as `This value is not available for use`
+					// On page 121 of EMV Book 4, it mentions `'3F' if no CVM is performed`
+					0b11_1111 => Some(CvMethod::NoCvmPerformed),
 					_ => None,
 				}
 			},
@@ -116,7 +120,8 @@ impl StatusValue<u16> for CardholderVerificationRule {
 							"Enciphered PIN verification performed by ICC and signature (paper)"
 						}
 						CvMethod::Signature => "Signature (paper)",
-						CvMethod::NoCvm => "No CVM required",
+						CvMethod::NoCvmRequired => "No CVM required",
+						CvMethod::NoCvmPerformed => "No CVM performed",
 					}
 				} else {
 					"Unknown (likely issuer or payment system-specific)"
