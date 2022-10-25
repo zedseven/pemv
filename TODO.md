@@ -7,6 +7,8 @@
   - Issuer Code Table Index
 - Coloured error messages for error values
   - Could look for an index of which status codes are "bad" and which are common/not a problem
-- Support other radix values and number prefixes (`0x`, `0b`, `0d`)
-- Split into a proper EMV library
+- Split into a proper EMV library(?)
   - From a cursory search on crates.io, there doesn't seem to be anything for it
+- Maybe split `EnabledBitRange` into two separate types:
+  - Boolean, len 1, static description
+  - Multi-value, len >1, dynamic description
