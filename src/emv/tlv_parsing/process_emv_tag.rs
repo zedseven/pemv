@@ -27,6 +27,12 @@ use crate::{
 };
 
 /// Process a [`RawEmvTag`] into a [`ProcessedEmvTag`].
+///
+/// This function is excluded from code coverage because there's not really a
+/// way to test it without just writing a test for every case here, which is
+/// rather painful and pointless. The individual components should already be
+/// tested.
+#[cfg(not(tarpaulin_include))]
 pub fn process_emv_tag(raw_tag: RawEmvTag) -> Result<ProcessedEmvTag, ParseError> {
 	// Parseable tags
 	let raw_tag_clone_0 = raw_tag.clone();
