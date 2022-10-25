@@ -22,10 +22,11 @@ const TAG_TYPE_EMV: char = 'T';
 
 /// Parses a block of Ingenico-proprietary TLV encoded data.
 ///
-/// Note: this function expects the field separator (FS) to already be replaced
-/// by another character, though it doesn't matter what that character is.
+/// Note: this function expects the field separator (FS) between tags to already
+/// be replaced by another character, though it doesn't matter what that
+/// character is.
 pub fn parse(data: &str, masking_characters: &[char]) -> Result<RawEmvBlock, ParseError> {
-	// The input data should only be ASCII - no Unicode is expected.
+	// The input data should only be ASCII - no Unicode data is expected.
 	if !data.is_ascii() {
 		return Err(ParseError::NonCompliant);
 	}
@@ -64,14 +65,12 @@ pub fn parse(data: &str, masking_characters: &[char]) -> Result<RawEmvBlock, Par
 		let length_str = &data[index..colon_index];
 		// Tag lengths greater than the maximum unsigned 32-bit integer value are
 		// unsupported
-		if length_str.len() > BYTES_PER_32_BITS {
+		let length_bytes =
+			parse_hex_str_strict(length_str).map_err(|_| ParseError::NonCompliant)?;
+		if length_bytes.len() > BYTES_PER_32_BITS {
 			return Err(ParseError::Unsupported);
 		}
-		let length = byte_slice_to_u32(
-			parse_hex_str_strict(length_str)
-				.map_err(|_| ParseError::NonCompliant)?
-				.as_slice(),
-		) as usize;
+		let length = byte_slice_to_u32(length_bytes.as_slice()) as usize;
 		index = colon_index + 1;
 		if index >= data_len {
 			return Err(ParseError::NonCompliant);
@@ -82,7 +81,7 @@ pub fn parse(data: &str, masking_characters: &[char]) -> Result<RawEmvBlock, Par
 		let tag_data = match data_format {
 			DATA_FORMAT_ASCII => {
 				index += 1;
-				if index + length >= data_len {
+				if index + length > data_len {
 					return Err(ParseError::NonCompliant);
 				}
 				let tag_data_str = &data[index..(index + length)];
