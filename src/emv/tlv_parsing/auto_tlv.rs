@@ -17,6 +17,11 @@ pub fn parse(
 	tlv_str: &str,
 	masking_characters: &[char],
 ) -> Result<(TlvFormat, RawEmvBlock), ParseError> {
+	// Don't accept empty input because it'll match to anything
+	if tlv_str.is_empty() {
+		return Err(ParseError::Unrecognised);
+	}
+
 	// Ingenico TLV
 	if let Ok(raw_emv_block) = parse_ingenico_tlv(tlv_str, masking_characters) {
 		Ok((TlvFormat::Ingenico, raw_emv_block))
