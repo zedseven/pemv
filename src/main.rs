@@ -78,6 +78,7 @@ pub const BITS_PER_BYTE: u8 = 8;
 /// output.
 ///
 /// [`Display`]: core::fmt::Display
+#[cfg(not(tarpaulin_include))]
 pub trait DisplayBreakdown {
 	/// Displays a pretty breakdown of the value and every part's meaning.
 	///
@@ -98,6 +99,7 @@ pub trait DisplayBreakdown {
 }
 
 // Entry Point
+#[cfg(not(tarpaulin_include))]
 fn main() {
 	let mut cli_definition = build_cli();
 	let matches = cli_definition.clone().get_matches();

@@ -31,6 +31,7 @@ pub enum ParseError {
 	Unrecognised,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Display for ParseError {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		match self {

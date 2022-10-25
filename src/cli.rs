@@ -210,3 +210,18 @@ pub fn build_cli() -> Command<'static> {
 				),
 		)
 }
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use super::build_cli;
+
+	// Tests
+	/// If there's anything wrong with the CLI setup, Clap will panic. This test
+	/// just ensures that no panic occurs.
+	#[test]
+	fn build_cli_is_successful() {
+		build_cli();
+	}
+}

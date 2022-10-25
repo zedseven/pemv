@@ -71,9 +71,9 @@ pub enum AllowedServices: u8 {
 enum_no_repr_infallible! {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum PinRequirements: u8 {
-	None                  = 0 | 3 | 5 => "None",
-	PinRequired           = 6 | 7     => "PIN required",
-	PromptIfPinpadPresent = _         => "Prompt for PIN if PIN pad is present",
+	PinRequired           = 0 | 3 | 5 => "PIN required",
+	PromptIfPinpadPresent = 6 | 7     => "Prompt for PIN if PIN pad is present",
+	None                  = _         => "None",
 }
 }
 
@@ -118,6 +118,7 @@ impl TryFrom<&[u8]> for ServiceCode {
 	}
 }
 
+#[cfg(not(tarpaulin_include))]
 impl DisplayBreakdown for ServiceCode {
 	fn display_breakdown(&self, stdout: &mut StandardStream, indentation: u8) {
 		let bold_colour_spec = bold_colour_spec();
@@ -171,11 +172,14 @@ impl DisplayBreakdown for ServiceCode {
 		println!("               {}", self.technology);
 	}
 }
+// Coverage-Excluded Section End
 
 // Unit Tests
 #[cfg(test)]
 mod tests {
 	// Uses
+	use std::cmp::Ordering;
+
 	use super::{
 		AllowedServices,
 		AuthorisationProcessing,
@@ -184,19 +188,94 @@ mod tests {
 		ServiceCode,
 		Technology,
 	};
+	use crate::error::ParseError;
 
 	// Tests
+	/// This value is the service code of my personal Interac debit card.
 	#[test]
-	fn parse_basic() {
+	fn parse_interac_debit() {
 		let expected = Ok(ServiceCode {
 			number: 220,
 			interchange: Interchange::International,
 			technology: Technology::IntegratedCircuitCard,
 			authorisation_processing: AuthorisationProcessing::ByIssuer,
 			allowed_services: AllowedServices::NoRestrictions,
-			pin_requirements: PinRequirements::None,
+			pin_requirements: PinRequirements::PinRequired,
 		});
 		let result = ServiceCode::try_from(220);
+
+		assert_eq!(expected, result);
+	}
+
+	/// This value is the service code of my personal Visa credit card.
+	#[test]
+	fn parse_visa_credit() {
+		let expected = Ok(ServiceCode {
+			number: 201,
+			interchange: Interchange::International,
+			technology: Technology::IntegratedCircuitCard,
+			authorisation_processing: AuthorisationProcessing::Normal,
+			allowed_services: AllowedServices::NoRestrictions,
+			pin_requirements: PinRequirements::None,
+		});
+		let result = ServiceCode::try_from(201);
+
+		assert_eq!(expected, result);
+	}
+
+	/// This value is the service code of a typical prepaid card.
+	#[test]
+	fn parse_prepaid() {
+		let expected = Ok(ServiceCode {
+			number: 121,
+			interchange: Interchange::International,
+			technology: Technology::MagneticStripeOnly,
+			authorisation_processing: AuthorisationProcessing::ByIssuer,
+			allowed_services: AllowedServices::NoRestrictions,
+			pin_requirements: PinRequirements::None,
+		});
+		let result = ServiceCode::try_from(121);
+
+		assert_eq!(expected, result);
+	}
+
+	/// This test simply ensures all valid values for service codes are able to
+	/// be parsed without panicking or returning an error.
+	#[test]
+	fn parse_all_valid() {
+		for n in 0..=999 {
+			let result = ServiceCode::try_from(n);
+
+			assert!(result.is_ok());
+		}
+	}
+
+	#[test]
+	fn parse_invalid_number() {
+		let expected = Err(ParseError::InvalidNumber);
+		let result = ServiceCode::try_from(1000);
+
+		assert_eq!(expected, result);
+	}
+
+	/// This test ensures we get the same output from parsing a slice of `u8` as
+	/// we do from parsing a single `u16`.
+	#[test]
+	fn parse_from_bytes() {
+		let expected = ServiceCode::try_from(220);
+		let result = ServiceCode::try_from([0x02, 0x20].as_slice());
+
+		assert_eq!(expected, result);
+	}
+
+	#[test]
+	fn parse_from_bytes_invalid() {
+		let expected = Err(ParseError::ByteCountIncorrect {
+			r#type: Ordering::Equal,
+			expected: 2,
+			found: 3,
+		});
+		let result = ServiceCode::try_from([0x02, 0x20, 0x00].as_slice());
 
 		assert_eq!(expected, result);
 	}

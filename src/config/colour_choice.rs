@@ -3,6 +3,8 @@ use atty::{is as is_tty, Stream};
 use serde_derive::{Deserialize, Serialize};
 use termcolor::ColorChoice as TermColorChoice;
 
+use crate::error::ParseError;
+
 /// Wraps [`termcolor`]'s [`ColorChoice`] enum, with support for
 /// serialisation.
 ///
@@ -56,7 +58,7 @@ impl From<ColourChoice> for TermColorChoice {
 }
 
 impl TryFrom<&str> for ColourChoice {
-	type Error = ();
+	type Error = ParseError;
 
 	fn try_from(value: &str) -> Result<Self, Self::Error> {
 		match value.to_lowercase().as_str() {
@@ -64,7 +66,7 @@ impl TryFrom<&str> for ColourChoice {
 			"ansi" => Ok(Self::AlwaysAnsi),
 			"auto" => Ok(Self::Auto),
 			"never" => Ok(Self::Never),
-			_ => Err(()),
+			_ => Err(ParseError::Unsupported),
 		}
 	}
 }
@@ -83,6 +85,7 @@ impl From<ColourChoice> for &str {
 impl ColourChoice {
 	/// Changes the value to `Never` if `stdout` isn't a tty.
 	#[must_use]
+	#[cfg(not(tarpaulin_include))]
 	pub fn change_based_on_tty(self) -> Self {
 		#[allow(clippy::wildcard_enum_match_arm)]
 		match self {
@@ -95,5 +98,58 @@ impl ColourChoice {
 			}
 			_ => self,
 		}
+	}
+}
+
+// Unit Tests
+#[cfg(test)]
+mod tests {
+	// Uses
+	use termcolor::ColorChoice as TermColorChoice;
+
+	use super::ColourChoice;
+	use crate::error::ParseError;
+
+	// Tests
+	#[test]
+	fn round_trip_conversions() {
+		macro_rules! test_round_trip {
+			($first_type:ty, $second_type:ty, $variant:ident) => {
+				let expected = <$first_type>::$variant;
+				let result: $second_type = <$first_type>::$variant.into();
+				let result: $first_type = result.into();
+				assert_eq!(expected, result);
+			};
+		}
+		macro_rules! test_round_trip_second_type_try {
+			($first_type:ty, $second_type:ty, $variant:ident) => {
+				let expected = <$first_type>::$variant;
+				let result: $second_type = <$first_type>::$variant.into();
+				let result: $first_type = result
+					.try_into()
+					.expect("error checking will be done separately");
+				assert_eq!(expected, result);
+			};
+		}
+
+		test_round_trip!(ColourChoice, TermColorChoice, Always);
+		test_round_trip!(ColourChoice, TermColorChoice, AlwaysAnsi);
+		test_round_trip!(ColourChoice, TermColorChoice, Auto);
+		test_round_trip!(ColourChoice, TermColorChoice, Never);
+		test_round_trip!(TermColorChoice, ColourChoice, Always);
+		test_round_trip!(TermColorChoice, ColourChoice, AlwaysAnsi);
+		test_round_trip!(TermColorChoice, ColourChoice, Auto);
+		test_round_trip!(TermColorChoice, ColourChoice, Never);
+		test_round_trip_second_type_try!(ColourChoice, &str, Always);
+		test_round_trip_second_type_try!(ColourChoice, &str, AlwaysAnsi);
+		test_round_trip_second_type_try!(ColourChoice, &str, Auto);
+		test_round_trip_second_type_try!(ColourChoice, &str, Never);
+	}
+	#[test]
+	fn from_str_error() {
+		let expected = Err(ParseError::Unsupported);
+		let result = ColourChoice::try_from("unsupported value");
+
+		assert_eq!(expected, result);
 	}
 }

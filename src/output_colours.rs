@@ -5,6 +5,7 @@
 use termcolor::{Color, ColorSpec};
 
 /// Bold, without any specified colour.
+#[cfg(not(tarpaulin_include))]
 pub fn bold_colour_spec() -> ColorSpec {
 	let mut c = ColorSpec::new();
 	c.set_bold(true);
@@ -12,6 +13,7 @@ pub fn bold_colour_spec() -> ColorSpec {
 }
 
 /// Bold, with a specified colour. To be used for headers.
+#[cfg(not(tarpaulin_include))]
 pub fn header_colour_spec() -> ColorSpec {
 	let mut c = ColorSpec::new();
 	c.set_bold(true).set_fg(Some(Color::Cyan));
