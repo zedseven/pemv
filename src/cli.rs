@@ -52,5 +52,13 @@ pub fn parse_cli_arguments() -> ArgMatches {
 				.value_name("CVM RESULTS")
 				.help("Parse Cardholder Verification Method Results (tag 0x9F34)"),
 		)
+		.next_help_heading("NON-EMV")
+		.arg(
+			Arg::new("service-code")
+				.long("service-code")
+				.takes_value(true)
+				.value_name("SERVICE CODE")
+				.help("Parse a card Service Code (MSR)"),
+		)
 		.get_matches()
 }

@@ -56,7 +56,8 @@ use crate::{
 		TransactionStatusInformation,
 	},
 	error::ParseError,
-	util::parse_hex_str,
+	non_emv::ServiceCode,
+	util::{parse_hex_str, parse_str_to_u16},
 };
 
 // Constants
@@ -102,6 +103,12 @@ fn main() {
 			.err()
 	} else if let Some(cvm_str) = matches.value_of("cvm") {
 		CardholderVerificationMethodResults::try_from(parse_hex_str(cvm_str).as_slice())
+			.map(|v| v.display_breakdown(&mut stdout))
+			.err()
+	} else if let Some(service_code_str) = matches.value_of("service-code") {
+		parse_str_to_u16(service_code_str)
+			.map(ServiceCode::try_from)
+			.and_then(|v| v)
 			.map(|v| v.display_breakdown(&mut stdout))
 			.err()
 	} else {
