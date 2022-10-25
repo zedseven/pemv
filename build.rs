@@ -53,7 +53,7 @@ fn generate_man_page(cli_definition: Command) -> Result<(), Error> {
 	let mut buffer: Vec<u8> = Default::default();
 	man.render(&mut buffer)?;
 
-	let output_path = PathBuf::from(out_dir).join(format!("{}.1", APPLICATION_BIN_NAME));
+	let output_path = PathBuf::from(out_dir).join(format!("{APPLICATION_BIN_NAME}.1"));
 
 	fs_write(output_path.as_os_str(), buffer)?;
 
