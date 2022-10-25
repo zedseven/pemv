@@ -12,6 +12,7 @@ if [ -n "$(git status --porcelain)" ]; then
   exit
 fi
 
+NEWLINE=$'\n'
 TAG="$1"
 
 # Update the version
@@ -33,7 +34,7 @@ git show
 TAG_CHANGELOG=$(git cliff --tag "$TAG" --unreleased --strip all)
 
 # Create a signed tag for the new version
-git tag -s -a "$TAG" -m "$TAG_CHANGELOG" --cleanup=whitespace || exit
+git tag -s -a "$TAG" -m "Release $TAG" -m "$TAG_CHANGELOG$NEWLINE" --cleanup=verbatim || exit
 
 # Verify and show the new tag
 git tag -v "$TAG" || exit
