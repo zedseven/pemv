@@ -2,12 +2,14 @@
 
 // Modules
 mod cvr;
+mod tsi;
 mod tvr;
 
+// Uses
 use std::fmt::Display;
 
 // Public Exports
-pub use {cvr::*, tvr::*};
+pub use {cvr::*, tsi::*, tvr::*};
 
 /// An EMV status value.
 pub trait StatusValue<I> {
