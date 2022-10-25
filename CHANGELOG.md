@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.2] - 2022-10-25
+
+### Miscellaneous Tasks
+
+- Clean up the generated tag changelogs so that they render properly on GitHub. (hopefully) ([95e6104](https://github.com/zedseven/pemv/commit/95e6104))
+
 ## [0.4.1] - 2022-10-25
 
 ### Refactor
