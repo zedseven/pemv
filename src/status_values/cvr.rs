@@ -234,28 +234,28 @@ impl StatusValue<u64> for CardVerificationResults {
 			enabled_bits.push(EnabledBitRange {
 				offset: 3 + 2 * 8,
 				len: 1,
-				explanation: "Issuer discretionary bit 1".to_owned(),
+				explanation: "Issuer-discretionary bit 1".to_owned(),
 			});
 		}
 		if self.issuer_discretionary_bit_2 {
 			enabled_bits.push(EnabledBitRange {
 				offset: 2 + 2 * 8,
 				len: 1,
-				explanation: "Issuer discretionary bit 2".to_owned(),
+				explanation: "Issuer-discretionary bit 2".to_owned(),
 			});
 		}
 		if self.issuer_discretionary_bit_3 {
 			enabled_bits.push(EnabledBitRange {
 				offset: 1 + 2 * 8,
 				len: 1,
-				explanation: "Issuer discretionary bit 3".to_owned(),
+				explanation: "Issuer-discretionary bit 3".to_owned(),
 			});
 		}
 		if self.issuer_discretionary_bit_4 {
 			enabled_bits.push(EnabledBitRange {
 				offset: 2 * 8,
 				len: 1,
-				explanation: "Issuer discretionary bit 4".to_owned(),
+				explanation: "Issuer-discretionary bit 4".to_owned(),
 			});
 		}
 		enabled_bits.push(EnabledBitRange {
