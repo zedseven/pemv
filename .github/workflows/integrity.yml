@@ -59,6 +59,64 @@ jobs:
           command: clippy
           args: -- -D warnings -A unused
 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    container:
+      image: xd009642/tarpaulin:develop-nightly
+      options: --security-opt seccomp=unconfined
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install `nightly` toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          components: llvm-tools-preview
+          override: true
+
+      - name: Restore cache
+        uses: Swatinem/rust-cache@v1
+
+      - name: Install Tarpaulin
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cargo-tarpaulin
+        continue-on-error: true # This command "fails" if the tool is already installed, but we don't care
+
+      - name: Test & Generate Coverage
+        run: >
+          cargo tarpaulin
+          --all-features
+          --no-fail-fast
+          --ignore-tests
+          --ignore-panics
+          --exclude-files build.rs
+          --workspace
+          --timeout 120
+          --out Html
+          --out Xml
+
+      - name: Upload HTML Coverage Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: Coverage Report
+          path: tarpaulin-report.html
+          if-no-files-found: error
+
+      - name: Upload Codecov Coverage Report
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          env_vars: OS
+          fail_ci_if_error: true
+          directory: ./
+          files: cobertura.xml
+          verbose: true
+
   misplaced-use-statements-check:
     name: Misplaced `use` Statements Check
     runs-on: ubuntu-latest
