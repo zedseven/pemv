@@ -101,8 +101,6 @@ impl StatusValue<u64> for CardVerificationResults {
 	}
 
 	fn display_breakdown(&self) {
-		const NUM_BITS: u8 = 40;
-
 		// This is an ugly mess, but these values are display-only and it doesn't make
 		// sense to store them anywhere else. :/
 		let mut enabled_bits = Vec::with_capacity(4);

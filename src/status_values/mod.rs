@@ -1,6 +1,7 @@
 //! The module for all status value definitions.
 
 // Modules
+mod cv_rule;
 mod cvr;
 mod tsi;
 mod tvr;
