@@ -441,6 +441,7 @@ pub enum TlvFormat {
 	Ingenico,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Display for TlvFormat {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FormatResult {
 		f.write_str(match self {

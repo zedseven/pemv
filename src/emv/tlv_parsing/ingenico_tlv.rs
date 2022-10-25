@@ -54,7 +54,7 @@ pub fn parse(data: &str, masking_characters: &[char]) -> Result<RawEmvBlock, Par
 		if index >= data_len || tag_id_bytes.is_empty() {
 			return Err(ParseError::NonCompliant);
 		}
-		let (class, data_object_type) = parse_tag_metadata(tag_id_bytes[0])?;
+		let (class, data_object_type) = parse_tag_metadata(tag_id_bytes[0]);
 
 		// Tag Length
 		let colon_index = match &data[index..].find(TAG_FIELD_SEPARATOR) {
