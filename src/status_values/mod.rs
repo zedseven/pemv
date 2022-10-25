@@ -1,12 +1,13 @@
 //! The module for all status value definitions.
 
 // Modules
+mod cvr;
 mod tvr;
 
 use std::fmt::Display;
 
 // Public Exports
-pub use tvr::*;
+pub use {cvr::*, tvr::*};
 
 /// An EMV status value.
 pub trait StatusValue<I> {

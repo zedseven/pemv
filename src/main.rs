@@ -45,7 +45,7 @@ use anyhow::{Context, Result};
 
 use crate::{
 	cli::parse_cli_arguments,
-	status_values::{StatusValue, TerminalVerificationResults},
+	status_values::{CardVerificationResults, StatusValue, TerminalVerificationResults},
 	util::hex_str_to_u64,
 };
 
@@ -55,6 +55,12 @@ fn main() -> Result<()> {
 	if let Some(tvr_value) = matches.value_of("tvr") {
 		let l = TerminalVerificationResults::parse_bits(
 			hex_str_to_u64(tvr_value).with_context(|| "unable to parse hex value")?,
+		);
+		l.display_breakdown();
+	}
+	if let Some(cvr_value) = matches.value_of("cvr") {
+		let l = CardVerificationResults::parse_bits(
+			hex_str_to_u64(cvr_value).with_context(|| "unable to parse hex value")?,
 		);
 		l.display_breakdown();
 	}

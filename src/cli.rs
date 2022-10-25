@@ -13,6 +13,14 @@ pub fn parse_cli_arguments() -> ArgMatches {
 				.value_name("TVR")
 				.help("Parse Terminal Verification Results"),
 		)
-		.group(ArgGroup::new("status-values").args(&["tvr"]))
+		.arg(
+			Arg::new("cvr")
+				.short('c')
+				.long("cvr")
+				.takes_value(true)
+				.value_name("CVR")
+				.help("Parse Card Verification Results"),
+		)
+		.group(ArgGroup::new("status-values").args(&["tvr", "cvr"]))
 		.get_matches()
 }
