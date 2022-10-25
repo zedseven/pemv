@@ -17,6 +17,9 @@ pub enum ParseError {
 	},
 	/// The string provided couldn't be parsed as a number.
 	InvalidNumber,
+	/// The value provided isn't compliant with the EMV specifications in some
+	/// way.
+	NonCcdCompliant,
 }
 
 impl Display for ParseError {
@@ -41,6 +44,12 @@ impl Display for ParseError {
 			Self::InvalidNumber => write!(
 				f,
 				"The value provided is not a valid number, or is too large."
+			),
+			Self::NonCcdCompliant => write!(
+				f,
+				"The value provided isn't compliant with the EMV Common Core Definitions (CCD) in \
+				 some way. This isn't a problem necessarily, but it does mean that the value \
+				 can't be parsed."
 			),
 		}
 	}

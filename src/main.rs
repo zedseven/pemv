@@ -57,6 +57,7 @@ use crate::{
 			TransactionStatusInformation,
 		},
 		CardholderVerificationMethodList,
+		IssuerApplicationData,
 	},
 	non_emv::ServiceCode,
 	util::{parse_hex_str, parse_str_to_u16},
@@ -104,6 +105,10 @@ fn main() {
 
 	let parse_error = if let Some(tvr_str) = matches.value_of("tvr") {
 		TerminalVerificationResults::try_from(parse_hex_str(tvr_str).as_slice())
+			.map(|v| v.display_breakdown(&mut stdout, 0))
+			.err()
+	} else if let Some(iad_str) = matches.value_of("iad") {
+		IssuerApplicationData::try_from(parse_hex_str(iad_str).as_slice())
 			.map(|v| v.display_breakdown(&mut stdout, 0))
 			.err()
 	} else if let Some(cvr_str) = matches.value_of("cvr") {

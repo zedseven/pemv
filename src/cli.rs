@@ -34,12 +34,20 @@ pub fn build_cli() -> Command<'static> {
 				.help("Parse Terminal Verification Results (tag 0x95)"),
 		)
 		.arg(
-			Arg::new("cvr")
+			Arg::new("ccd-iad")
+				.short('i')
+				.long("ccd-iad")
+				.takes_value(true)
+				.value_name("IAD")
+				.help("Parse CCD-compliant Issuer Application Data (tag 0x9F10)"),
+		)
+		.arg(
+			Arg::new("ccd-cvr")
 				.short('c')
-				.long("cvr")
+				.long("ccd-cvr")
 				.takes_value(true)
 				.value_name("CVR")
-				.help("Parse Card Verification Results (part of tag 0x9F10)"),
+				.help("Parse CCD-compliant Card Verification Results (part of tag 0x9F10)"),
 		)
 		.arg(
 			Arg::new("tsi")
