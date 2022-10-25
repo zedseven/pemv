@@ -28,6 +28,7 @@
 	clippy::doc_markdown,
 	clippy::module_name_repetitions,
 	clippy::similar_names,
+	clippy::struct_excessive_bools,
 	clippy::too_many_lines,
 	clippy::unnecessary_wraps,
 	dead_code,
@@ -52,7 +53,7 @@ use crate::{
 fn main() -> Result<()> {
 	let matches = parse_cli_arguments();
 	if let Some(tvr_value) = matches.value_of("tvr") {
-		let l = TerminalVerificationResults::from_bits_truncate(
+		let l = TerminalVerificationResults::parse_bits(
 			hex_str_to_u64(tvr_value).with_context(|| "unable to parse hex value")?,
 		);
 		l.display_breakdown();
