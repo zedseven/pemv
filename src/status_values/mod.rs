@@ -2,11 +2,13 @@
 
 // Modules
 mod cv_rule;
+mod cvm_results;
 mod cvr;
 mod tsi;
 mod tvr;
 
 // Public Exports
+pub use cvm_results::*;
 pub use cvr::*;
 pub use tsi::*;
 pub use tvr::*;

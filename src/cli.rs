@@ -1,5 +1,7 @@
+// Uses
 use clap::{Arg, ArgGroup, ArgMatches, Command};
 
+/// Parse CLI input.
 pub fn parse_cli_arguments() -> ArgMatches {
 	Command::new("ParseEMV")
 		.version(env!("CARGO_PKG_VERSION"))
@@ -28,6 +30,14 @@ pub fn parse_cli_arguments() -> ArgMatches {
 				.value_name("TSI")
 				.help("Parse Transaction Status Information"),
 		)
-		.group(ArgGroup::new("status-values").args(&["tvr", "cvr", "tsi"]))
+		.arg(
+			Arg::new("cvm")
+				.short('m')
+				.long("cvm")
+				.takes_value(true)
+				.value_name("CVM results")
+				.help("Parse Cardholder Verification Method Results"),
+		)
+		.group(ArgGroup::new("status-values").args(&["tvr", "cvr", "tsi", "cvm"]))
 		.get_matches()
 }

@@ -48,11 +48,11 @@ use crate::{
 	status_values::{
 		display_breakdown,
 		CardVerificationResults,
-		StatusValue,
+		CardholderVerificationMethodResults,
 		TerminalVerificationResults,
 		TransactionStatusInformation,
 	},
-	util::{hex_str_to_u16, hex_str_to_u64},
+	util::{hex_str_to_u16, hex_str_to_u32, hex_str_to_u64},
 };
 
 // Entry Point
@@ -73,6 +73,12 @@ fn main() -> Result<()> {
 	if let Some(tsi_value) = matches.value_of("tsi") {
 		let status_value = TransactionStatusInformation::new(
 			hex_str_to_u16(tsi_value).with_context(|| "unable to parse hex value")?,
+		);
+		display_breakdown(&status_value);
+	}
+	if let Some(cvm_value) = matches.value_of("cvm") {
+		let status_value = CardholderVerificationMethodResults::new(
+			hex_str_to_u32(cvm_value).with_context(|| "unable to parse hex value")?,
 		);
 		display_breakdown(&status_value);
 	}
