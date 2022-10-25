@@ -14,7 +14,7 @@ pub fn parse_str_to_u16(s: &str) -> Result<u16, ParseError> {
 ///
 /// Original function written by Jake Goulding.
 ///
-/// https://codereview.stackexchange.com/a/201699
+/// <https://codereview.stackexchange.com/a/201699>
 pub fn parse_hex_str(hex_asm: &str) -> Vec<u8> {
 	let mut hex_bytes = hex_asm
 		.as_bytes()
@@ -68,7 +68,7 @@ pub fn byte_slice_to_u64(bytes: &[u8]) -> u64 {
 	u64::from_be_bytes(all_bytes)
 }
 
-/// Sourced from https://stackoverflow.com/a/69302957.
+/// Sourced from <https://stackoverflow.com/a/69302957>.
 ///
 /// Once the `int_log` feature becomes stable, this can be replaced with
 /// [`u32::log10`].
